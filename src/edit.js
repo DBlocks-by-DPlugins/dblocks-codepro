@@ -1,6 +1,7 @@
 // Edit.js
 
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import { RawHTML } from '@wordpress/element'; // Import RawHTML
 import Editor from '@monaco-editor/react';
 import { emmetHTML } from 'emmet-monaco-es';
 import { useState, useEffect, useRef } from 'react';
@@ -84,7 +85,6 @@ export default function Edit({ attributes, setAttributes }) {
                                 ]}
                                 onChange={changeEditorLanguage}
                             />
-
                         )}
                     </PanelBody>
                 </Panel>
@@ -114,7 +114,7 @@ export default function Edit({ attributes, setAttributes }) {
                             />
                         )}
                         {viewMode === 'preview' && (
-                            <div dangerouslySetInnerHTML={{ __html: content }} />
+                            <RawHTML>{content}</RawHTML> {/* Use RawHTML here */}
                         )}
                         {viewMode === 'both' && (
                             <>
@@ -126,7 +126,7 @@ export default function Edit({ attributes, setAttributes }) {
                                     options={{ automaticLayout: true, readOnly: false }}
                                     onChange={handleEditorChange}
                                 />
-                                <div dangerouslySetInnerHTML={{ __html: content }} />
+                                <RawHTML>{content}</RawHTML> {/* Use RawHTML here */}
                             </>
                         )}
                     </>

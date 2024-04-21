@@ -1,3 +1,4 @@
+import { RawHTML } from '@wordpress/element';
 import { useBlockProps } from '@wordpress/block-editor';
 
 export default function save({ attributes }) {
@@ -18,7 +19,9 @@ export default function save({ attributes }) {
     } else {
         // Display content as HTML when syntaxHighlight is false
         return (
-            <div {...blockProps} dangerouslySetInnerHTML={{ __html: content }} />
+            <div {...blockProps}>
+                <RawHTML>{content}</RawHTML>
+            </div>
         );
     }
 }
