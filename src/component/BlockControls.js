@@ -21,10 +21,10 @@ const BlockControlsComponent = ({ viewMode, setViewMode }) => {
                     Preview
                 </ToolbarButton>
                 <ToolbarButton
-                    onClick={() => setViewMode('both')}
-                    isActive={viewMode === 'both'}
+                    onClick={() => setViewMode('split')}
+                    isActive={viewMode === 'split'}
                 >
-                    Both
+                    Split
                 </ToolbarButton>
             </ToolbarGroup>
         </BlockControls>

@@ -116,7 +116,7 @@ export default function Edit({ attributes, setAttributes }) {
                         {viewMode === 'preview' && (
                             <RawHTML>{content}</RawHTML> {/* Use RawHTML here */}
                         )}
-                        {viewMode === 'both' && (
+                        {viewMode === 'split' && (
                             <>
                                 <Editor
                                     height="30vh"
