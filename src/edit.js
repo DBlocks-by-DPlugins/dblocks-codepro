@@ -2,7 +2,8 @@
 
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import Editor from '@monaco-editor/react';
-import { useState, useEffect } from 'react';
+import { emmetHTML } from 'emmet-monaco-es';
+import { useState, useEffect, useRef } from 'react';
 import { Panel, PanelBody, ToggleControl, SelectControl } from '@wordpress/components';
 import './editor.scss';
 import BlockControlsComponent from './component/BlockControls.js';
@@ -14,10 +15,15 @@ export default function Edit({ attributes, setAttributes }) {
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
+    const disposeEmmetRef = useRef(null); // Define disposeEmmetRef
 
     const handleEditorChange = (value) => {
         setContent(value);
         setAttributes({ content: value });
+        if (disposeEmmetRef.current) {
+            disposeEmmetRef.current(); // Dispose the previous Emmet instance if it exists
+        }
+        disposeEmmetRef.current = emmetHTML(window.monaco); // Create a new Emmet instance
     };
 
     const toggleTheme = () => {
@@ -32,6 +38,12 @@ export default function Edit({ attributes, setAttributes }) {
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
         setAttributes({ editorLanguage: language });
+
+        // Dispose the previous Emmet instance and create a new one with the updated language
+        if (disposeEmmetRef.current) {
+            disposeEmmetRef.current();
+        }
+        disposeEmmetRef.current = emmetHTML(window.monaco); // Assuming window.monaco is available
     };
 
     useEffect(() => {
@@ -82,7 +94,7 @@ export default function Edit({ attributes, setAttributes }) {
                 {syntaxHighlight ? (
                     <Editor
                         height="30vh"
-                        defaultLanguage={editorLanguage}
+                        language={editorLanguage}
                         theme={theme}
                         value={content}
                         options={{ automaticLayout: true, readOnly: false }}
