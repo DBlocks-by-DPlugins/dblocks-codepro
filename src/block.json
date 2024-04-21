@@ -27,6 +27,10 @@
 		"syntaxHighlight": {
 			"type": "boolean",
 			"default": true
+		},
+		"editorLanguage": {
+			"type": "string",
+			"default": "html"
 		}
 	},	
 	"textdomain": "dblocks-codepro",

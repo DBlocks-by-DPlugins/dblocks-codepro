@@ -3,7 +3,7 @@
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import Editor from '@monaco-editor/react';
 import { useState, useEffect } from 'react';
-import { Panel, PanelBody, ToggleControl } from '@wordpress/components';
+import { Panel, PanelBody, ToggleControl, SelectControl } from '@wordpress/components';
 import './editor.scss';
 import BlockControlsComponent from './component/BlockControls.js';
 
@@ -13,6 +13,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [viewMode, setViewMode] = useState(attributes.viewMode || 'code');
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
+    const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
 
     const handleEditorChange = (value) => {
         setContent(value);
@@ -28,10 +29,14 @@ export default function Edit({ attributes, setAttributes }) {
         setAttributes({ syntaxHighlight: !syntaxHighlight });
     };
 
-    // Ensure the theme and syntax highlight settings persist on reload
+    const changeEditorLanguage = (language) => {
+        setEditorLanguage(language);
+        setAttributes({ editorLanguage: language });
+    };
+
     useEffect(() => {
-        setAttributes({ theme, syntaxHighlight });
-    }, [theme, syntaxHighlight, setAttributes]);
+        setAttributes({ theme, syntaxHighlight, editorLanguage });
+    }, [theme, syntaxHighlight, editorLanguage, setAttributes]);
 
     return (
         <>
@@ -48,23 +53,42 @@ export default function Edit({ attributes, setAttributes }) {
                             checked={syntaxHighlight}
                             onChange={toggleSyntaxHighlight}
                         />
+                        {syntaxHighlight && (
+                            <SelectControl
+                                label="Language"
+                                value={editorLanguage}
+                                options={[
+                                    { label: 'HTML', value: 'html' },
+                                    { label: 'CSS', value: 'css' },
+                                    { label: 'SCSS', value: 'scss' },
+                                    { label: 'JavaScript', value: 'js' },
+                                    { label: 'PHP', value: 'php' },
+                                    { label: 'TypeScript', value: 'typescript' },
+                                    { label: 'Bash', value: 'bash' },
+                                    { label: 'Twig', value: 'twig' },
+                                    { label: 'YAML', value: 'yaml' },
+                                    { label: 'Plaintext', value: 'plaintext' }, 
+                                    { label: 'JSON', value: 'json' }            
+                                ]}
+                                onChange={changeEditorLanguage}
+                            />
+
+                        )}
                     </PanelBody>
                 </Panel>
             </InspectorControls>
 
             <div {...blockProps}>
                 {syntaxHighlight ? (
-                    // If syntax highlighting is enabled, show only the editor
                     <Editor
                         height="30vh"
-                        defaultLanguage="html"
+                        defaultLanguage={editorLanguage}
                         theme={theme}
                         value={content}
                         options={{ automaticLayout: true, readOnly: false }}
                         onChange={handleEditorChange}
                     />
                 ) : (
-                    // If syntax highlighting is disabled, show controls and conditional displays
                     <>
                         <BlockControlsComponent viewMode={viewMode} setViewMode={setViewMode} />
                         {viewMode === 'code' && (
