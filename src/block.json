@@ -12,19 +12,23 @@
 		"align": [ "wide", "full" ]
 	},
 	"attributes": {
-        "content": {
-            "type": "string",
-            "default": "<h2>Your content goes here</h2>"
-        },
+		"content": {
+			"type": "string",
+			"default": "<h2>Your content goes here</h2>"
+		},
 		"viewMode": {
-            "type": "string",
-            "default": "code"
-        },
+			"type": "string",
+			"default": "code"
+		},
 		"theme": {
-            "type": "string",
-            "default": "vs-light"
-        }
-    },
+			"type": "string",
+			"default": "vs-light"
+		},
+		"syntaxHighlight": {
+			"type": "boolean",
+			"default": true
+		}
+	},	
 	"textdomain": "dblocks-codepro",
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
