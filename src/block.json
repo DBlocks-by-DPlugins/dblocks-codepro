@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "dblocks/dblocks-codepro",
+	"version": "0.1.0",
+	"title": "Code Pro",
+	"category": "dblocks",
+	"icon": "smiley",
+	"description": "HTML and Syntax Highlighter",
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ]
+	},
+	"attributes": {
+        "content": {
+            "type": "string",
+            "default": "<h2>Your content goes here</h2>"
+        },
+		"viewMode": {
+            "type": "string",
+            "default": "code"
+        },
+		"theme": {
+            "type": "string",
+            "default": "vs-light"
+        }
+    },
+	"textdomain": "dblocks-codepro",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScript": "file:./view.js"
+}
