@@ -8,7 +8,7 @@ export default function save({ attributes }) {
         // Display the code with syntax highlighting
         return (
             <div {...blockProps}>
-                <pre style={{ overflowX: 'auto', backgroundColor: '#1e1e1e', color: theme === 'vs-dark' ? '#d4d4d4' : '#333', padding: '20px', borderRadius: '5px', fontFamily: '"Courier New", Courier, monospace' }}>
+                <pre>
                     <code className={`language-${editorLanguage}`}>
                         {content}
                     </code>

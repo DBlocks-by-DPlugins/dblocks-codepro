@@ -1,5 +1,22 @@
-.wp-block-create-block-dblocks-codepro {
-	background-color: #21759b;
-	color: #fff;
-	padding: 2px;
+.wp-block-dblocks-dblocks-codepro {
+	pre{
+		position: relative;
+	}
+
+	button{
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		padding: 0.5rem 0.75rem;
+		border-radius: 4px;
+		background-color: rgba(255, 255, 255, 0.1);
+		color: white;
+		border: 0;
+
+		cursor: pointer;
+
+		&:hover{
+			background-color: rgba(255, 255, 255, 0.2);
+		}
+	}
 }
