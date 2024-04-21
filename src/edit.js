@@ -114,7 +114,7 @@ export default function Edit({ attributes, setAttributes }) {
                             />
                         )}
                         {viewMode === 'preview' && (
-                            <RawHTML>{content}</RawHTML> {/* Use RawHTML here */}
+                            <RawHTML>{content}</RawHTML>
                         )}
                         {viewMode === 'split' && (
                             <>
@@ -126,7 +126,7 @@ export default function Edit({ attributes, setAttributes }) {
                                     options={{ automaticLayout: true, readOnly: false }}
                                     onChange={handleEditorChange}
                                 />
-                                <RawHTML>{content}</RawHTML> {/* Use RawHTML here */}
+                                <RawHTML>{content}</RawHTML>
                             </>
                         )}
                     </>

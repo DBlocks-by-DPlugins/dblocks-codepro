@@ -5,7 +5,6 @@
 	"version": "0.1.0",
 	"title": "Code Pro",
 	"category": "dblocks",
-	"icon": "smiley",
 	"description": "HTML and Syntax Highlighter",
 	"supports": {
 		"html": false,
@@ -26,7 +25,7 @@
 		},
 		"syntaxHighlight": {
 			"type": "boolean",
-			"default": true
+			"default": false
 		},
 		"editorLanguage": {
 			"type": "string",
