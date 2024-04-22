@@ -17,7 +17,7 @@
 	"attributes": {
 		"content": {
 			"type": "string",
-			"default": "<h2>Your content goes here</h2>"
+			"default": "Write HTML..."
 		},
 		"viewMode": {
 			"type": "string",

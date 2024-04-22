@@ -1,9 +1,17 @@
-// /**
-//  * The following styles get applied inside the editor only.
-//  *
-//  * Replace them with your own styles or remove the file completely.
-//  */
+.wp-block-dblocks-dblocks-codepro {
 
-// .wp-block-create-block-dblocks-codepro {
-// 	border: 1px dotted #f00;
-// }
+    &.is-selected{
+        
+    }
+
+    section {
+        border: 1px solid;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .monaco-editor{
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
