@@ -8,13 +8,12 @@ export default function save({ attributes }) {
     if (syntaxHighlight) {
         // Display the code with syntax highlighting
         return (
-            <div {...blockProps}>
-                <pre>
+            
+                <pre {...blockProps}>
                     <code className={`language-${editorLanguage}`}>
                         {content}
                     </code>
                 </pre>
-            </div>
         );
     } else {
         // Display content as HTML when syntaxHighlight is false
