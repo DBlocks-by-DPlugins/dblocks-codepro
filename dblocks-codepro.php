@@ -50,7 +50,7 @@ add_filter('block_categories_all', 'dblock_category');
 
 
 // ========================================================== //
-// Enqueue Prism.js scripts and styles if the current post contains the custom block.
+// Enqueue Syntax Highlighting
 // ========================================================== //
 
 
