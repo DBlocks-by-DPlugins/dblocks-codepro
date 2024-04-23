@@ -38,6 +38,10 @@
 		"editorLanguage": {
 			"type": "string",
 			"default": "html"
+		},
+		"useWrapper": {
+			"type": "boolean",
+			"default": true
 		}
 	},	
 	"textdomain": "dblocks-codepro",

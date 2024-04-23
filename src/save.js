@@ -17,10 +17,12 @@ export default function save({ attributes }) {
         );
     } else {
         // Display content as HTML when syntaxHighlight is false
-        return (
-            <div {...blockProps}>
-                <RawHTML>{content}</RawHTML>
+        return attributes.useWrapper ? (
+            <div>
+                <RawHTML>{attributes.content}</RawHTML>
             </div>
+        ) : (
+            <RawHTML>{attributes.content}</RawHTML>
         );
     }
 }

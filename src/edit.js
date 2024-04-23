@@ -19,6 +19,10 @@ export default function Edit({ attributes, setAttributes }) {
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
     const disposeEmmetRef = useRef(null);
 
+    const toggleUseWrapper = () => {
+        setAttributes({ useWrapper: !attributes.useWrapper });
+    };
+
     const handleEditorChange = (value) => {
         setContent(value);
         setAttributes({ content: value });
@@ -73,7 +77,7 @@ export default function Edit({ attributes, setAttributes }) {
         setSyntaxHighlight(!syntaxHighlight);
         setAttributes({ syntaxHighlight: !syntaxHighlight });
     };
-    
+
 
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
@@ -116,6 +120,13 @@ export default function Edit({ attributes, setAttributes }) {
                             label="Dark Mode"
                             checked={theme === 'vs-dark'}
                             onChange={toggleTheme}
+                        />
+                    </PanelBody>
+                    <PanelBody title="Content Settings">
+                        <ToggleControl
+                            label="Use Wrapper"
+                            checked={attributes.useWrapper}
+                            onChange={toggleUseWrapper}
                         />
                     </PanelBody>
                     <PanelBody title="Syntax Highlighting">
