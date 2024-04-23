@@ -53,19 +53,35 @@ add_filter('block_categories_all', 'dblock_category');
 // Enqueue Prism.js scripts and styles if the current post contains the custom block.
 // ========================================================== //
 
-function enqueue_prism_if_block_present() {
+
+function enqueue_highlightjs_if_block_present() {
     if (is_admin()) {
-        // This is necessary to ensure the editor style and scripts load in the Gutenberg editor.
+        // Skip in admin panel as it's not needed in the editor.
         return;
     }
 
-    // Check if we're on a single post or page that has our custom block.
     global $post;
     if ($post && has_block('dblocks/dblocks-codepro', $post)) {
-        // Enqueue Prism CSS
-        wp_enqueue_style('prism-css', 'https://cdn.jsdelivr.net/npm/prismjs/themes/prism-okaidia.css', array(), '1.0', 'all');
-        // Enqueue Prism JS
-        wp_enqueue_script('prism-js', 'https://cdn.jsdelivr.net/npm/prismjs/prism.js', array(), '1.0', true);
+        // Get the plugin directory URL
+        $plugin_url = plugin_dir_url(__FILE__);
+
+        // Enqueue Highlight.js CSS
+        wp_enqueue_style('highlightjs-css', $plugin_url . 'vendor/highlight/styles/vs2015.min.css', array(), '1.0', 'all');
+
+        // Base Highlight.js script
+        wp_enqueue_script('highlightjs', $plugin_url . 'vendor/highlight/highlight.min.js', array(), '1.0', true);
+
+        // Array of languages used in your block
+        $languages = ['html', 'css', 'scss', 'javascript', 'php', 'typescript', 'bash', 'twig', 'yaml', 'plaintext', 'json'];
+
+        foreach ($languages as $lang) {
+            wp_enqueue_script("highlightjs-lang-$lang", $plugin_url . "vendor/highlight/languages/$lang.min.js", array('highlightjs'), '1.0', true);
+        }
+
+        // Initialize Highlight.js
+        wp_add_inline_script('highlightjs', 'hljs.initHighlightingOnLoad();');
     }
 }
-add_action('wp_enqueue_scripts', 'enqueue_prism_if_block_present');
+add_action('wp_enqueue_scripts', 'enqueue_highlightjs_if_block_present');
+
+
