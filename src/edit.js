@@ -15,7 +15,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [viewMode, setViewMode] = useState(attributes.viewMode || 'code');
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
-    const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || 'syntaxHighlightTheme-light');
+    const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || 'light');
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
     const disposeEmmetRef = useRef(null);
 
@@ -48,16 +48,32 @@ export default function Edit({ attributes, setAttributes }) {
         }
     };
 
+    const toggleSyntaxHighlightTheme = async () => {
+        const newSyntaxTheme = syntaxHighlightTheme === 'light' ? 'dark' : 'light';
+        try {
+            const response = await fetch('/wp-json/dblocks-codepro/v1/syntax-theme/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': wpApiSettings.nonce
+                },
+                body: JSON.stringify({ syntaxTheme: newSyntaxTheme })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok.');
+            setSyntaxHighlightTheme(newSyntaxTheme);  // Update local state for instant UI update
+            setAttributes({ syntaxHighlightTheme: newSyntaxTheme });  // Update block attributes for persistence
+        } catch (error) {
+            console.error('Failed to update syntax theme:', error);
+        }
+    };
+
+
     const toggleSyntaxHighlight = () => {
         setSyntaxHighlight(!syntaxHighlight);
         setAttributes({ syntaxHighlight: !syntaxHighlight });
     };
-
-    const toggleSyntaxHighlightTheme = () => {
-        const newTheme = syntaxHighlightTheme === 'syntaxHighlightTheme-light' ? 'syntaxHighlightTheme-dark' : 'syntaxHighlightTheme-light';
-        setSyntaxHighlightTheme(newTheme);
-        setAttributes({ syntaxHighlightTheme: newTheme });
-    };
+    
 
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
@@ -68,6 +84,7 @@ export default function Edit({ attributes, setAttributes }) {
         disposeEmmetRef.current = emmetHTML(window.monaco);
     };
 
+    // Fetch both main and syntax themes when the component mounts
     useEffect(() => {
         fetch('/wp-json/dblocks-codepro/v1/theme')
             .then(response => response.json())
@@ -76,6 +93,14 @@ export default function Edit({ attributes, setAttributes }) {
                 setAttributes({ theme: data });
             })
             .catch(error => console.error('Error fetching theme:', error));
+
+        fetch('/wp-json/dblocks-codepro/v1/syntax-theme/')
+            .then(response => response.json())
+            .then(data => {
+                setSyntaxHighlightTheme(data);
+                setAttributes({ syntaxHighlightTheme: data });
+            })
+            .catch(error => console.error('Error fetching syntax theme:', error));
     }, []);
 
     useEffect(() => {
@@ -102,8 +127,8 @@ export default function Edit({ attributes, setAttributes }) {
                         {syntaxHighlight && (
                             <>
                                 <ToggleControl
-                                    label="Dark Mode"
-                                    checked={syntaxHighlightTheme === 'syntaxHighlightTheme-dark'}
+                                    label="Dark Theme"
+                                    checked={syntaxHighlightTheme === 'dark'}
                                     onChange={toggleSyntaxHighlightTheme}
                                 />
                                 <SelectControl
@@ -126,6 +151,7 @@ export default function Edit({ attributes, setAttributes }) {
                                 />
                             </>
                         )}
+
                     </PanelBody>
                 </Panel>
             </InspectorControls>

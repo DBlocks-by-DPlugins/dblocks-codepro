@@ -7,27 +7,31 @@ function enqueue_highlightjs_if_block_present() {
 
     global $post;
     if ($post && has_block('dblocks/dblocks-codepro', $post)) {
-        // Fetch the current theme setting
-        $theme_setting = get_option('dblocks_codepro_theme', 'vs-light');
+        $blocks = parse_blocks($post->post_content);
+        $syntax_highlight_active = false;
 
-        // Enqueue Highlight.js CSS based on theme
-        if ($theme_setting === 'vs-dark') {
-            wp_enqueue_style('highlightjs-css', DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs2015.min.css', array(), '1.0', 'all');
-        } else {
-            wp_enqueue_style('highlightjs-css', DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs.min.css', array(), '1.0', 'all');
+        foreach ($blocks as $block) {
+            if ($block['blockName'] === 'dblocks/dblocks-codepro' && !empty($block['attrs']['syntaxHighlight'])) {
+                $syntax_highlight_active = true;
+                break;
+            }
         }
 
-        // Base Highlight.js script
-        wp_enqueue_script('highlightjs', DBLOCKS_CODEPRO_URL . 'vendor/highlight/highlight.min.js', array(), '1.0', true);
+        if ($syntax_highlight_active) {
+            $syntax_theme_setting = get_option('dblocks_codepro_syntax_theme', 'light');
+            $style_url = $syntax_theme_setting === 'dark' ? 
+                         DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs2015.min.css' :
+                         DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs.min.css';
+            wp_enqueue_style('highlightjs-css', $style_url, array(), '1.0', 'all');
+            wp_enqueue_script('highlightjs', DBLOCKS_CODEPRO_URL . 'vendor/highlight/highlight.min.js', array(), '1.0', true);
 
-        $languages = ['html', 'css', 'scss', 'javascript', 'php', 'typescript', 'bash', 'twig', 'yaml', 'plaintext', 'json'];
+            $languages = ['html', 'css', 'scss', 'javascript', 'php', 'typescript', 'bash', 'twig', 'yaml', 'plaintext', 'json'];
+            foreach ($languages as $lang) {
+                wp_enqueue_script("highlightjs-lang-$lang", DBLOCKS_CODEPRO_URL . "vendor/highlight/languages/$lang.min.js", array('highlightjs'), '1.0', true);
+            }
 
-        foreach ($languages as $lang) {
-            wp_enqueue_script("highlightjs-lang-$lang", DBLOCKS_CODEPRO_URL . "vendor/highlight/languages/$lang.min.js", array('highlightjs'), '1.0', true);
+            wp_add_inline_script('highlightjs', 'hljs.initHighlightingOnLoad();');
         }
-
-        // Initialize Highlight.js
-        wp_add_inline_script('highlightjs', 'hljs.initHighlightingOnLoad();');
     }
 }
 add_action('wp_enqueue_scripts', 'enqueue_highlightjs_if_block_present');
