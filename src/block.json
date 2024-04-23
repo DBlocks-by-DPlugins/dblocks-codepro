@@ -35,6 +35,10 @@
 			"type": "string",
 			"default": "html"
 		},
+		"editorFontSize": {
+            "type": "string",
+            "default": "14px"
+        },
 		"useWrapper": {
 			"type": "boolean",
 			"default": true

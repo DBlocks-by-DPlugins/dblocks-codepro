@@ -5,7 +5,7 @@ import { RawHTML } from '@wordpress/element';
 import Editor from '@monaco-editor/react';
 import { emmetHTML } from 'emmet-monaco-es';
 import { useState, useEffect, useRef } from 'react';
-import { Panel, PanelBody, ToggleControl, SelectControl } from '@wordpress/components';
+import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
 import './editor.scss';
 import BlockControlsComponent from './component/BlockControls.js';
 
@@ -17,6 +17,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || 'light');
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
+    const [fontSize, setFontSize] = useState(attributes.editorFontSize);
     const disposeEmmetRef = useRef(null);
 
     const toggleUseWrapper = () => {
@@ -88,7 +89,28 @@ export default function Edit({ attributes, setAttributes }) {
         disposeEmmetRef.current = emmetHTML(window.monaco);
     };
 
-    // Fetch both main and syntax themes when the component mounts
+    const setFontSizeAndUpdate = newSize => {
+        fetch('/wp-json/dblocks-codepro/v1/editor-font-size/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': wpApiSettings.nonce  // Ensure this is correctly configured
+            },
+            body: JSON.stringify({ editorFontSize: newSize })
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok.');
+                return response.json();
+            })
+            .then(data => {
+                setFontSize(newSize);
+                setAttributes({ editorFontSize: newSize });
+            })
+            .catch(error => {
+                console.error('Failed to update editor font size:', error);
+            });
+    };
+
     useEffect(() => {
         fetch('/wp-json/dblocks-codepro/v1/theme')
             .then(response => response.json())
@@ -105,11 +127,20 @@ export default function Edit({ attributes, setAttributes }) {
                 setAttributes({ syntaxHighlightTheme: data });
             })
             .catch(error => console.error('Error fetching syntax theme:', error));
+
+        fetch('/wp-json/dblocks-codepro/v1/editor-font-size/')
+            .then(response => response.json())
+            .then(data => {
+                console.log("Fetched font size:", data);  // Check the fetched font size
+                setFontSize(data);
+                setAttributes({ editorFontSize: data });
+            })
+            .catch(error => console.error('Error fetching editor font size:', error));
     }, []);
 
     useEffect(() => {
-        setAttributes({ theme, syntaxHighlight, syntaxHighlightTheme, editorLanguage });
-    }, [theme, syntaxHighlight, syntaxHighlightTheme, editorLanguage]);
+        setAttributes({ theme, syntaxHighlight, syntaxHighlightTheme, editorLanguage, fontSize });
+    }, [theme, syntaxHighlight, syntaxHighlightTheme, editorLanguage, fontSize]);
 
     return (
         <>
@@ -120,6 +151,14 @@ export default function Edit({ attributes, setAttributes }) {
                             label="Dark Mode"
                             checked={theme === 'vs-dark'}
                             onChange={toggleTheme}
+                        />
+                        <UnitControl
+                            label="Font Size"
+                            value={fontSize}
+                            onChange={setFontSizeAndUpdate}
+                            units={[{ value: 'px', label: 'Pixels', default: 14 }]}
+                            min={10}
+                            max={30}
                         />
                     </PanelBody>
                     <PanelBody title="Content Settings">
@@ -174,7 +213,7 @@ export default function Edit({ attributes, setAttributes }) {
                         language={editorLanguage}
                         theme={theme}
                         value={content}
-                        options={{ automaticLayout: true, readOnly: false }}
+                        options={{ automaticLayout: true, fontSize: parseFloat(fontSize) }}
                         onChange={handleEditorChange}
                     />
                 ) : (
@@ -186,7 +225,7 @@ export default function Edit({ attributes, setAttributes }) {
                                 defaultLanguage="html"
                                 theme={theme}
                                 value={content}
-                                options={{ automaticLayout: true, readOnly: false }}
+                                options={{ automaticLayout: true, fontSize: parseFloat(fontSize) }}
                                 onChange={handleEditorChange}
                             />
                         )}
@@ -200,7 +239,7 @@ export default function Edit({ attributes, setAttributes }) {
                                     defaultLanguage="html"
                                     theme={theme}
                                     value={content}
-                                    options={{ automaticLayout: true, readOnly: false }}
+                                    options={{ automaticLayout: true, fontSize: parseFloat(fontSize) }}
                                     onChange={handleEditorChange}
                                 />
 
