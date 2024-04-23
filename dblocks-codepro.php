@@ -24,3 +24,4 @@ define( 'DBLOCKS_CODEPRO_URL', plugin_dir_url( __FILE__ ) );
 require_once DBLOCKS_CODEPRO_DIR . 'inc/block-registration.php';
 require_once DBLOCKS_CODEPRO_DIR . 'inc/category.php';
 require_once DBLOCKS_CODEPRO_DIR . 'inc/enqueue-scripts.php';
+require_once DBLOCKS_CODEPRO_DIR . 'inc/theme-api.php';

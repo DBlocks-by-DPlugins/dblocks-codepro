@@ -27,9 +27,26 @@ export default function Edit({ attributes, setAttributes }) {
         disposeEmmetRef.current = emmetHTML(window.monaco); // Create a new Emmet instance
     };
 
-    const toggleTheme = () => {
-        setTheme(theme === 'vs-light' ? 'vs-dark' : 'vs-light');
+    const toggleTheme = async () => {
+        const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
+        try {
+            const response = await fetch('/wp-json/dblocks-codepro/v1/theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': wpApiSettings.nonce
+                },
+                body: JSON.stringify({ theme: newTheme })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok.');
+            setTheme(newTheme);
+            setAttributes({ theme: newTheme });
+        } catch (error) {
+            console.error('Failed to update theme:', error);
+        }
     };
+    
 
     const toggleSyntaxHighlight = () => {
         setSyntaxHighlight(!syntaxHighlight);
@@ -48,8 +65,19 @@ export default function Edit({ attributes, setAttributes }) {
     };
 
     useEffect(() => {
+        fetch('/wp-json/dblocks-codepro/v1/theme')
+            .then(response => response.json())
+            .then(data => {
+                setTheme(data);
+                setAttributes({ theme: data });
+            })
+            .catch(error => console.error('Error fetching theme:', error));
+    }, []);
+
+    useEffect(() => {
         setAttributes({ theme, syntaxHighlight, editorLanguage });
-    }, [theme, syntaxHighlight, editorLanguage, setAttributes]);
+    }, [theme, syntaxHighlight, editorLanguage]);
+    
 
     return (
         <>
