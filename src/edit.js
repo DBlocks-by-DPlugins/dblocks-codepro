@@ -12,7 +12,7 @@ import BlockControlsComponent from './component/BlockControls.js';
 export default function Edit({ attributes, setAttributes }) {
     const blockProps = useBlockProps();
     const [content, setContent] = useState(attributes.content || '<h2>Test</h2>');
-    const [viewMode, setViewMode] = useState(attributes.viewMode || 'code');
+    const [viewMode, setViewModeInternal] = useState(attributes.viewMode);
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || 'light');
@@ -24,6 +24,12 @@ export default function Edit({ attributes, setAttributes }) {
         setAttributes({ useWrapper: !attributes.useWrapper });
     };
 
+    const setViewMode = (newMode) => {
+        setAttributes({ viewMode: newMode });
+        setViewModeInternal(newMode);
+    };
+
+    
     const handleEditorChange = (value) => {
         setContent(value);
         setAttributes({ content: value });
@@ -157,8 +163,8 @@ export default function Edit({ attributes, setAttributes }) {
                             value={fontSize}
                             onChange={setFontSizeAndUpdate}
                             units={[{ value: 'px', label: 'Pixels', default: 14 }]}
-                            min={10}
-                            max={30}
+                            min={12}
+                            max={24}
                         />
                     </PanelBody>
                     <PanelBody title="Content Settings">
