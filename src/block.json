@@ -8,11 +8,7 @@
 	"description": "HTML and Syntax Highlighter",
 	"supports": {
 		"html": false,
-		"align": [ "wide", "full" ],
-		"typography": {
-			"fontSize": true,
-			"lineHeight": true
-		}
+		"align": [ "wide", "full" ]
 	},
 	"attributes": {
 		"content": {

@@ -190,7 +190,7 @@ export default function Edit({ attributes, setAttributes }) {
                                 onChange={handleEditorChange}
                             />
                         )}
-                        {viewMode === 'preview' && (
+                        {viewMode === 'preview' && attributes.useWrapper && (
                             <RawHTML>{content}</RawHTML>
                         )}
                         {viewMode === 'split' && (
@@ -203,12 +203,25 @@ export default function Edit({ attributes, setAttributes }) {
                                     options={{ automaticLayout: true, readOnly: false }}
                                     onChange={handleEditorChange}
                                 />
-                                <RawHTML>{content}</RawHTML>
+
+                                {attributes.useWrapper ? (
+                                    <RawHTML>{content}</RawHTML>
+                                ) : null}
+
                             </>
                         )}
+
                     </>
                 )}
             </div>
+
+            {viewMode === 'preview' && !attributes.useWrapper && (
+                <RawHTML>{content}</RawHTML>
+            )}
+
+            {viewMode === 'split' && !attributes.useWrapper && (
+                <RawHTML>{content}</RawHTML>
+            )}
         </>
     );
 }
