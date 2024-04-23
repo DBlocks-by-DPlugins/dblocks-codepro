@@ -12,7 +12,7 @@ const BlockControlsComponent = ({ viewMode, setViewMode }) => {
                     onClick={() => setViewMode('code')}
                     isActive={viewMode === 'code'}
                 >
-                    Code
+                    HTML
                 </ToolbarButton>
                 <ToolbarButton
                     onClick={() => setViewMode('preview')}

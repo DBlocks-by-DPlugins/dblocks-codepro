@@ -83,14 +83,16 @@ export default function Edit({ attributes, setAttributes }) {
         <>
             <InspectorControls>
                 <Panel>
-                    <PanelBody title="Editor Settings">
+                    <PanelBody title="Code Editor Settings">
                         <ToggleControl
                             label="Dark Mode"
                             checked={theme === 'vs-dark'}
                             onChange={toggleTheme}
                         />
+                    </PanelBody>
+                    <PanelBody title="Syntax Highlighting">
                         <ToggleControl
-                            label="Syntax Highlighting"
+                            label="Activate Syntax Highlighting"
                             checked={syntaxHighlight}
                             onChange={toggleSyntaxHighlight}
                         />
