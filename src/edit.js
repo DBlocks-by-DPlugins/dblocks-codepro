@@ -1,7 +1,7 @@
 // Edit.js
 
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { RawHTML } from '@wordpress/element'; // Import RawHTML
+import { RawHTML } from '@wordpress/element';
 import Editor from '@monaco-editor/react';
 import { emmetHTML } from 'emmet-monaco-es';
 import { useState, useEffect, useRef } from 'react';
@@ -15,16 +15,17 @@ export default function Edit({ attributes, setAttributes }) {
     const [viewMode, setViewMode] = useState(attributes.viewMode || 'code');
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
+    const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || 'syntaxHighlightTheme-light');
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
-    const disposeEmmetRef = useRef(null); // Define disposeEmmetRef
+    const disposeEmmetRef = useRef(null);
 
     const handleEditorChange = (value) => {
         setContent(value);
         setAttributes({ content: value });
         if (disposeEmmetRef.current) {
-            disposeEmmetRef.current(); // Dispose the previous Emmet instance if it exists
+            disposeEmmetRef.current();
         }
-        disposeEmmetRef.current = emmetHTML(window.monaco); // Create a new Emmet instance
+        disposeEmmetRef.current = emmetHTML(window.monaco);
     };
 
     const toggleTheme = async () => {
@@ -46,22 +47,25 @@ export default function Edit({ attributes, setAttributes }) {
             console.error('Failed to update theme:', error);
         }
     };
-    
 
     const toggleSyntaxHighlight = () => {
         setSyntaxHighlight(!syntaxHighlight);
         setAttributes({ syntaxHighlight: !syntaxHighlight });
     };
 
+    const toggleSyntaxHighlightTheme = () => {
+        const newTheme = syntaxHighlightTheme === 'syntaxHighlightTheme-light' ? 'syntaxHighlightTheme-dark' : 'syntaxHighlightTheme-light';
+        setSyntaxHighlightTheme(newTheme);
+        setAttributes({ syntaxHighlightTheme: newTheme });
+    };
+
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
         setAttributes({ editorLanguage: language });
-
-        // Dispose the previous Emmet instance and create a new one with the updated language
         if (disposeEmmetRef.current) {
             disposeEmmetRef.current();
         }
-        disposeEmmetRef.current = emmetHTML(window.monaco); // Assuming window.monaco is available
+        disposeEmmetRef.current = emmetHTML(window.monaco);
     };
 
     useEffect(() => {
@@ -75,9 +79,8 @@ export default function Edit({ attributes, setAttributes }) {
     }, []);
 
     useEffect(() => {
-        setAttributes({ theme, syntaxHighlight, editorLanguage });
-    }, [theme, syntaxHighlight, editorLanguage]);
-    
+        setAttributes({ theme, syntaxHighlight, syntaxHighlightTheme, editorLanguage });
+    }, [theme, syntaxHighlight, syntaxHighlightTheme, editorLanguage]);
 
     return (
         <>
@@ -97,24 +100,31 @@ export default function Edit({ attributes, setAttributes }) {
                             onChange={toggleSyntaxHighlight}
                         />
                         {syntaxHighlight && (
-                            <SelectControl
-                                label="Language"
-                                value={editorLanguage}
-                                options={[
-                                    { label: 'HTML', value: 'html' },
-                                    { label: 'CSS', value: 'css' },
-                                    { label: 'SCSS', value: 'scss' },
-                                    { label: 'JavaScript', value: 'js' },
-                                    { label: 'PHP', value: 'php' },
-                                    { label: 'TypeScript', value: 'typescript' },
-                                    { label: 'Bash', value: 'bash' },
-                                    { label: 'Twig', value: 'twig' },
-                                    { label: 'YAML', value: 'yaml' },
-                                    { label: 'Plaintext', value: 'plaintext' }, 
-                                    { label: 'JSON', value: 'json' }            
-                                ]}
-                                onChange={changeEditorLanguage}
-                            />
+                            <>
+                                <ToggleControl
+                                    label="Dark Mode"
+                                    checked={syntaxHighlightTheme === 'syntaxHighlightTheme-dark'}
+                                    onChange={toggleSyntaxHighlightTheme}
+                                />
+                                <SelectControl
+                                    label="Language"
+                                    value={editorLanguage}
+                                    options={[
+                                        { label: 'HTML', value: 'html' },
+                                        { label: 'CSS', value: 'css' },
+                                        { label: 'SCSS', value: 'scss' },
+                                        { label: 'JavaScript', value: 'js' },
+                                        { label: 'PHP', value: 'php' },
+                                        { label: 'TypeScript', value: 'typescript' },
+                                        { label: 'Bash', value: 'bash' },
+                                        { label: 'Twig', value: 'twig' },
+                                        { label: 'YAML', value: 'yaml' },
+                                        { label: 'Plaintext', value: 'plaintext' },
+                                        { label: 'JSON', value: 'json' }
+                                    ]}
+                                    onChange={changeEditorLanguage}
+                                />
+                            </>
                         )}
                     </PanelBody>
                 </Panel>

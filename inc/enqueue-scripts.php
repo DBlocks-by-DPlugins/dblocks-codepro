@@ -7,8 +7,15 @@ function enqueue_highlightjs_if_block_present() {
 
     global $post;
     if ($post && has_block('dblocks/dblocks-codepro', $post)) {
-        // Enqueue Highlight.js CSS
-        wp_enqueue_style('highlightjs-css', DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs2015.min.css', array(), '1.0', 'all');
+        // Fetch the current theme setting
+        $theme_setting = get_option('dblocks_codepro_theme', 'vs-light');
+
+        // Enqueue Highlight.js CSS based on theme
+        if ($theme_setting === 'vs-dark') {
+            wp_enqueue_style('highlightjs-css', DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs2015.min.css', array(), '1.0', 'all');
+        } else {
+            wp_enqueue_style('highlightjs-css', DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs.min.css', array(), '1.0', 'all');
+        }
 
         // Base Highlight.js script
         wp_enqueue_script('highlightjs', DBLOCKS_CODEPRO_URL . 'vendor/highlight/highlight.min.js', array(), '1.0', true);

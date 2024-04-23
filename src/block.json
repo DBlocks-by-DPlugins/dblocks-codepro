@@ -31,6 +31,10 @@
 			"type": "boolean",
 			"default": false
 		},
+		"syntaxHighlightTheme": {
+			"type": "string",
+			"default": "light"
+		},	
 		"editorLanguage": {
 			"type": "string",
 			"default": "html"
