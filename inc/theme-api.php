@@ -5,7 +5,7 @@ add_action('rest_api_init', function () {
     register_rest_route('dblocks-codepro/v1', '/theme/', array(
         'methods' => 'GET',
         'callback' => function () {
-            return new WP_REST_Response(get_option('dblocks_codepro_theme', 'vs-light'), 200);
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_theme', 'vs-light')), 200);
         },
         'permission_callback' => '__return_true'
     ));
@@ -24,7 +24,7 @@ add_action('rest_api_init', function () {
     register_rest_route('dblocks-codepro/v1', '/syntax-theme/', array(
         'methods' => 'GET',
         'callback' => function () {
-            return new WP_REST_Response(get_option('dblocks_codepro_syntax_theme', 'light'), 200);
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_syntax_theme', 'light')), 200);
         },
         'permission_callback' => '__return_true'
     ));
@@ -43,7 +43,7 @@ add_action('rest_api_init', function () {
     register_rest_route('dblocks-codepro/v1', '/editor-font-size/', array(
         'methods' => 'GET',
         'callback' => function () {
-            return new WP_REST_Response(get_option('dblocks_codepro_editor_font_size', '14px'), 200);
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_editor_font_size', '14px')), 200);
         },
         'permission_callback' => '__return_true'
     ));
