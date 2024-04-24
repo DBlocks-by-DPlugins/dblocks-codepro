@@ -1,6 +1,6 @@
 <?php
 
-function enqueue_highlightjs_if_block_present() {
+function DBLOCKS_CODEPRO_enqueue_highlightjs_if_block_present() {
     if (is_admin()) {
         return; // Skip in admin panel
     }
@@ -34,4 +34,4 @@ function enqueue_highlightjs_if_block_present() {
         }
     }
 }
-add_action('wp_enqueue_scripts', 'enqueue_highlightjs_if_block_present');
+add_action('wp_enqueue_scripts', 'DBLOCKS_CODEPRO_enqueue_highlightjs_if_block_present');
