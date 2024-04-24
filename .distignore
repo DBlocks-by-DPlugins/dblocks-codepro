@@ -1,0 +1,8 @@
+node_modules
+src
+
+.editorconfig
+.gitignore 
+package-lock.json 
+package.json 
+prepros.config 
