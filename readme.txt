@@ -10,10 +10,33 @@ Example block scaffolded with Create Block tool.
 
 == Description ==
 
-This is the long description. No limit, and you can use Markdown (as well as in the following sections).
 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+**Enhanced Code Editor for WordPress** transforms the default WordPress block editor into a powerful development environment tailored for coding and content creation. Built on the robust Monaco Editor, this plugin brings advanced code editing features directly into WordPress, making it an essential tool for developers, designers, and content creators who frequently work with code.
+
+### Key Features:
+
+-   **Rich Code Editing**: Leverage the power of Monaco Editor, renowned for its extensive capabilities including syntax highlighting, intelligent code completion, and seamless user experience.
+-   **Emmet Integration**: Speed up your HTML/CSS workflow with built-in Emmet support, allowing you to use shorthand for rapid coding.
+-   **Theme Customization**: Toggle between light and dark themes to suit your preference or match your working environment, enhancing visibility and reducing eye strain.
+-   **Dynamic Syntax Highlighting**: Easily enable or disable syntax highlighting and choose between light or dark themes to best fit the context of your content.
+-   **Flexible Editor Configuration**: Adjust font sizes and choose from various programming languages such as HTML, CSS, JavaScript, PHP, and more, catering to diverse development needs.
+-   **Multiple Viewing Modes**: Includes 'Code', 'Preview', and 'Split View' modes, enabling you to code and preview content simultaneously or separately, optimizing your workflow.
+
+### Ideal Use Cases:
+
+This plugin is perfect for:
+
+-   **Developers** embedding custom code directly into posts or pages.
+-   **Educational platforms** that feature coding tutorials.
+-   **Tech bloggers** showcasing programming tips and snippets.
+
+### Why Choose Enhanced Code Editor?
+
+-   **Improved Usability**: With an intuitive interface and adjustable settings, this plugin is designed to enhance productivity and ease of use.
+-   **Responsive and Adaptive**: Works seamlessly across different devices and screen sizes, ensuring a consistent editing experience everywhere.
+-   **Persistent Settings**: Customizations and settings are saved per user, so your environment is the same each time you log in.
+
+Embrace a superior coding experience within WordPress with **Enhanced Code Editor**. Whether you're a professional developer or a hobbyist, this plugin adapts to your needs, making coding within WordPress a delight.
 
 == Installation ==
 
