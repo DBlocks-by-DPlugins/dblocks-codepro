@@ -6,6 +6,10 @@ src
 .gitignore
 .git
 
+.DS_Store
+/**/.DS_Store
+/**/**/.DS_Store
+
 dev.md
 package-lock.json
 package.json
