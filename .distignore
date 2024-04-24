@@ -1,8 +1,12 @@
 node_modules
 src
 
+.distignore
 .editorconfig
-.gitignore 
-package-lock.json 
-package.json 
-prepros.config 
+.gitignore
+.git
+
+dev.md
+package-lock.json
+package.json
+prepros.config
