@@ -1,6 +1,6 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
-	"apiVersion": 2,
+	"apiVersion": 3,
 	"name": "dblocks/dblocks-codepro",
 	"version": "0.1.0",
 	"title": "Code Pro",
@@ -8,7 +8,10 @@
 	"description": "HTML and Syntax Highlighter",
 	"supports": {
 		"html": false,
-		"align": [ "wide", "full" ]
+		"align": [
+			"wide",
+			"full"
+		]
 	},
 	"attributes": {
 		"content": {
@@ -30,20 +33,20 @@
 		"syntaxHighlightTheme": {
 			"type": "string",
 			"default": "light"
-		},	
+		},
 		"editorLanguage": {
 			"type": "string",
 			"default": "html"
 		},
 		"editorFontSize": {
-            "type": "string",
-            "default": "14px"
-        },
+			"type": "string",
+			"default": "14px"
+		},
 		"useWrapper": {
 			"type": "boolean",
 			"default": true
 		}
-	},	
+	},
 	"textdomain": "dblocks-codepro",
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
