@@ -2,14 +2,13 @@
 
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { RawHTML } from '@wordpress/element';
-// import { emmetHTML } from 'emmet-monaco-es';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
 import './editor.scss';
 import BlockControlsComponent from './component/BlockControls.js';
 import MonacoEditor from './component/MonacoEditor.js';
 
-export default function Edit({ attributes, setAttributes }) {
+export default function Edit({ attributes, setAttributes, clientId }) {
   const blockProps = useBlockProps();
   const [content, setContent] = useState(attributes.content || '<h2>Test</h2>');
   const [viewMode, setViewModeInternal] = useState(attributes.viewMode);
@@ -18,7 +17,6 @@ export default function Edit({ attributes, setAttributes }) {
   const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || 'light');
   const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
   const [fontSize, setFontSize] = useState(attributes.editorFontSize);
-  // const disposeEmmetRef = useRef(null);
 
   const toggleUseWrapper = () => {
     setAttributes({ useWrapper: !attributes.useWrapper });
@@ -33,10 +31,6 @@ export default function Edit({ attributes, setAttributes }) {
   const handleEditorChange = (value) => {
     setContent(value);
     setAttributes({ content: value });
-    // if (disposeEmmetRef.current) {
-    //     disposeEmmetRef.current();
-    // }
-    // disposeEmmetRef.current = emmetHTML(window.monaco);
   };
 
   const toggleTheme = async () => {
@@ -89,10 +83,6 @@ export default function Edit({ attributes, setAttributes }) {
   const changeEditorLanguage = (language) => {
     setEditorLanguage(language);
     setAttributes({ editorLanguage: language });
-    // if (disposeEmmetRef.current) {
-    //     disposeEmmetRef.current();
-    // }
-    // disposeEmmetRef.current = emmetHTML(window.monaco);
   };
 
   const setFontSizeAndUpdate = newSize => {
@@ -219,8 +209,10 @@ export default function Edit({ attributes, setAttributes }) {
             language={editorLanguage}
             theme={`vs-${syntaxHighlightTheme}`}
             value={content}
-            fontSize={parseFloat(fontSize)}
             onChange={handleEditorChange}
+            clientId={clientId}
+            dispatch={wp.data.dispatch}
+            isSyntaxHighlight={true}
           />
         ) : (
           <>
@@ -230,9 +222,13 @@ export default function Edit({ attributes, setAttributes }) {
                 height="30vh"
                 language="html"
                 theme={theme}
+                setTheme={setTheme}
                 value={content}
                 fontSize={parseFloat(fontSize)}
+                setFontSize={setFontSize}
                 onChange={handleEditorChange}
+                clientId={clientId}
+                dispatch={wp.data.dispatch}
               />
             )}
             {viewMode === 'preview' && attributes.useWrapper && (
@@ -244,9 +240,13 @@ export default function Edit({ attributes, setAttributes }) {
                   height="30vh"
                   language="html"
                   theme={theme}
+                  setTheme={setTheme}
                   value={content}
                   fontSize={parseFloat(fontSize)}
+                  setFontSize={setFontSize}
                   onChange={handleEditorChange}
+                  clientId={clientId}
+                  dispatch={wp.data.dispatch}
                 />
 
                 {attributes.useWrapper ? (

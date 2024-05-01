@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "@wordpress/element";
+import { emmetHTML } from 'emmet-monaco-es'
 
-export default function MonacoEditor({ height, language, theme, value, fontSize, onChange }) {
+export default function MonacoEditor({ height, language, theme, setTheme, value, fontSize, setFontSize, onChange, clientId, dispatch, isSyntaxHighlight }) {
+  const { selectBlock } = dispatch('core/block-editor');
+
   const iframeRef = useRef(null);
 
   const [monacoInstance, setMonacoInstance] = useState(null);
   const [monacoEditorInstance, setMonacoEditorInstance] = useState(null);
+
+  const [boxShadow, setBoxShadow] = useState('inset 0 0 0 1px #1e1e1e');
 
   useEffect(() => {
     if (iframeRef?.current) {
@@ -62,9 +67,38 @@ export default function MonacoEditor({ height, language, theme, value, fontSize,
             }
           });
 
+          monaco.onDidFocusEditorWidget(() => {
+            selectBlock(clientId);
+            setBoxShadow('0 0 0 var(--wp-admin-border-width-focus) var(--wp-admin-theme-color)');
+          });
+
+          monaco.onDidBlurEditorWidget(() => {
+            setBoxShadow('inset 0 0 0 1px #1e1e1e');
+          });
+
           doc.body.removeChild(loader);
           setMonacoInstance(iframe.contentWindow.monaco);
           setMonacoEditorInstance(monaco);
+
+          if ((language || 'html') === 'html') {
+            emmetHTML(iframe.contentWindow.monaco);
+          }
+
+          if (window?.parent?.monacoInstances && Array.isArray(window?.parent?.monacoInstances)) {
+            window.parent.monacoInstances.push({
+              monaco: iframe.contentWindow.monaco,
+              editor: monaco,
+              setTheme,
+              setFontSize
+            });
+          } else {
+            window.parent.monacoInstances = [{
+              monaco: iframe.contentWindow.monaco,
+              editor: monaco,
+              setTheme,
+              setFontSize
+            }];
+          }
         });
       }
       doc.body.appendChild(script);
@@ -73,7 +107,19 @@ export default function MonacoEditor({ height, language, theme, value, fontSize,
 
   useEffect(() => {
     if (monacoInstance && theme) {
-      monacoInstance.editor.setTheme(theme)
+      if (!isSyntaxHighlight && window?.parent?.monacoInstances && Array.isArray(window?.parent?.monacoInstances)) {
+        window?.parent?.monacoInstances.map(instance => {
+          if (typeof instance?.setTheme === 'function') {
+            instance.monaco.editor.setTheme(theme);
+            instance.setTheme(theme);
+          }
+        });
+      } else {
+        monacoInstance.editor.setTheme(theme);
+        if (typeof setTheme === 'function') {
+          setTheme(theme);
+        }
+      }
     }
   }, [monacoInstance, theme]);
 
@@ -85,17 +131,23 @@ export default function MonacoEditor({ height, language, theme, value, fontSize,
 
   useEffect(() => {
     if (monacoEditorInstance && fontSize) {
-      monacoEditorInstance.updateOptions({ fontSize })
+      if (!isSyntaxHighlight && window?.parent?.monacoInstances && Array.isArray(window?.parent?.monacoInstances)) {
+        window?.parent?.monacoInstances.map(instance => {
+          if (typeof instance?.setFontSize === 'function') {
+            instance.editor.updateOptions({ fontSize });
+            instance.setFontSize(fontSize);
+          }
+        });
+      } else {
+        monacoEditorInstance.updateOptions({ fontSize })
+        if (typeof setFontSize === 'function') {
+          setFontSize(fontSize);
+        }
+      }
     }
   }, [monacoEditorInstance, fontSize]);
 
-  // useEffect(() => {
-  //   if (monacoInstance && monacoEditorInstance && value) {
-  //     monacoEditorInstance.getModel().setValue(value)
-  //   }
-  // }, [monacoEditorInstance, value]);
-
   return (
-    <iframe ref={iframeRef} style={{ width: '100%', height, borderRadius: '2px', boxShadow: 'inset 0 0 0 1px #1e1e1e', outline: '1px solid #0000' }}></iframe>
+    <iframe ref={iframeRef} style={{ width: '100%', height, borderRadius: '2px', boxShadow, outline: '1px solid #0000' }}></iframe>
   );
 }
