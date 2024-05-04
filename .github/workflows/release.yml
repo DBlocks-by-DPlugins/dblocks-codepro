@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  dist:
+    name: "Build distribution release."
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checks out the repository."
+        uses: "actions/checkout@v2"
+
+      - name: "Setup NodeJS."
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Updated Node.js version
+
+      - name: "Install NPM dependencies."
+        run: npm install
+
+      - name: "Build release: Stable"
+        run: npm run build
+
+      - name: "Remove files based on .distignore"
+        run: |
+          if [ -f .distignore ]; then
+            cat .distignore | xargs rm -rf
+          else
+            echo ".distignore file not found."
+          fi
+
+      - name: "Create a Release Archive"
+        run: |
+          zip -r dblocks-codepro.zip .
+
+      - name: "Create a GitHub Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dblocks-codepro.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
