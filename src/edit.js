@@ -127,7 +127,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     fetch('/wp-json/dblocks-codepro/v1/editor-font-size/')
       .then(response => response.json())
       .then(data => {
-        console.log("Fetched font size:", data);  // Check the fetched font size
+        // console.log("Fetched font size:", data);  // Check the fetched font size
         setFontSize(data);
         setAttributes({ editorFontSize: data });
       })
