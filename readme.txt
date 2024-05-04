@@ -68,7 +68,22 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 == Changelog ==
 
-= 0.1.0 =
+= 1.0.4 =
+* Added transform form core/code and core/html
+
+= 1.0.3 =
+* Moved to Api v3
+
+
+= 1.0.2 =
+* Updated header info
+
+
+= 1.0.1 =
+* Files Cleanup for wordpress.org
+
+
+= 1.0.0 =
 * Release
 
 == Arbitrary section ==
