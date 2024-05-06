@@ -17,7 +17,7 @@ jobs:
       - name: "Setup NodeJS."
         uses: actions/setup-node@v2
         with:
-          node-version: '18'  # Updated Node.js version
+          node-version: '16'  # Updated Node.js version
 
       - name: "Install NPM dependencies."
         run: npm install
@@ -60,7 +60,7 @@ jobs:
 
           # Configure Git user information
           git config user.email "mailme@markokrstic.com"
-          git config user.name "krstivoja"
+          git config user.name "marko krstic"
 
           # Commit and push changes
           git add .
