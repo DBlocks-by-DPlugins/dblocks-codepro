@@ -1,68 +1,68 @@
 name: Transfer and Build Release
 
-on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+*'
-
-jobs:
-  clone_and_copy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout Private Repository"
-        uses: actions/checkout@v2
-        with:
-          repository: "DBlocks-by-DPlugins/dblocks-codepro--dev"
-          token: ${{ secrets.WPSCIPTSTOKEN }}  # Token must have access to the private repo
-          path: 'private-repo'
-
-      - name: "Checkout Public Repository"
-        uses: actions/checkout@v2
-        with:
-          repository: "DBlocks-by-DPlugins/dblocks-codepro"
-          token: ${{ secrets.WPSCIPTSTOKEN }}  # Token must have access to the public repo
-          path: 'public-repo'
-
-      - name: "Copy files from Private to Public Repo"
-        run: |
-          cp -R private-repo/* public-repo/
-          cd public-repo
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add .
-          git commit -m "Sync files from private repository to public repository"
-          git push
-
-  build_release:
-    needs: clone_and_copy
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout Public Repository"
-        uses: actions/checkout@v2
-        with:
-          repository: "DBlocks-by-DPlugins/dblocks-codepro"
-          token: ${{ secrets.WPSCIPTSTOKEN }}
-          path: 'public-repo'
-
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: "Install NPM dependencies"
-        run: |
-          cd public-repo
-          npm install
-
-      - name: "Build and Create Release Archive"
-        run: |
-          cd public-repo
-          npm run build  # Assuming you have a build script in your package.json
-          zip -r release.zip .
-
-      - name: "Upload Release Zip to Public Repository Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: 'public-repo/release.zip'
-        env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+          on:
+            push:
+              tags:
+                - '[0-9]+.[0-9]+.[0-9]+*'
+          
+          jobs:
+            clone_and_copy:
+              runs-on: ubuntu-latest
+              steps:
+                - name: "Checkout Private Repository"
+                  uses: actions/checkout@v2
+                  with:
+                    repository: "DBlocks-by-DPlugins/dblocks-codepro--dev"
+                    token: ${{ secrets.WPSCIPTSTOKEN }}  # Token must have access to the private repo
+                    path: 'private-repo'
+          
+                - name: "Checkout Public Repository"
+                  uses: actions/checkout@v2
+                  with:
+                    repository: "DBlocks-by-DPlugins/dblocks-codepro"
+                    token: ${{ secrets.WPSCIPTSTOKEN }}  # Token must have access to the public repo
+                    path: 'public-repo'
+          
+                - name: "Copy files from Private to Public Repo"
+                  run: |
+                    cp -R private-repo/* public-repo/
+                    cd public-repo
+                    git config user.name "GitHub Action"
+                    git config user.email "action@github.com"
+                    git add .
+                    git commit -m "Sync files from private repository to public repository"
+                    git push
+          
+            build_release:
+              needs: clone_and_copy
+              runs-on: ubuntu-latest
+              steps:
+                - name: "Checkout Public Repository"
+                  uses: actions/checkout@v2
+                  with:
+                    repository: "DBlocks-by-DPlugins/dblocks-codepro"
+                    token: ${{ secrets.WPSCIPTSTOKEN }}
+                    path: 'public-repo'
+          
+                - name: "Setup Node.js"
+                  uses: actions/setup-node@v2
+                  with:
+                    node-version: '16'
+          
+                - name: "Install NPM dependencies"
+                  run: |
+                    cd public-repo
+                    npm install
+          
+                - name: "Build and Create Release Archive"
+                  run: |
+                    cd public-repo
+                    npm run build  # Assuming you have a build script in your package.json
+                    zip -r release.zip .
+          
+                - name: "Upload Release Zip to Public Repository Release"
+                  uses: softprops/action-gh-release@v1
+                  with:
+                    files: 'public-repo/release.zip'
+                  env:
+                    GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
