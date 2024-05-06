@@ -6,13 +6,15 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
-  dist:
+  build:
     name: "Build distribution release."
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checks out the repository."
-        uses: "actions/checkout@v2"
+      - name: "Checkout Private Repo"
+        uses: actions/checkout@v2
+        with:
+          path: 'private-repo'
 
       - name: "Setup NodeJS."
         uses: actions/setup-node@v2
@@ -20,50 +22,44 @@ jobs:
           node-version: '16'
 
       - name: "Install NPM dependencies."
-        run: npm install
+        run: |
+          cd private-repo
+          npm install
 
       - name: "Build release: Stable"
-        run: npm run build
-
-      - name: "Remove files based on .distignore"
         run: |
-          if [ -f .distignore ]; then
-            cat .distignore | xargs rm -rf
-          else
-            echo ".distignore file not found."
-          fi
+          cd private-repo
+          npm run build
 
       - name: "Create a Release Archive"
         run: |
-          zip -r dblocks-codepro.zip .
+          cd private-repo
+          zip -r ../dblocks-codepro.zip .
 
-      - name: "Checkout Public Repository"
+      - name: "Checkout Public Repo"
         uses: actions/checkout@v2
         with:
           repository: 'DBlocks-by-DPlugins/dblocks-codepro'
-          token: ${{ secrets.DBLOCKSPAT }}  # Use the token with appropriate permissions
+          token: ${{ secrets.DBLOCKSPAT }}
           path: 'public-repo'
 
-      - name: "Unzip Release Archive"
-        run: unzip ../dblocks-codepro.zip -d ./public-repo/
-
-      - name: "Remove src Directory"
+      - name: "Copy Release to Public Repo"
         run: |
-          cd ./public-repo
-          rm -rf src/
+          cp ../dblocks-codepro.zip public-repo/
 
-      - name: "Commit and Push to Public Repository"
+      - name: "Commit and Push to Public Repo"
         run: |
-          cd ./public-repo
-          git config user.name 'github-actions'
-          git config user.email 'github-actions@github.com'
-          git add .
-          git commit -m 'Update release'
+          cd public-repo
+          git config --local user.email "workflow@bot.com"
+          git config --local user.name "WorkflowBot"
+          git add dblocks-codepro.zip
+          git commit -m "Update release archive"
           git push
 
-      - name: "Create a GitHub Release"
+      - name: "Create a GitHub Release in Public Repo"
         uses: softprops/action-gh-release@v1
         with:
           files: dblocks-codepro.zip
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+
