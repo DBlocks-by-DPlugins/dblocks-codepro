@@ -64,7 +64,7 @@ jobs:
 
           # Configure Git user information
           git config user.email "mailme@markokrstic.com"
-          git config user.name "YMarko Krstic"
+          git config user.name "Marko Krstic"
 
           # Commit and push changes
           git add .
