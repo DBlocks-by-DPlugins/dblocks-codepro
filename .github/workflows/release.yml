@@ -51,12 +51,13 @@ jobs:
           if [ -d "new-repo" ]; then
             cd new-repo
             git pull origin main
+            cd ..
           else
             git clone https://github.com/DBlocks-by-DPlugins/dblocks-codepro.git new-repo
           fi
 
           # Copy release files to the new repository directory
-          cp -r * new-repo/
+          cp -r !(new-repo) new-repo/
 
           # Navigate to the new repository directory
           cd new-repo
