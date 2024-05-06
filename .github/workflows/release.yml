@@ -36,8 +36,7 @@ jobs:
       - name: "Copy Tags from Private to Public Repo"
         run: |
           cd private-repo
-          git fetch --tags --force
+          git fetch --tags
           for tag in $(git tag); do
-            git push --delete origin "$tag"  # Delete the tag from the public repository if it exists
             git push origin "$tag"  # Push the tag from the private repository to the public repository
           done
