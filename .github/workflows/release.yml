@@ -42,7 +42,7 @@ jobs:
         with:
           files: dblocks-codepro.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
+          GITHUB_TOKEN: ${{ secrets.DBLOCKSTOKENS }}  # Use your secret name here
 
       # Copy release files to new repository
       - name: "Copy Release Files to New Repository"
@@ -63,8 +63,8 @@ jobs:
           cd new-repo
 
           # Configure Git user information
-          git config user.email "your@email.com"
-          git config user.name "Your Name"
+          git config user.email "mailme@markokrstic.com"
+          git config user.name "YMarko Krstic"
 
           # Commit and push changes
           git add .
