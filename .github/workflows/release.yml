@@ -63,8 +63,8 @@ jobs:
           cd new-repo
 
           # Configure Git user information
-          git config user.email "mailme@markokrstic.com"
-          git config user.name "krstivoja"
+          git config --global user.email "mailme@markokrstic.com"
+          git config --global user.name "krstivoja"
 
           # Commit and push changes
           git add .
