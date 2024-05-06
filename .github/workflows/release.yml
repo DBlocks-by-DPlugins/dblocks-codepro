@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: "DBlocks-by-DPlugins/dblocks-codepro"
-          token: ${{ secrets.PUBLIC_ACCESS_TOKEN }}  # Token must have access to the public repo
+          token: ${{ secrets.WPSCIPTSTOKEN }}  # Token must have access to the public repo
           path: 'public-repo'
 
       - name: "Copy files from Private to Public Repo"
