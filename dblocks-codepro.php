@@ -4,7 +4,7 @@
  * Description:       Advanced HTML Block and Code Syntax Highlighterin in one
  * Requires at least: 6.5.2
  * Requires PHP:      7.0
- * Version:           1.0.5
+ * Version:           1.0.5.1
  * Author:            DPlugins
  * * Author URI:      https://dplugins.com/
  * License:           GPL-2.0-or-later
@@ -39,7 +39,7 @@ $plugin_prefix = 'DBLOCKSCODEPRO';
 define($plugin_prefix . '_DIR', plugin_basename(__DIR__));
 define($plugin_prefix . '_BASE', plugin_basename(__FILE__));
 define($plugin_prefix . '_PATH', plugin_dir_path(__FILE__));
-define($plugin_prefix . '_VER', '1.0.5');
+define($plugin_prefix . '_VER', '1.0.5.1');
 define($plugin_prefix . '_CACHE_KEY', 'blockscodepro-cache-key-for-plugin');
 define($plugin_prefix . '_REMOTE_URL', 'http://selfhost.dplugins.com/wp-content/uploads/plugins/18/info.json');
 

@@ -43,3 +43,20 @@ jobs:
           files: dblocks-codepro.zip
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
+
+      # Copy release files to new repository
+      - name: "Copy Release Files to New Repository"
+        run: |
+          # Clone the new repository
+          git clone https://github.com/DBlocks-by-DPlugins/dblocks-codepro--dev.git new-repo
+
+          # Copy release files to the new repository directory
+          cp -r * new-repo/
+
+          # Navigate to the new repository directory
+          cd new-repo
+
+          # Commit and push changes
+          git add .
+          git commit -m "Add release files"
+          git push origin main  # Or whatever branch you're using
