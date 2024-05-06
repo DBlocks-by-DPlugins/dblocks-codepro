@@ -17,7 +17,7 @@ jobs:
       - name: "Setup NodeJS."
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Updated Node.js version
+          node-version: '16'
 
       - name: "Install NPM dependencies."
         run: npm install
@@ -37,9 +37,33 @@ jobs:
         run: |
           zip -r dblocks-codepro.zip .
 
+      - name: "Checkout Public Repository"
+        uses: actions/checkout@v2
+        with:
+          repository: 'DBlocks-by-DPlugins/dblocks-codepro'
+          token: ${{ secrets.DBLOCKSPAT }}  # Use the token with appropriate permissions
+          path: 'public-repo'
+
+      - name: "Unzip Release Archive"
+        run: unzip ../dblocks-codepro.zip -d ./public-repo/
+
+      - name: "Remove src Directory"
+        run: |
+          cd ./public-repo
+          rm -rf src/
+
+      - name: "Commit and Push to Public Repository"
+        run: |
+          cd ./public-repo
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add .
+          git commit -m 'Update release'
+          git push
+
       - name: "Create a GitHub Release"
         uses: softprops/action-gh-release@v1
         with:
           files: dblocks-codepro.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
+          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
