@@ -17,7 +17,7 @@ jobs:
       - name: "Setup NodeJS."
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Updated Node.js version
+          node-version: '18'  # Updated Node.js version
 
       - name: "Install NPM dependencies."
         run: npm install
@@ -42,19 +42,15 @@ jobs:
         with:
           files: dblocks-codepro.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.DBLOCKSTOKENS }}  # Use your secret name here
+          GITHUB_TOKEN: ${{ secrets.DBLOCKSTOKENS }}  # Use your workflow token here
 
       # Copy release files to new repository
       - name: "Copy Release Files to New Repository"
         run: |
-          # Clone the new repository or pull if it already exists
-          if [ -d "new-repo" ]; then
-            cd new-repo
-            git pull origin main
-            cd ..
-          else
-            git clone https://github.com/DBlocks-by-DPlugins/dblocks-codepro.git new-repo
-          fi
+          # Check out the other private repository using the PAT
+          git clone https://github.com/DBlocks-by-DPlugins/dblocks-codepro.git new-repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.DBLOCKSPAT }}  # Use your PAT secret here
 
           # Copy release files to the new repository directory
           rsync -av --exclude=new-repo/* . new-repo/
@@ -63,8 +59,8 @@ jobs:
           cd new-repo
 
           # Configure Git user information
-          git config --global user.email "mailme@markokrstic.com"
-          git config --global user.name "krstivoja"
+          git config user.email "mailme@markokrstic.com"
+          git config user.name "krstivoja"
 
           # Commit and push changes
           git add .
