@@ -35,8 +35,7 @@ jobs:
         run: |
           cd private-repo
           zip -r ../dblocks-codepro.zip .
-          echo "Listing contents of the zip file:"
-          unzip -l ../dblocks-codepro.zip
+          ls -l ../ # List the files in the parent directory to confirm zip creation
 
       - name: "Checkout Public Repo"
         uses: actions/checkout@v2
@@ -48,16 +47,21 @@ jobs:
       - name: "Copy Release to Public Repo"
         run: |
           cp ${GITHUB_WORKSPACE}/dblocks-codepro.zip ${GITHUB_WORKSPACE}/public-repo/
-          echo "Listing contents of the public-repo directory:"
-          ls -lh ${GITHUB_WORKSPACE}/public-repo/
+          ls -l ${GITHUB_WORKSPACE}/public-repo/ # List files to confirm the copy was successful
+
+      - name: "Unzip Archive in Public Repo"
+        run: |
+          cd ${GITHUB_WORKSPACE}/public-repo
+          unzip dblocks-codepro.zip
+          ls -l # List files to confirm unzip was successful
 
       - name: "Commit and Push to Public Repo"
         run: |
           cd ${GITHUB_WORKSPACE}/public-repo
           git config --local user.email "workflow@bot.com"
           git config --local user.name "WorkflowBot"
-          git add dblocks-codepro.zip -f
-          git commit -m "Update release archive"
+          git add .
+          git commit -m "Unzip and update public repo with release files"
           git push
 
       - name: "Create a GitHub Release in Public Repo"
@@ -66,9 +70,3 @@ jobs:
           files: dblocks-codepro.zip
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
-
-      - name: "Final Verification in Public Repo"
-        run: |
-          cd ${GITHUB_WORKSPACE}/public-repo
-          echo "Final check of the zip file contents in the public repository:"
-          unzip -l dblocks-codepro.zip
