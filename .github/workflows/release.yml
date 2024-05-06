@@ -6,7 +6,7 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
-  clone_and_build_release:
+  clone_and_copy:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout Private Repository"
@@ -33,16 +33,36 @@ jobs:
           git commit -m "Sync files from private repository to public repository"
           git push
 
-      - name: "Setup Node.js and Build Release Archive"
+  build_release:
+    needs: clone_and_copy
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Public Repository"
+        uses: actions/checkout@v2
+        with:
+          repository: "DBlocks-by-DPlugins/dblocks-codepro"
+          token: ${{ secrets.WPSCIPTSTOKEN }}
+          path: 'public-repo'
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: "Install NPM dependencies"
         run: |
           cd public-repo
           npm install
+
+      - name: "Build and Create Release Archive"
+        run: |
+          cd public-repo
           npm run build  # Assuming you have a build script in your package.json
-          zip -r dblocks-codepro.zip .
+          zip -r release.zip .
 
       - name: "Upload Release Zip to Public Repository Release"
         uses: softprops/action-gh-release@v1
         with:
-          files: 'public-repo/dblocks-codepro.zip'
+          files: 'public-repo/release.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
