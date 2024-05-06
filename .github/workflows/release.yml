@@ -24,14 +24,15 @@ jobs:
           path: 'public-repo'
 
       - name: "Copy files from Private to Public Repo"
-        run: |
-          cp -R private-repo/* public-repo/
-          cd public-repo
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add .
-          git commit -m "Sync files from private repository to public repository"
-          git push
+          run: |
+            cp -R private-repo/* public-repo/
+            cd public-repo
+            git config user.name "GitHub Action"
+            git config user.email "action@github.com"
+            git add -v .
+            git commit -m "Sync files from private repository to public repository"
+            git push
+        
 
       - name: "Setup Node.js and Build Release Archive"
         run: |
