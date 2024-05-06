@@ -17,7 +17,7 @@ jobs:
       - name: "Setup NodeJS."
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Use Node.js version 16
+          node-version: '16'  # Ensure you are using the Node.js version required by your project
 
       - name: "Install NPM dependencies."
         run: npm install
@@ -31,11 +31,11 @@ jobs:
             cat .distignore | xargs rm -rf
           else
             echo ".distignore file not found."
-          fi
 
       - name: "Create a Release Archive"
         run: |
           zip -r dblocks-codepro.zip .
+          ls -l  # Lists files to verify zip creation
 
       - name: "Create a GitHub Release"
         uses: softprops/action-gh-release@v1
@@ -44,7 +44,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
 
-  # New job to handle downloading and unzipping in public repo
   deploy:
     needs: dist
     runs-on: ubuntu-latest
@@ -55,22 +54,23 @@ jobs:
           node-version: '16'
 
       - name: "Download Release Archive"
-        run: gh release download --repo <owner/repo> --pattern "dblocks-codepro.zip"
+        run: |
+          gh release download --repo DBlocks-by-DPlugins/dblocks-codepro--dev --pattern "dblocks-codepro.zip"
         env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions to access the releases
 
       - name: "Checkout Public Repository"
         uses: actions/checkout@v2
         with:
-          repository: 'owner/public-repo'
-          token: ${{ secrets.WPSCIPTSTOKEN }}
+          repository: 'DBlocks-by-DPlugins/dblocks-codepro'
+          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
           path: 'public-repo'
 
       - name: "Unzip Archive in Public Repo"
         run: |
           unzip dblocks-codepro.zip -d public-repo/
           cd public-repo
-          ls -la
+          ls -la  # List files to confirm unzip was successful
 
       - name: "Commit and Push Changes"
         run: |
@@ -86,4 +86,4 @@ jobs:
         with:
           files: dblocks-codepro.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
