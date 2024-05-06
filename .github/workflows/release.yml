@@ -38,6 +38,8 @@ jobs:
           cd private-repo
           git fetch --tags
           for tag in $(git tag); do
-            git tag -f "$tag" -m "$tag"
-            git push origin "$tag"
+            new_tag="v$tag"  # Add "v" prefix to the tag
+            git tag "$new_tag" "$tag"  # Create a new tag with the prefix
+            git push origin "$new_tag"  # Push the new tag to the remote repository
           done
+      
