@@ -38,9 +38,6 @@ jobs:
           cd private-repo
           git fetch --tags
           for tag in $(git tag); do
-            if ! git rev-parse -q --verify "refs/tags/$tag"; then
-              git push origin "$tag"  # Push the tag from the private repository to the public repository
-            else
-              echo "Tag $tag already exists. Skipping..."
-            fi
+            git tag -f "$tag" -m "$tag"
+            git push origin "$tag"
           done
