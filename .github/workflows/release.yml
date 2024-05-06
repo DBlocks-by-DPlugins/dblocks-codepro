@@ -37,4 +37,9 @@ jobs:
         run: |
           cd private-repo
           git fetch --tags
-          git push --tags origin main  # Push tags to the main branch of the public repository
+          for tag in $(git tag); do
+            if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
+              git tag -d "$tag"  # Delete existing tag
+            fi
+            git push origin "$tag"  # Push the tag to the public repository
+          done
