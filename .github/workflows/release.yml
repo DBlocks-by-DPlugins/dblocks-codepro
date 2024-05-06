@@ -47,8 +47,13 @@ jobs:
       # Copy release files to new repository
       - name: "Copy Release Files to New Repository"
         run: |
-          # Clone the new repository
-          git clone https://github.com/DBlocks-by-DPlugins/dblocks-codepro--dev.git new-repo
+          # Clone the new repository or pull if it already exists
+          if [ -d "new-repo" ]; then
+            cd new-repo
+            git pull origin main
+          else
+            git clone https://github.com/DBlocks-by-DPlugins/dblocks-codepro.git new-repo
+          fi
 
           # Copy release files to the new repository directory
           cp -r * new-repo/
@@ -56,7 +61,11 @@ jobs:
           # Navigate to the new repository directory
           cd new-repo
 
+          # Configure Git user information
+          git config user.email "your@email.com"
+          git config user.name "Your Name"
+
           # Commit and push changes
           git add .
           git commit -m "Add release files"
-          git push origin main  # Or whatever branch you're using
+          git push origin main
