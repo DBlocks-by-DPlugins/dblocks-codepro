@@ -38,8 +38,6 @@ jobs:
           cd private-repo
           git fetch --tags --force
           for tag in $(git tag); do
-            if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
-              git tag -d "$tag"  # Delete existing tag
-            fi
-            git push origin "$tag"  # Push the tag to the public repository
+            git push --delete origin "$tag"  # Delete the tag from the public repository if it exists
+            git push origin "$tag"  # Push the tag from the private repository to the public repository
           done
