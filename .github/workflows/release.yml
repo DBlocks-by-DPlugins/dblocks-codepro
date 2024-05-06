@@ -57,7 +57,7 @@ jobs:
           fi
 
           # Copy release files to the new repository directory
-          cp -r !(new-repo) new-repo/
+          rsync -av --exclude=new-repo/* . new-repo/
 
           # Navigate to the new repository directory
           cd new-repo
