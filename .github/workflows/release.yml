@@ -33,8 +33,9 @@ jobs:
           git commit -m "Sync files from private repository to public repository"
           git push origin main  # Push changes to the main branch of the public repository
 
-      - name: "Copy Tag to Public Repository"
+      - name: "Copy Tags from Private to Public Repo"
         run: |
           cd private-repo
-          git tag -l | xargs -I{} git tag -f {} origin/{}
+          git fetch --tags
+          git tag | xargs -I{} git tag -f {} origin/{}
           git push --tags origin main  # Push tags to the main branch of the public repository
