@@ -29,12 +29,6 @@ require_once DBLOCKS_CODEPRO_DIR . 'inc/theme-api.php';
 
 
 
-
-
-
-
-
-
 /**
  * For plugin to work on multiple installs replace 'UNIQUE_PLUGIN_NAME'
  * Update plugin _VER on the line 32
