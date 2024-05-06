@@ -37,5 +37,4 @@ jobs:
         run: |
           cd private-repo
           git fetch --tags
-          git tag | xargs -I{} git tag -f {} origin/{}
           git push --tags origin main  # Push tags to the main branch of the public repository
