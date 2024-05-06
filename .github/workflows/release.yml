@@ -34,14 +34,14 @@ jobs:
           git push origin main  # Push changes to the main branch of the public repository
 
       - name: "Copy Tags from Private to Public Repo"
-          run: |
-            cd private-repo
-            git fetch --tags
-            for tag in $(git tag); do
-              new_tag="v$tag"  # Add "v" prefix to the tag
-              git tag "$new_tag" "$tag"  # Create a new tag with the prefix
-              git push origin "$new_tag"  # Push the new tag to the remote repository
-              git tag -d "$tag"  # Delete the old tag locally
-              git push origin ":refs/tags/$tag"  # Delete the old tag on the remote repository
-            done
-        
+        run: |
+          cd private-repo
+          git fetch --tags
+          for tag in $(git tag); do
+            new_tag="v$tag"  # Add "v" prefix to the tag
+            git tag "$new_tag" "$tag"  # Create a new tag with the prefix
+            git push origin "$new_tag"  # Push the new tag to the remote repository
+            git tag -d "$tag"  # Delete the old tag locally
+            git push origin ":refs/tags/$tag"  # Delete the old tag on the remote repository
+          done
+      
