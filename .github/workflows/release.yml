@@ -40,8 +40,8 @@ jobs:
           for tag in $(git tag); do
             new_tag="v$tag"  # Add "v" prefix to the tag
             git tag "$new_tag" "$tag"  # Create a new tag with the prefix
-            git push origin "$new_tag"  # Push the new tag to the remote repository
+            git push --force origin "$new_tag"  # Push the new tag to the remote repository, overwriting existing tag
             git tag -d "$tag"  # Delete the old tag locally
-            git push origin ":refs/tags/$tag"  # Delete the old tag on the remote repository
+            git push --force origin ":refs/tags/$tag"  # Delete the old tag on the remote repository
           done
       
