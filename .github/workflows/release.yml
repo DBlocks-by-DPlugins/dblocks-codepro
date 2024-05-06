@@ -42,27 +42,4 @@ jobs:
         with:
           files: dblocks-codepro.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.DBLOCKSTOKENS }}  # Use your workflow token here
-
-      # Copy release files to new repository
-      - name: "Copy Release Files to New Repository"
-        run: |
-          # Check out the other private repository using the PAT
-          git clone https://github.com/DBlocks-by-DPlugins/dblocks-codepro.git new-repo
-        env:
-          GITHUB_TOKEN: ${{ secrets.DBLOCKSPAT }}  # Use your PAT secret here
-
-          # Copy release files to the new repository directory
-          rsync -av --exclude=new-repo/* . new-repo/
-
-          # Navigate to the new repository directory
-          cd new-repo
-
-          # Configure Git user information
-          git config user.email "mailme@markokrstic.com"
-          git config user.name "marko krstic"
-
-          # Commit and push changes
-          git add .
-          git commit -m "Add release files"
-          git push origin main
+          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
