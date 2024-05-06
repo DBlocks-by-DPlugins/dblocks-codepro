@@ -42,8 +42,8 @@ jobs:
 
       - name: "Remove files based on .distignore"
         run: |
-          if [ -f .distignore ]; then
-            cat .distignore | xargs rm -rf
+          if [ -f public-repo/.distignore ]; then
+            cat public-repo/.distignore | xargs rm -rf
           else
             echo ".distignore file not found."
           fi
