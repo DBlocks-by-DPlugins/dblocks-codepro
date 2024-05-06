@@ -11,16 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checkout private repository"
-        uses: actions/checkout@v2
-        with:
-          repository: "DBlocks-by-DPlugins/dblocks-codepro--dev"
-          token: ${{ secrets.WPSCIPTSTOKEN }}  # Token must have access to private repo
+      - name: "Checks out the repository."
+        uses: "actions/checkout@v2"
 
       - name: "Setup NodeJS."
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '16'  # Updated Node.js version
 
       - name: "Install NPM dependencies."
         run: npm install
@@ -34,43 +31,15 @@ jobs:
             cat .distignore | xargs rm -rf
           else
             echo ".distignore file not found."
+          fi  # Correctly closing the if statement
 
       - name: "Create a Release Archive"
-        run: zip -r dblocks-codepro.zip .
+        run: |
+          zip -r dblocks-codepro.zip .
 
-      - name: "Create a GitHub Release in private repo"
+      - name: "Create a GitHub Release"
         uses: softprops/action-gh-release@v1
         with:
           files: dblocks-codepro.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
-
-      - name: "Checkout public repository"
-        uses: actions/checkout@v2
-        with:
-          repository: "DBlocks-by-DPlugins/dblocks-codepro"
-          token: ${{ secrets.PUBLIC_ACCESS_TOKEN }}  # Token must have access to public repo
-          path: "public-repo"
-
-      - name: "Copy release to public repo"
-        run: |
-          cp dblocks-codepro.zip public-repo/
-          cd public-repo
-          unzip dblocks-codepro.zip
-          rm dblocks-codepro.zip  # Optional: Remove zip after extraction
-
-      - name: "Push changes to public repository"
-        run: |
-          cd public-repo
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add .
-          git commit -m "Deploy new release"
-          git push
-
-      - name: "Create a GitHub Release in public repo"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dblocks-codepro.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLIC_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
