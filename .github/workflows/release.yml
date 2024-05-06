@@ -35,7 +35,7 @@ jobs:
         run: |
           cd private-repo
           zip -r ../dblocks-codepro.zip .
-          ls -l ../ # Optional: List the files in the parent directory to confirm zip creation
+          ls -l ../ # List the files in the parent directory to confirm zip creation
 
       - name: "Checkout Public Repo"
         uses: actions/checkout@v2
@@ -47,15 +47,17 @@ jobs:
       - name: "Copy Release to Public Repo"
         run: |
           cp ${GITHUB_WORKSPACE}/dblocks-codepro.zip ${GITHUB_WORKSPACE}/public-repo/
-          ls -l ${GITHUB_WORKSPACE}/public-repo/ # Optional: List files to confirm the copy was successful
+          ls -l ${GITHUB_WORKSPACE}/public-repo/ # List files to confirm the copy was successful
 
-      - name: "Commit and Push to Public Repo"
+      - name: "Modify .gitignore and Commit"
         run: |
           cd ${GITHUB_WORKSPACE}/public-repo
+          # Remove specific zip file ignore rule or clear all rules (adjust as needed)
+          grep -v 'dblocks-codepro.zip' .gitignore > temp.txt && mv temp.txt .gitignore
           git config --local user.email "workflow@bot.com"
           git config --local user.name "WorkflowBot"
-          git add dblocks-codepro.zip
-          git commit -m "Update release archive"
+          git add .gitignore dblocks-codepro.zip -f
+          git commit -m "Allow dblocks-codepro.zip and update .gitignore"
           git push
 
       - name: "Create a GitHub Release in Public Repo"
