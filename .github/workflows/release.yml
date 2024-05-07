@@ -48,7 +48,7 @@ jobs:
       - name: "Duplicate Release to New Repository"
         uses: Hs1r1us/Release-AIO@v2.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.PRIVATE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
         with:
           tag_name: 'inherit'  # Duplicate the latest release
           repo: 'DBlocks-by-DPlugins/dblocks-codepro'
