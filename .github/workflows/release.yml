@@ -37,6 +37,14 @@ jobs:
         run: |
           zip -r dblocks-codepro.zip .
 
+      - name: "Check Archive Existence"
+        run: |
+          if [ -f "dblocks-codepro.zip" ]; then
+            echo "dblocks-codepro.zip exists."
+          else
+            echo "dblocks-codepro.zip does not exist."
+          fi
+
       - name: "Extract Tag Name"
         id: extract_tag
         run: |
