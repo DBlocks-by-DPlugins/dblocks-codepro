@@ -17,9 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
-if ( ! defined( 'ABSPATH' ) ) {
-    exit; // Exit if accessed directly.
-}
+// Define plugin URLs and PATHs
+define( 'DBLOCKS_CODEPRO_DIR', plugin_dir_path( __FILE__ ) );
+define( 'DBLOCKS_CODEPRO_URL', plugin_dir_url( __FILE__ ) );
 
 /**
  * Set up plugin prefixes and constants.

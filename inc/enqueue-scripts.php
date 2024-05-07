@@ -18,19 +18,16 @@ function DBLOCKS_CODEPRO_enqueue_highlightjs_if_block_present() {
         }
 
         if ($syntax_highlight_active) {
-            
-            $plugin_url = constant($plugin_prefix . '_URL');
-
             $syntax_theme_setting = get_option('dblocks_codepro_syntax_theme', 'light');
             $style_url = $syntax_theme_setting === 'dark' ? 
-                         $plugin_url . 'vendor/highlight/styles/vs2015.min.css' :
-                         $plugin_url . 'vendor/highlight/styles/vs.min.css';
+                         DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs2015.min.css' :
+                         DBLOCKS_CODEPRO_URL . 'vendor/highlight/styles/vs.min.css';
             wp_enqueue_style('highlightjs-css', $style_url, array(), '1.0', 'all');
-            wp_enqueue_script('highlightjs', $plugin_url . 'vendor/highlight/highlight.min.js', array(), '1.0', true);
+            wp_enqueue_script('highlightjs', DBLOCKS_CODEPRO_URL . 'vendor/highlight/highlight.min.js', array(), '1.0', true);
 
             $languages = ['html', 'css', 'scss', 'javascript', 'php', 'typescript', 'bash', 'twig', 'yaml', 'plaintext', 'json'];
             foreach ($languages as $lang) {
-                wp_enqueue_script("highlightjs-lang-$lang", $plugin_url . "vendor/highlight/languages/$lang.min.js", array('highlightjs'), '1.0', true);
+                wp_enqueue_script("highlightjs-lang-$lang", DBLOCKS_CODEPRO_URL . "vendor/highlight/languages/$lang.min.js", array('highlightjs'), '1.0', true);
             }
 
             wp_add_inline_script('highlightjs', 'hljs.initHighlightingOnLoad();');
