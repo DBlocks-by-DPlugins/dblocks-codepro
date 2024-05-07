@@ -43,3 +43,11 @@ jobs:
           files: dblocks-codepro.zip
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
+      
+      - name: Copy Release
+        uses: marchbold/copy-release-to-repository-action@v1
+        with:
+          source-repo: 'DBlocks-by-DPlugins/dblocks-codepro--dev'
+          target-repo: 'DBlocks-by-DPlugins/dblocks-codepro'
+          target-token: ${{ secrets.WPSCIPTSTOKEN }}
+      
