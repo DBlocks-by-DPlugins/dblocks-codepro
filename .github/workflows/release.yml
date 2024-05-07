@@ -31,21 +31,26 @@ jobs:
             cat .distignore | xargs rm -rf
           else
             echo ".distignore file not found."
-          fi  # This was missing in your script
+          fi
 
       - name: "Create a Release Archive"
         run: |
           zip -r dblocks-codepro.zip .
 
-      - name: "Create a GitHub Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dblocks-codepro.zip
+      - name: "Create and Upload Release"
+        uses: Hs1r1us/Release-AIO@v2.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
-
-      - name: "Copy Release"
-        uses: marchbold/copy-release-to-repository-action@v1
         with:
-          destination_repo: 'DBlocks-by-DPlugins/dblocks-codepro'
-          github_token: ${{ secrets.WPSCIPTSTOKEN }}
+          tag_name: ${{ github.ref }}
+          asset_files: './dblocks-codepro.zip'
+
+      - name: "Duplicate Release to New Repository"
+        uses: Hs1r1us/Release-AIO@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_TOKEN }}
+        with:
+          tag_name: 'inherit'  # Duplicate the latest release
+          repo: 'DBlocks-by-DPlugins/dblocks-codepro'
+          asset_files: './dblocks-codepro.zip'
+          body: 'Duplicate of the latest release'
