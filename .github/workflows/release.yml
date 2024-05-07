@@ -17,7 +17,7 @@ jobs:
       - name: "Setup NodeJS."
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Updated Node.js version
+          node-version: '16'
 
       - name: "Install NPM dependencies."
         run: npm install
@@ -31,7 +31,6 @@ jobs:
             cat .distignore | xargs rm -rf
           else
             echo ".distignore file not found."
-          fi
 
       - name: "Create a Release Archive"
         run: |
@@ -42,12 +41,10 @@ jobs:
         with:
           files: dblocks-codepro.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}  # Ensure this token has the right permissions
-      
-      - name: Copy Release
+          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+
+      - name: "Copy Release"
         uses: marchbold/copy-release-to-repository-action@v1
         with:
-          source-repo: 'DBlocks-by-DPlugins/dblocks-codepro--dev'
-          target-repo: 'DBlocks-by-DPlugins/dblocks-codepro'
-          target-token: ${{ secrets.WPSCIPTSTOKEN }}
-      
+          destination_repo: 'DBlocks-by-DPlugins/dblocks-codepro'
+          github_token: ${{ secrets.WPSCIPTSTOKEN }}
