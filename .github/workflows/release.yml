@@ -5,52 +5,56 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+*'
 
-jobs:
-  dist:
-    name: "Build distribution release."
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: "Checks out the repository."
-        uses: "actions/checkout@v2"
-
-      - name: "Setup NodeJS."
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: "Install NPM dependencies."
-        run: npm install
-
-      - name: "Build release: Stable"
-        run: npm run build
-
-      - name: "Remove files based on .distignore"
-        run: |
-          if [ -f .distignore ]; then
-            cat .distignore | xargs rm -rf
-          else
-            echo ".distignore file not found."
-          fi
-
-      - name: "Create a Release Archive"
-        run: |
-          zip -r dblocks-codepro.zip .
-
-      - name: "Create and Upload Release"
-        uses: Hs1r1us/Release-AIO@v2.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          asset_files: './dblocks-codepro.zip'
-
-      - name: "Duplicate Release to New Repository"
-        uses: Hs1r1us/Release-AIO@v2.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
-        with:
-          tag_name: 'inherit'  # Duplicate the latest release
-          repo: 'DBlocks-by-DPlugins/dblocks-codepro'
-          asset_files: './dblocks-codepro.zip'
-          body: 'Duplicate of the latest release'
+  jobs:
+    dist:
+      name: "Build distribution release."
+      runs-on: ubuntu-latest
+  
+      steps:
+        - name: "Checks out the repository."
+          uses: "actions/checkout@v2"
+  
+        - name: "Setup NodeJS."
+          uses: actions/setup-node@v2
+          with:
+            node-version: '16'
+  
+        - name: "Install NPM dependencies."
+          run: npm install
+  
+        - name: "Build release: Stable"
+          run: npm run build
+  
+        - name: "Remove files based on .distignore"
+          run: |
+            if [ -f .distignore ]; then
+              cat .distignore | xargs rm -rf
+            else
+              echo ".distignore file not found."
+            fi
+  
+        - name: "Create a Release Archive"
+          run: |
+            zip -r dblocks-codepro.zip .
+  
+        - name: "Delete Existing Release Asset"
+          env:
+            GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+          run: |
+            # Replace with the appropriate tag name or release ID
+            release_id=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -s https://api.github.com/repos/DBlocks-by-DPlugins/dblocks-codepro/releases/tags/1.0.6.27 | jq -r '.id')
+            if [ -n "$release_id" ]; then
+              asset_ids=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -s https://api.github.com/repos/DBlocks-by-DPlugins/dblocks-codepro/releases/$release_id/assets | jq -r '.[] | select(.name == "dblocks-codepro.zip") | .id')
+              for asset_id in $asset_ids; do
+                curl -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" -s https://api.github.com/repos/DBlocks-by-DPlugins/dblocks-codepro/releases/assets/$asset_id
+              done
+            fi
+  
+        - name: "Create and Upload Release"
+          uses: Hs1r1us/Release-AIO@v2.0.0
+          env:
+            GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+          with:
+            tag_name: '1.0.6.27'
+            asset_files: './dblocks-codepro.zip'
+  
