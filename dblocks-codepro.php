@@ -17,39 +17,38 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
-// Define plugin URLs and PATHs
-define( 'DBLOCKS_CODEPRO_DIR', plugin_dir_path( __FILE__ ) );
-define( 'DBLOCKS_CODEPRO_URL', plugin_dir_url( __FILE__ ) );
-
-// Include the components
-require_once DBLOCKS_CODEPRO_DIR . 'inc/block-registration.php';
-require_once DBLOCKS_CODEPRO_DIR . 'inc/category.php';
-require_once DBLOCKS_CODEPRO_DIR . 'inc/enqueue-scripts.php';
-require_once DBLOCKS_CODEPRO_DIR . 'inc/theme-api.php';
-
-
-
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly.
+}
 
 /**
- * For plugin to work on multiple installs replace 'UNIQUE_PLUGIN_NAME'
- * Update plugin _VER on the line 32
- * Update plugin _REMOTE_URL on the line 34
+ * Set up plugin prefixes and constants.
+ * Update plugin _VER on line 30
+ * Update plugin _REMOTE_URL on line 32
  */
 $plugin_prefix = 'DBLOCKSCODEPRO';
 
+// Define relevant paths and URLs
+define($plugin_prefix . '_PATH', plugin_dir_path(__FILE__));
+define($plugin_prefix . '_URL', plugin_dir_url(__FILE__));
 define($plugin_prefix . '_DIR', plugin_basename(__DIR__));
 define($plugin_prefix . '_BASE', plugin_basename(__FILE__));
-define($plugin_prefix . '_PATH', plugin_dir_path(__FILE__));
 define($plugin_prefix . '_VER', '1.0.5.1');
 define($plugin_prefix . '_CACHE_KEY', 'blockscodepro-cache-key-for-plugin');
 define($plugin_prefix . '_REMOTE_URL', 'http://selfhost.dplugins.com/wp-content/uploads/plugins/18/info.json');
 
-require constant($plugin_prefix . '_PATH') . 'inc/update.php';
+// Include the components using the prefixed path constant
+require_once constant($plugin_prefix . '_PATH') . 'inc/block-registration.php';
+require_once constant($plugin_prefix . '_PATH') . 'inc/category.php';
+require_once constant($plugin_prefix . '_PATH') . 'inc/enqueue-scripts.php';
+require_once constant($plugin_prefix . '_PATH') . 'inc/theme-api.php';
+require_once constant($plugin_prefix . '_PATH') . 'inc/update.php';
 
+// Initialize the update checker
 new DPUpdateChecker(
-	constant($plugin_prefix . '_DIR'),
-	constant($plugin_prefix . '_VER'),
-	constant($plugin_prefix . '_CACHE_KEY'),
-	constant($plugin_prefix . '_REMOTE_URL'),
-	constant($plugin_prefix . '_BASE')
+    constant($plugin_prefix . '_DIR'),
+    constant($plugin_prefix . '_VER'),
+    constant($plugin_prefix . '_CACHE_KEY'),
+    constant($plugin_prefix . '_REMOTE_URL'),
+    constant($plugin_prefix . '_BASE')
 );
