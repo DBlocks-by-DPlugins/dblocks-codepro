@@ -1,45 +1,45 @@
-name: Sync Private to Public Repository
+name: Build and Release
 
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"
+      - '[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
-  sync:
-    name: "Sync private repo to public repo"
+  dist:
+    name: "Build distribution release."
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Check out the Private Repository"
-        uses: actions/checkout@v2
-        with:
-          repository: 'DBlocks-by-DPlugins/dblocks-codepro--dev'
-          token: ${{ secrets.WPSCIPTSTOKEN }}
+      - name: "Checks out the repository."
+        uses: "actions/checkout@v2"
 
-      - name: "Check out the Public Repository"
-        uses: actions/checkout@v2
+      - name: "Setup NodeJS."
+        uses: actions/setup-node@v2
         with:
-          repository: 'DBlocks-by-DPlugins/dblocks-codepro'
-          token: ${{ secrets.WPSCIPTSTOKEN }}
-          path: public_repo
+          node-version: '16'
 
-      - name: "Copy Files to Public Repository"
+      - name: "Install NPM dependencies."
+        run: npm install
+
+      - name: "Build release: Stable"
+        run: npm run build
+
+      - name: "Remove files based on .distignore"
         run: |
-          rsync -av --exclude='.release.yml' ./ public_repo/
+          if [ -f .distignore ]; then
+            cat .distignore | xargs rm -rf
+          else
+            echo ".distignore file not found."
+          fi
 
-      - name: "Push Changes to Public Repository"
-        working-directory: public_repo
+      - name: "Create a Release Archive"
+        run: |
+          zip -r dblocks-codepro.zip .
+
+      - name: "Create a GitHub Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dblocks-codepro.zip
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
-        run: |
-          git config --global user.email "mailme@markokrstic.com"
-          git config --global user.name "krstivoja"
-
-          # Add and commit all changes
-          git add -A
-          git commit -m "Sync from private repo to public repo"
-
-          # Push with tags
-          git push origin main
-          git push origin --tags
