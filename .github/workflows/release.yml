@@ -31,6 +31,7 @@ jobs:
             cat .distignore | xargs rm -rf
           else
             echo ".distignore file not found."
+          fi  # This was missing in your script
 
       - name: "Create a Release Archive"
         run: |
