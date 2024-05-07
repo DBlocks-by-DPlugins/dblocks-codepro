@@ -43,8 +43,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.WPSCIPTSTOKEN }}
 
-      - name: "Copy Release to New Repository"
-        uses: bmaupin/copy-release@v1
+        - name: Copy Release
+        uses: marchbold/copy-release-to-repository-action@v1    
         with:
           source-repo: 'DBlocks-by-DPlugins/dblocks-codepro--dev'
           target-repo: 'DBlocks-by-DPlugins/dblocks-codepro'
