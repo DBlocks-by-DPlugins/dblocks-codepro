@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly.
+}
+
 function DBLOCKS_CODEPRO_enqueue_highlightjs_if_block_present() {
     if (is_admin()) {
         return; // Skip in admin panel
