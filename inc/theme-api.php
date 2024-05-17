@@ -1,9 +1,5 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-    exit; // Exit if accessed directly.
-}
-
 add_action('rest_api_init', function () {
     // Routes for the main editor theme
     register_rest_route('dblocks-codepro/v1', '/theme/', array(

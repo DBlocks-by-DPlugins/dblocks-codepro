@@ -1,9 +1,5 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-    exit; // Exit if accessed directly.
-}
-
 function DBLOCKSCODEPRO_block_init() {
     register_block_type( constant('DBLOCKSCODEPRO_PATH') . 'build/' );
 }
