@@ -18,6 +18,7 @@
 		"@wordpress/scripts": "^27.7.0"
 	},
 	"dependencies": {
-		"emmet-monaco-es": "^4.4.2"
+		"emmet-monaco-es": "^4.7.6",
+		"monaco-editor": "^0.48.0"
 	}
 }
