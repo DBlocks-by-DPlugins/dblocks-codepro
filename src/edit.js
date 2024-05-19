@@ -147,7 +147,7 @@ export default function Edit({ attributes, setAttributes }) {
                 value: content || '<!-- some comment -->',
                 language: editorLanguage,
                 automaticLayout: true,
-                theme: syntaxHighlight ? `vs-${syntaxHighlightTheme}` : theme,
+                theme: theme,
                 fontSize: parseInt(fontSize),
             });
 
@@ -195,7 +195,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, theme, fontSize, syntaxHighlight, syntaxHighlightTheme, editorLanguage]); // Re-run this effect whenever these dependencies change
+    }, [viewMode, theme, fontSize, editorLanguage]); // Re-run this effect whenever these dependencies change
 
     // Update the editor content if the `content` attribute changes
     useEffect(() => {
@@ -274,8 +274,8 @@ export default function Edit({ attributes, setAttributes }) {
 
             <div {...useBlockProps()}>
                 <BlockControlsComponent viewMode={viewMode} setViewMode={setViewMode} />
-                {viewMode === 'preview' && <RawHTML>{content}</RawHTML>}
-                {viewMode === 'split' && <RawHTML>{content}</RawHTML>}
+                {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {(viewMode === 'code' || viewMode === 'split') && (
                     <div ref={editorContainerRef} style={{ height: '50vh' }} />
                 )}
