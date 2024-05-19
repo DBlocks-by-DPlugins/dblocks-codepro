@@ -1,15 +1,27 @@
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { useBlockProps } from '@wordpress/block-editor';
+import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
+import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
+import BlockControlsComponent from './component/BlockControls.js';
+
 import './editor.scss';
 
 const MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
 
 export default function Edit({ attributes, setAttributes }) {
-    const { content } = attributes;
+    const { content, viewMode: initialViewMode } = attributes;
+    const [viewMode, setViewMode] = useState(initialViewMode); // Manage the view mode
+    const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
+
+    const toggleTheme = () => {
+        const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
+        setTheme(newTheme);
+        setAttributes({ theme: newTheme });
+    };
 
     useEffect(() => {
         const isMonacoLoaderScriptPresent = (contextDoc) => {
@@ -38,9 +50,11 @@ export default function Edit({ attributes, setAttributes }) {
             }
 
             editorInstanceRef.current = monaco.editor.create(editorContainerRef.current, {
+                minimap: { enabled: false },
                 value: content || '<!-- some comment -->',
                 language: 'html',
-                automaticLayout: true
+                automaticLayout: true,
+                theme: theme
             });
 
             emmetHTML(monaco);
@@ -69,22 +83,25 @@ export default function Edit({ attributes, setAttributes }) {
             }
         };
 
-        const iframe = document.querySelector('.editor-canvas__iframe');
-        if (iframe && iframe.contentWindow) {
-            // Load Monaco Editor in the iframe
-            loadMonacoEditorScript(iframe.contentWindow, iframe.contentWindow.document);
-        } else {
-            // Load Monaco Editor in the main document
-            loadMonacoEditorScript(window, document);
+        if (viewMode === 'code' || viewMode === 'split') {
+            const iframe = document.querySelector('.editor-canvas__iframe');
+            if (iframe && iframe.contentWindow) {
+                // Load Monaco Editor in the iframe
+                loadMonacoEditorScript(iframe.contentWindow, iframe.contentWindow.document);
+            } else {
+                // Load Monaco Editor in the main document
+                loadMonacoEditorScript(window, document);
+            }
         }
 
-        // Cleanup editor instance on component unmount
+        // Cleanup editor instance on component unmount or when switching to preview mode
         return () => {
-            if (editorInstanceRef.current) {
+            if (editorInstanceRef.current && (viewMode === 'preview' || viewMode === 'split')) {
                 editorInstanceRef.current.dispose();
+                editorInstanceRef.current = null;
             }
         };
-    }, []); // Run this effect only once when the component mounts
+    }, [viewMode]); // Re-run this effect whenever viewMode changes
 
     // Update the editor content if the `content` attribute changes
     useEffect(() => {
@@ -93,10 +110,41 @@ export default function Edit({ attributes, setAttributes }) {
         }
     }, [content]);
 
+    // Update the editor theme if the `theme` state changes
+    useEffect(() => {
+        if (editorInstanceRef.current) {
+            editorInstanceRef.current.updateOptions({ theme });
+        }
+    }, [theme]);
+
+    // Save viewMode to attributes whenever it changes
+    useEffect(() => {
+        setAttributes({ viewMode });
+    }, [viewMode]);
+
     return (
-        <div {...useBlockProps()}>
-            <h2>{__('Your Block Title 2', 'text-domain')}</h2>
-            <div ref={editorContainerRef} style={{ height: '50vh' }} />
-        </div>
+        <>
+            <InspectorControls>
+                <Panel>
+                    <PanelBody title="Code Editor Settings">
+
+                        <ToggleControl
+                            label="Dark Mode"
+                            checked={theme === 'vs-dark'}
+                            onChange={toggleTheme}
+                        />
+                    </PanelBody>
+                </Panel>
+            </InspectorControls>
+
+            <div {...useBlockProps()}>
+                <BlockControlsComponent viewMode={viewMode} setViewMode={setViewMode} />
+                {viewMode === 'preview' && <RawHTML>{content}</RawHTML>}
+                {viewMode === 'split' && <RawHTML>{content}</RawHTML>}
+                {(viewMode === 'code' || viewMode === 'split') && (
+                    <div ref={editorContainerRef} style={{ height: '50vh' }} />
+                )}
+            </div>
+        </>
     );
 }
