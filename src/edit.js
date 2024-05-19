@@ -244,7 +244,7 @@ export default function Edit({ attributes, setAttributes }) {
                         {syntaxHighlight && (
                             <>
                                 <ToggleControl
-                                    label="Dark Theme"
+                                    label="FrontEnd Dark Theme"
                                     checked={syntaxHighlightTheme === "dark"}
                                     onChange={toggleSyntaxHighlightTheme}
                                 />
