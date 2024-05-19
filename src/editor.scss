@@ -1,4 +1,11 @@
 .wp-block-dblocks-dblocks-codepro {
+	border: 1px solid black;
+    
+    > div{
+        
+
+        width: 100%;
+    }
 
     &.is-selected{
         

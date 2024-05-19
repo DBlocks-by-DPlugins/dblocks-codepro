@@ -4,6 +4,8 @@ import { useBlockProps } from '@wordpress/block-editor';
 import { emmetHTML } from 'emmet-monaco-es';
 import './editor.scss';
 
+const MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
+
 export default function Edit() {
 	const editorContainerRef = useRef(null);
 
@@ -16,17 +18,16 @@ export default function Edit() {
 
 				// Inject Monaco loader script into the iframe
 				const script = iframeDoc.createElement('script');
-				script.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.48.0/min/vs/loader.js';
+				script.src = `${iframeWindow.location.origin}${MONACO_PATH}/loader.js`;
 				script.onload = () => {
-					iframeWindow.require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.48.0/min/vs' }});
+					iframeWindow.require.config({ paths: { 'vs': `${iframeWindow.location.origin}${MONACO_PATH}` }});
 					iframeWindow.require(['vs/editor/editor.main'], () => {
 						const monaco = iframeWindow.monaco;
 
 						// Create Monaco Editor instance
 						const editor = monaco.editor.create(editorContainerRef.current, {
 							value: "<!-- some comment -->",
-							language: "html",
-							theme: "vs-dark",
+							language: "html"
 						});
 
 						// Initialize Emmet
@@ -47,3 +48,4 @@ export default function Edit() {
 		</div>
 	);
 }
+
