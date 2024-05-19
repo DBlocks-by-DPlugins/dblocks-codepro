@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
 import { RawHTML } from '@wordpress/element';
@@ -12,7 +11,7 @@ const MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
 
 export default function Edit({ attributes, setAttributes }) {
     const { content, viewMode: initialViewMode } = attributes;
-    const [viewMode, setViewMode] = useState(initialViewMode); // Manage the view mode
+    const [viewMode, setViewMode] = useState(initialViewMode);
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
     const [editorHeight, setEditorHeight] = useState(attributes.editorHeight || '50vh');
@@ -23,8 +22,8 @@ export default function Edit({ attributes, setAttributes }) {
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
 
-    const toggleUseWrapper = () => {
-        setAttributes({ useWrapper: !attributes.useWrapper });
+    const toggleAttribute = (attribute, value) => {
+        setAttributes({ [attribute]: value });
     };
 
     const toggleSyntaxHighlightTheme = async () => {
@@ -40,21 +39,16 @@ export default function Edit({ attributes, setAttributes }) {
             });
 
             if (!response.ok) throw new Error("Network response was not ok.");
-            setSyntaxHighlightTheme(newSyntaxTheme); // Update local state for instant UI update
-            setAttributes({ syntaxHighlightTheme: newSyntaxTheme }); // Update block attributes for persistence
+            setSyntaxHighlightTheme(newSyntaxTheme);
+            toggleAttribute('syntaxHighlightTheme', newSyntaxTheme);
         } catch (error) {
             console.error("Failed to update syntax theme:", error);
         }
     };
 
-    const toggleSyntaxHighlight = () => {
-        setSyntaxHighlight(!syntaxHighlight);
-        setAttributes({ syntaxHighlight: !syntaxHighlight });
-    };
-
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
-        setAttributes({ editorLanguage: language });
+        toggleAttribute('editorLanguage', language);
     };
 
     const toggleTheme = async () => {
@@ -64,144 +58,116 @@ export default function Edit({ attributes, setAttributes }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-WP-Nonce': wpApiSettings.nonce
+                    'X-WP-Nonce': wpApiSettings.nonce,
                 },
-                body: JSON.stringify({ theme: newTheme })
+                body: JSON.stringify({ theme: newTheme }),
             });
 
             if (!response.ok) throw new Error('Network response was not ok.');
             setTheme(newTheme);
-            setAttributes({ theme: newTheme });
+            toggleAttribute('theme', newTheme);
         } catch (error) {
             console.error('Failed to update theme:', error);
         }
     };
 
-    const setFontSizeAndUpdate = (newSize) => {
-        fetch('/wp-json/dblocks-codepro/v1/editor-font-size/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-WP-Nonce': wpApiSettings.nonce // Ensure this is correctly configured
-            },
-            body: JSON.stringify({ editorFontSize: newSize })
-        })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok.');
-                return response.json();
-            })
-            .then(data => {
-                setFontSize(newSize);
-                setAttributes({ editorFontSize: newSize });
-            })
-            .catch(error => {
-                console.error('Failed to update editor font size:', error);
+    const updateAttribute = async (attribute, value, endpoint) => {
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': wpApiSettings.nonce,
+                },
+                body: JSON.stringify({ [attribute]: value }),
             });
-    };
 
-    const setEditorHeightAndUpdate = (newHeight) => {
-        fetch('/wp-json/dblocks-codepro/v1/editor-height/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-WP-Nonce': wpApiSettings.nonce // Ensure this is correctly configured
-            },
-            body: JSON.stringify({ editorHeight: newHeight })
-        })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok.');
-                return response.json();
-            })
-            .then(data => {
-                setEditorHeight(newHeight);
-                setAttributes({ editorHeight: newHeight });
-            })
-            .catch(error => {
-                console.error('Failed to update editor height:', error);
-            });
+            if (!response.ok) throw new Error('Network response was not ok.');
+            setAttributes({ [attribute]: value });
+        } catch (error) {
+            console.error(`Failed to update ${attribute}:`, error);
+        }
     };
 
     useEffect(() => {
-        fetch('/wp-json/dblocks-codepro/v1/theme')
-            .then(response => response.json())
-            .then(data => {
-                setTheme(data);
-                setAttributes({ theme: data });
-            })
-            .catch(error => console.error('Error fetching theme:', error));
+        const fetchInitialSettings = async () => {
+            try {
+                const [themeResponse, fontSizeResponse, heightResponse] = await Promise.all([
+                    fetch('/wp-json/dblocks-codepro/v1/theme'),
+                    fetch('/wp-json/dblocks-codepro/v1/editor-font-size/'),
+                    fetch('/wp-json/dblocks-codepro/v1/editor-height/'),
+                ]);
 
-        fetch('/wp-json/dblocks-codepro/v1/editor-font-size/')
-            .then(response => response.json())
-            .then(data => {
-                setFontSize(data);
-                setAttributes({ editorFontSize: data });
-            })
-            .catch(error => console.error('Error fetching editor font size:', error));
+                const [themeData, fontSizeData, heightData] = await Promise.all([
+                    themeResponse.json(),
+                    fontSizeResponse.json(),
+                    heightResponse.json(),
+                ]);
 
-        fetch('/wp-json/dblocks-codepro/v1/editor-height/')
-            .then(response => response.json())
-            .then(data => {
-                setEditorHeight(data);
-                setAttributes({ editorHeight: data });
-            })
-            .catch(error => console.error('Error fetching editor height:', error));
-    }, []);
+                setTheme(themeData);
+                setFontSize(fontSizeData);
+                setEditorHeight(heightData);
 
-    useEffect(() => {
-        const isMonacoLoaderScriptPresent = (contextDoc) => {
-            return Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`));
-        };
-
-        const ensureRequireIsAvailable = (contextWindow) => {
-            return new Promise((resolve, reject) => {
-                const checkInterval = setInterval(() => {
-                    if (contextWindow.require && contextWindow.require.config) {
-                        clearInterval(checkInterval);
-                        resolve(contextWindow.require);
-                    }
-                }, 50);
-
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    reject(new Error('Require is not available.'));
-                }, 5000); // Timeout after 5 seconds
-            });
-        };
-
-        const initializeMonacoEditor = (contextWindow, monaco) => {
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.dispose();
+                setAttributes({
+                    theme: themeData,
+                    editorFontSize: fontSizeData,
+                    editorHeight: heightData,
+                });
+            } catch (error) {
+                console.error('Error fetching initial settings:', error);
             }
-
-            editorInstanceRef.current = monaco.editor.create(editorContainerRef.current, {
-                minimap: { enabled: false },
-                value: content || '<!-- some comment -->',
-                language: editorLanguage,
-                automaticLayout: true,
-                theme: theme,
-                fontSize: parseInt(fontSize),
-            });
-
-            emmetHTML(monaco);
-
-            editorInstanceRef.current.onDidChangeModelContent(() => {
-                const newValue = editorInstanceRef.current.getValue();
-                setAttributes({ content: newValue });
-            });
         };
 
+        fetchInitialSettings();
+    }, [setAttributes]);
+
+    useEffect(() => {
         const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
-            if (!isMonacoLoaderScriptPresent(contextDoc)) {
+            if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
                 const script = contextDoc.createElement('script');
                 script.src = `${contextWindow.location.origin}${MONACO_PATH}/loader.js`;
                 contextDoc.body.appendChild(script);
             }
 
+            const ensureRequireIsAvailable = (contextWindow) => {
+                return new Promise((resolve, reject) => {
+                    const checkInterval = setInterval(() => {
+                        if (contextWindow.require && contextWindow.require.config) {
+                            clearInterval(checkInterval);
+                            resolve(contextWindow.require);
+                        }
+                    }, 50);
+
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        reject(new Error('Require is not available.'));
+                    }, 5000);
+                });
+            };
+
             try {
                 await ensureRequireIsAvailable(contextWindow);
                 contextWindow.require.config({ paths: { 'vs': `${contextWindow.location.origin}${MONACO_PATH}` } });
                 contextWindow.require(['vs/editor/editor.main'], () => {
-                    initializeMonacoEditor(contextWindow, contextWindow.monaco);
+                    if (editorInstanceRef.current) {
+                        editorInstanceRef.current.dispose();
+                    }
+
+                    editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
+                        minimap: { enabled: false },
+                        value: content || '<!-- some comment -->',
+                        language: editorLanguage,
+                        automaticLayout: true,
+                        theme: theme,
+                        fontSize: parseInt(fontSize),
+                    });
+
+                    emmetHTML(contextWindow.monaco);
+
+                    editorInstanceRef.current.onDidChangeModelContent(() => {
+                        const newValue = editorInstanceRef.current.getValue();
+                        toggleAttribute('content', newValue);
+                    });
                 });
             } catch (error) {
                 console.error("Failed to ensure 'require' is available:", error);
@@ -210,34 +176,27 @@ export default function Edit({ attributes, setAttributes }) {
 
         if (viewMode === 'code' || viewMode === 'split') {
             const iframe = document.querySelector('.editor-canvas__iframe');
-            if (iframe && iframe.contentWindow) {
-                // Load Monaco Editor in the iframe
-                loadMonacoEditorScript(iframe.contentWindow, iframe.contentWindow.document);
-            } else {
-                // Load Monaco Editor in the main document
-                loadMonacoEditorScript(window, document);
-            }
+            const contextWindow = iframe ? iframe.contentWindow : window;
+            const contextDoc = iframe ? iframe.contentWindow.document : document;
+            loadMonacoEditorScript(contextWindow, contextDoc);
         }
 
-        // Cleanup editor instance on component unmount or when switching to preview mode
         return () => {
             if (editorInstanceRef.current && (viewMode === 'preview' || viewMode === 'split')) {
                 editorInstanceRef.current.dispose();
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, theme, fontSize, editorLanguage]); // Re-run this effect whenever these dependencies change
+    }, [viewMode, theme, fontSize, editorLanguage, content]);
 
-    // Update the editor content if the `content` attribute changes
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
             editorInstanceRef.current.setValue(content);
         }
     }, [content]);
 
-    // Save viewMode to attributes whenever it changes
     useEffect(() => {
-        setAttributes({ viewMode });
+        toggleAttribute('viewMode', viewMode);
     }, [viewMode]);
 
     return (
@@ -248,14 +207,17 @@ export default function Edit({ attributes, setAttributes }) {
                         <ToggleControl
                             label="Use Wrapper"
                             checked={attributes.useWrapper}
-                            onChange={toggleUseWrapper}
+                            onChange={() => toggleAttribute('useWrapper', !attributes.useWrapper)}
                         />
                     </PanelBody>
                     <PanelBody title="Syntax Highlighting">
                         <ToggleControl
                             label="Activate Syntax Highlighting"
                             checked={syntaxHighlight}
-                            onChange={toggleSyntaxHighlight}
+                            onChange={() => {
+                                setSyntaxHighlight(!syntaxHighlight);
+                                toggleAttribute('syntaxHighlight', !syntaxHighlight);
+                            }}
                         />
                         {syntaxHighlight && (
                             <>
@@ -294,7 +256,7 @@ export default function Edit({ attributes, setAttributes }) {
                         <UnitControl
                             label="Font Size"
                             value={fontSize}
-                            onChange={setFontSizeAndUpdate}
+                            onChange={(newSize) => updateAttribute('editorFontSize', newSize, '/wp-json/dblocks-codepro/v1/editor-font-size/')}
                             units={[{ value: 'px', label: 'Pixels', default: 14 }]}
                             min={10}
                             max={30}
@@ -302,7 +264,7 @@ export default function Edit({ attributes, setAttributes }) {
                         <UnitControl
                             label="Editor Height"
                             value={editorHeight}
-                            onChange={setEditorHeightAndUpdate}
+                            onChange={(newHeight) => updateAttribute('editorHeight', newHeight, '/wp-json/dblocks-codepro/v1/editor-height/')}
                             units={[{ value: 'vh', label: 'Viewport Height', default: 50 }]}
                             min={10}
                             max={100}
