@@ -85,6 +85,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     setAttributes({ editorLanguage: language });
   };
 
+  // Transfered >>>>>>>>>>>>>>>>>>>>>>>>>>
+  
   const setFontSizeAndUpdate = newSize => {
     fetch('/wp-json/dblocks-codepro/v1/editor-font-size/', {
       method: 'POST',
@@ -133,6 +135,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
       })
       .catch(error => console.error('Error fetching editor font size:', error));
   }, []);
+
+  // End of Transfered >>>>>>>>>>>>>>>>>>>>>>>>>>
 
   useEffect(() => {
     setAttributes({ theme, syntaxHighlight, syntaxHighlightTheme, editorLanguage, fontSize });

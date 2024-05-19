@@ -14,6 +14,8 @@ export default function Edit({ attributes, setAttributes }) {
     const { content, viewMode: initialViewMode } = attributes;
     const [viewMode, setViewMode] = useState(initialViewMode); // Manage the view mode
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
+    const [fontSize, setFontSize] = useState(attributes.editorFontSize);
+
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
 
@@ -37,32 +39,55 @@ export default function Edit({ attributes, setAttributes }) {
         }
     };
 
+    const setFontSizeAndUpdate = newSize => {
+        fetch('/wp-json/dblocks-codepro/v1/editor-font-size/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': wpApiSettings.nonce  // Ensure this is correctly configured
+            },
+            body: JSON.stringify({ editorFontSize: newSize })
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok.');
+                return response.json();
+            })
+            .then(data => {
+                setFontSize(newSize);
+                setAttributes({ editorFontSize: newSize });
+            })
+            .catch(error => {
+                console.error('Failed to update editor font size:', error);
+            });
+    };
+
+
     useEffect(() => {
         fetch('/wp-json/dblocks-codepro/v1/theme')
-          .then(response => response.json())
-          .then(data => {
-            setTheme(data);
-            setAttributes({ theme: data });
-          })
-          .catch(error => console.error('Error fetching theme:', error));
-    
+            .then(response => response.json())
+            .then(data => {
+                setTheme(data);
+                setAttributes({ theme: data });
+            })
+            .catch(error => console.error('Error fetching theme:', error));
+
         fetch('/wp-json/dblocks-codepro/v1/syntax-theme/')
-          .then(response => response.json())
-          .then(data => {
-            setSyntaxHighlightTheme(data);
-            setAttributes({ syntaxHighlightTheme: data });
-          })
-          .catch(error => console.error('Error fetching syntax theme:', error));
-    
+            .then(response => response.json())
+            .then(data => {
+                setSyntaxHighlightTheme(data);
+                setAttributes({ syntaxHighlightTheme: data });
+            })
+            .catch(error => console.error('Error fetching syntax theme:', error));
+
         fetch('/wp-json/dblocks-codepro/v1/editor-font-size/')
-          .then(response => response.json())
-          .then(data => {
-            // console.log("Fetched font size:", data);  // Check the fetched font size
-            setFontSize(data);
-            setAttributes({ editorFontSize: data });
-          })
-          .catch(error => console.error('Error fetching editor font size:', error));
-      }, []);
+            .then(response => response.json())
+            .then(data => {
+                // console.log("Fetched font size:", data);  // Check the fetched font size
+                setFontSize(data);
+                setAttributes({ editorFontSize: data });
+            })
+            .catch(error => console.error('Error fetching editor font size:', error));
+    }, []);
 
     useEffect(() => {
         const isMonacoLoaderScriptPresent = (contextDoc) => {
@@ -95,7 +120,8 @@ export default function Edit({ attributes, setAttributes }) {
                 value: content || '<!-- some comment -->',
                 language: 'html',
                 automaticLayout: true,
-                theme: theme
+                theme: theme,
+                fontSize: fontSize || 14,
             });
 
             emmetHTML(monaco);
@@ -142,7 +168,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, theme]); // Re-run this effect whenever viewMode changes
+    }, [viewMode, theme, fontSize]); // Re-run this effect whenever viewMode changes
 
     // Update the editor content if the `content` attribute changes
     useEffect(() => {
@@ -174,7 +200,16 @@ export default function Edit({ attributes, setAttributes }) {
                             checked={theme === 'vs-dark'}
                             onChange={toggleTheme}
                         />
-                        
+
+                        <UnitControl
+                            label="Font Size"
+                            value={fontSize}
+                            onChange={setFontSizeAndUpdate}
+                            units={[{ value: 'px', label: 'Pixels', default: 14 }]}
+                            min={12}
+                            max={24}
+                        />
+
                     </PanelBody>
                 </Panel>
             </InspectorControls>
