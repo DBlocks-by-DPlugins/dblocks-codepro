@@ -17,11 +17,58 @@ export default function Edit({ attributes, setAttributes }) {
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
 
-    const toggleTheme = () => {
+    // const toggleTheme = () => {
+    //     const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
+    //     setTheme(newTheme);
+    //     setAttributes({ theme: newTheme });
+    // };
+
+    const toggleTheme = async () => {
         const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
-        setTheme(newTheme);
-        setAttributes({ theme: newTheme });
+        try {
+            const response = await fetch('/wp-json/dblocks-codepro/v1/theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': wpApiSettings.nonce
+                },
+                body: JSON.stringify({ theme: newTheme })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok.');
+            setTheme(newTheme);
+            setAttributes({ theme: newTheme });
+        } catch (error) {
+            console.error('Failed to update theme:', error);
+        }
     };
+
+    useEffect(() => {
+        fetch('/wp-json/dblocks-codepro/v1/theme')
+          .then(response => response.json())
+          .then(data => {
+            setTheme(data);
+            setAttributes({ theme: data });
+          })
+          .catch(error => console.error('Error fetching theme:', error));
+    
+        fetch('/wp-json/dblocks-codepro/v1/syntax-theme/')
+          .then(response => response.json())
+          .then(data => {
+            setSyntaxHighlightTheme(data);
+            setAttributes({ syntaxHighlightTheme: data });
+          })
+          .catch(error => console.error('Error fetching syntax theme:', error));
+    
+        fetch('/wp-json/dblocks-codepro/v1/editor-font-size/')
+          .then(response => response.json())
+          .then(data => {
+            // console.log("Fetched font size:", data);  // Check the fetched font size
+            setFontSize(data);
+            setAttributes({ editorFontSize: data });
+          })
+          .catch(error => console.error('Error fetching editor font size:', error));
+      }, []);
 
     useEffect(() => {
         const isMonacoLoaderScriptPresent = (contextDoc) => {
@@ -101,7 +148,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode]); // Re-run this effect whenever viewMode changes
+    }, [viewMode, theme]); // Re-run this effect whenever viewMode changes
 
     // Update the editor content if the `content` attribute changes
     useEffect(() => {
@@ -133,6 +180,7 @@ export default function Edit({ attributes, setAttributes }) {
                             checked={theme === 'vs-dark'}
                             onChange={toggleTheme}
                         />
+                        
                     </PanelBody>
                 </Panel>
             </InspectorControls>
