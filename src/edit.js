@@ -10,35 +10,36 @@ export default function Edit() {
 	const editorContainerRef = useRef(null);
 
 	useEffect(() => {
-		const loadMonacoEditorScript = () => {
-			const iframe = document.querySelector('.editor-canvas__iframe');
-			if (iframe && iframe.contentWindow) {
-				const iframeWindow = iframe.contentWindow;
-				const iframeDoc = iframe.contentWindow.document;
+		const loadMonacoEditorScript = (contextWindow, contextDoc) => {
+			// Inject Monaco loader script into the context (iframe or main document)
+			const script = contextDoc.createElement('script');
+			script.src = `${contextWindow.location.origin}${MONACO_PATH}/loader.js`;
+			script.onload = () => {
+				contextWindow.require.config({ paths: { 'vs': `${contextWindow.location.origin}${MONACO_PATH}` }});
+				contextWindow.require(['vs/editor/editor.main'], () => {
+					const monaco = contextWindow.monaco;
 
-				// Inject Monaco loader script into the iframe
-				const script = iframeDoc.createElement('script');
-				script.src = `${iframeWindow.location.origin}${MONACO_PATH}/loader.js`;
-				script.onload = () => {
-					iframeWindow.require.config({ paths: { 'vs': `${iframeWindow.location.origin}${MONACO_PATH}` }});
-					iframeWindow.require(['vs/editor/editor.main'], () => {
-						const monaco = iframeWindow.monaco;
-
-						// Create Monaco Editor instance
-						const editor = monaco.editor.create(editorContainerRef.current, {
-							value: "<!-- some comment -->",
-							language: "html"
-						});
-
-						// Initialize Emmet
-						emmetHTML(monaco);
+					// Create Monaco Editor instance
+					const editor = monaco.editor.create(editorContainerRef.current, {
+						value: "<!-- some comment -->",
+						language: "html"
 					});
-				};
-				iframeDoc.body.appendChild(script);
-			}
+
+					// Initialize Emmet
+					emmetHTML(monaco);
+				});
+			};
+			contextDoc.body.appendChild(script);
 		};
 
-		loadMonacoEditorScript();
+		const iframe = document.querySelector('.editor-canvas__iframe');
+		if (iframe && iframe.contentWindow) {
+			// Load Monaco Editor in the iframe
+			loadMonacoEditorScript(iframe.contentWindow, iframe.contentWindow.document);
+		} else {
+			// Load Monaco Editor in the main document
+			loadMonacoEditorScript(window, document);
+		}
 	}, []);
 
 	return (
@@ -48,4 +49,3 @@ export default function Edit() {
 		</div>
 	);
 }
-
