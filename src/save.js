@@ -18,7 +18,7 @@ export default function save({ attributes }) {
     } else {
         // Display content as HTML when syntaxHighlight is false
         return attributes.useWrapper ? (
-            <div>
+            <div {...blockProps}>
                 <RawHTML>{attributes.content}</RawHTML>
             </div>
         ) : (

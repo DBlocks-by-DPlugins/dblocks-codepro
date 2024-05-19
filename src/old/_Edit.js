@@ -18,40 +18,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
   const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || 'html');
   const [fontSize, setFontSize] = useState(attributes.editorFontSize);
 
-  const toggleUseWrapper = () => {
-    setAttributes({ useWrapper: !attributes.useWrapper });
-  };
-
-  const setViewMode = (newMode) => {
-    setAttributes({ viewMode: newMode });
-    setViewModeInternal(newMode);
-  };
 
 
-  const handleEditorChange = (value) => {
-    setContent(value);
-    setAttributes({ content: value });
-  };
-
-  const toggleTheme = async () => {
-    const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
-    try {
-      const response = await fetch('/wp-json/dblocks-codepro/v1/theme', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-WP-Nonce': wpApiSettings.nonce
-        },
-        body: JSON.stringify({ theme: newTheme })
-      });
-
-      if (!response.ok) throw new Error('Network response was not ok.');
-      setTheme(newTheme);
-      setAttributes({ theme: newTheme });
-    } catch (error) {
-      console.error('Failed to update theme:', error);
-    }
-  };
 
   const toggleSyntaxHighlightTheme = async () => {
     const newSyntaxTheme = syntaxHighlightTheme === 'light' ? 'dark' : 'light';
@@ -85,8 +53,47 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     setAttributes({ editorLanguage: language });
   };
 
+
+
   // Transfered >>>>>>>>>>>>>>>>>>>>>>>>>>
-  
+
+  const toggleUseWrapper = () => {
+    setAttributes({ useWrapper: !attributes.useWrapper });
+  };
+
+
+  const setViewMode = (newMode) => {
+    setAttributes({ viewMode: newMode });
+    setViewModeInternal(newMode);
+  };
+
+
+  const handleEditorChange = (value) => {
+    setContent(value);
+    setAttributes({ content: value });
+  };
+
+
+  const toggleTheme = async () => {
+    const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
+    try {
+      const response = await fetch('/wp-json/dblocks-codepro/v1/theme', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-WP-Nonce': wpApiSettings.nonce
+        },
+        body: JSON.stringify({ theme: newTheme })
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok.');
+      setTheme(newTheme);
+      setAttributes({ theme: newTheme });
+    } catch (error) {
+      console.error('Failed to update theme:', error);
+    }
+  };
+
   const setFontSizeAndUpdate = newSize => {
     fetch('/wp-json/dblocks-codepro/v1/editor-font-size/', {
       method: 'POST',

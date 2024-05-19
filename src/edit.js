@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
+import { Panel, PanelBody, ToggleControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
 import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
 import BlockControlsComponent from './component/BlockControls.js';
@@ -14,10 +14,14 @@ export default function Edit({ attributes, setAttributes }) {
     const { content, viewMode: initialViewMode } = attributes;
     const [viewMode, setViewMode] = useState(initialViewMode); // Manage the view mode
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
-    const [fontSize, setFontSize] = useState(attributes.editorFontSize);
+    const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
 
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
+
+    const toggleUseWrapper = () => {
+        setAttributes({ useWrapper: !attributes.useWrapper });
+    };
 
     const toggleTheme = async () => {
         const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
@@ -39,12 +43,12 @@ export default function Edit({ attributes, setAttributes }) {
         }
     };
 
-    const setFontSizeAndUpdate = newSize => {
+    const setFontSizeAndUpdate = (newSize) => {
         fetch('/wp-json/dblocks-codepro/v1/editor-font-size/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-WP-Nonce': wpApiSettings.nonce  // Ensure this is correctly configured
+                'X-WP-Nonce': wpApiSettings.nonce // Ensure this is correctly configured
             },
             body: JSON.stringify({ editorFontSize: newSize })
         })
@@ -61,7 +65,6 @@ export default function Edit({ attributes, setAttributes }) {
             });
     };
 
-
     useEffect(() => {
         fetch('/wp-json/dblocks-codepro/v1/theme')
             .then(response => response.json())
@@ -71,18 +74,9 @@ export default function Edit({ attributes, setAttributes }) {
             })
             .catch(error => console.error('Error fetching theme:', error));
 
-        fetch('/wp-json/dblocks-codepro/v1/syntax-theme/')
-            .then(response => response.json())
-            .then(data => {
-                setSyntaxHighlightTheme(data);
-                setAttributes({ syntaxHighlightTheme: data });
-            })
-            .catch(error => console.error('Error fetching syntax theme:', error));
-
         fetch('/wp-json/dblocks-codepro/v1/editor-font-size/')
             .then(response => response.json())
             .then(data => {
-                // console.log("Fetched font size:", data);  // Check the fetched font size
                 setFontSize(data);
                 setAttributes({ editorFontSize: data });
             })
@@ -121,7 +115,7 @@ export default function Edit({ attributes, setAttributes }) {
                 language: 'html',
                 automaticLayout: true,
                 theme: theme,
-                fontSize: fontSize || 14,
+                fontSize: parseInt(fontSize),
             });
 
             emmetHTML(monaco);
@@ -168,7 +162,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, theme, fontSize]); // Re-run this effect whenever viewMode changes
+    }, [viewMode, theme, fontSize]); // Re-run this effect whenever viewMode, theme, or fontSize changes
 
     // Update the editor content if the `content` attribute changes
     useEffect(() => {
@@ -176,13 +170,6 @@ export default function Edit({ attributes, setAttributes }) {
             editorInstanceRef.current.setValue(content);
         }
     }, [content]);
-
-    // Update the editor theme if the `theme` state changes
-    useEffect(() => {
-        if (editorInstanceRef.current) {
-            editorInstanceRef.current.updateOptions({ theme });
-        }
-    }, [theme]);
 
     // Save viewMode to attributes whenever it changes
     useEffect(() => {
@@ -193,14 +180,19 @@ export default function Edit({ attributes, setAttributes }) {
         <>
             <InspectorControls>
                 <Panel>
-                    <PanelBody title="Code Editor Settings">
-
+                    <PanelBody title="Element Settings">
+                        <ToggleControl
+                            label="Use Wrapper"
+                            checked={attributes.useWrapper}
+                            onChange={toggleUseWrapper}
+                        />
+                    </PanelBody>
+                    <PanelBody title="Editor Global Settings">
                         <ToggleControl
                             label="Dark Mode"
                             checked={theme === 'vs-dark'}
                             onChange={toggleTheme}
                         />
-
                         <UnitControl
                             label="Font Size"
                             value={fontSize}
@@ -209,8 +201,8 @@ export default function Edit({ attributes, setAttributes }) {
                             min={10}
                             max={30}
                         />
-
                     </PanelBody>
+                    
                 </Panel>
             </InspectorControls>
 
