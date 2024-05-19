@@ -1,4 +1,5 @@
 .wp-block-dblocks-dblocks-codepro {
+
 	pre{
 		position: relative;
 	}
@@ -18,5 +19,14 @@
 		&:hover{
 			background-color: rgba(255, 255, 255, 0.2);
 		}
+	}
+}
+
+
+pre:has(.hsl-light) {
+	background-color: #f6f8fa;
+
+	.hljs {
+		background-color: unset;
 	}
 }

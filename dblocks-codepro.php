@@ -52,3 +52,18 @@ new DPUpdateChecker(
     constant($plugin_prefix . '_REMOTE_URL'),
     constant($plugin_prefix . '_BASE')
 );
+
+
+function register_my_block() {
+
+	// Localize script with plugin URL
+	wp_localize_script(
+		'my-block-editor-script',
+		'chbeObj',
+		[
+			'pluginUrl' => plugins_url( '', __FILE__ )
+		]
+	);
+
+}
+add_action( 'init', 'register_my_block' );

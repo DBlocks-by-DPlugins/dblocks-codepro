@@ -45,7 +45,11 @@
 		"useWrapper": {
 			"type": "boolean",
 			"default": true
-		}
+		},
+		"editorHeight": {
+            "type": "string",
+            "default": "50vh"
+        }
 	},
 	"textdomain": "dblocks-codepro",
 	"editorScript": "file:./index.js",
