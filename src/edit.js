@@ -206,8 +206,8 @@ export default function Edit({ attributes, setAttributes }) {
                             value={fontSize}
                             onChange={setFontSizeAndUpdate}
                             units={[{ value: 'px', label: 'Pixels', default: 14 }]}
-                            min={12}
-                            max={24}
+                            min={10}
+                            max={30}
                         />
 
                     </PanelBody>
