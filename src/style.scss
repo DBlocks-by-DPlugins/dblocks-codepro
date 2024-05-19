@@ -1,9 +1,6 @@
 .wp-block-dblocks-dblocks-codepro {
-
-	pre{
-		position: relative;
-	}
-
+	position: relative;
+	
 	button{
 		position: absolute;
 		top: 0.5rem;
@@ -20,13 +17,19 @@
 			background-color: rgba(255, 255, 255, 0.2);
 		}
 	}
-}
 
+	&:has(.hsl-light) {
+		background-color: #f6f8fa;
+	
+		.hljs {
+			background-color: unset;
+		}
 
-pre:has(.hsl-light) {
-	background-color: #f6f8fa;
-
-	.hljs {
-		background-color: unset;
+		button{
+			background-color: rgba(0, 0, 0, 0.1);
+			color: black;
+		}
 	}
 }
+
+

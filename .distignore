@@ -1,5 +1,4 @@
 node_modules
-src
 
 .distignore
 .editorconfig
@@ -11,6 +10,7 @@ src
 /**/**/.DS_Store
 
 dev.md
+TODO.MD
 package-lock.json
 package.json
 prepros.config

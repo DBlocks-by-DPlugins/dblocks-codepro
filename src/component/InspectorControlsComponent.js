@@ -16,6 +16,7 @@ const InspectorControlsComponent = ({
     fontSize,
     updateAttribute,
     editorHeight,
+    setEditorHeight, // Receive setEditorHeight as a prop
 }) => {
     return (
         <InspectorControls>
@@ -64,7 +65,7 @@ const InspectorControlsComponent = ({
                         </>
                     )}
                 </PanelBody>
-                <PanelBody title="Editor Global Settings">
+                <PanelBody title="Editor Global Settings" initialOpen={false}>
                     <ToggleControl
                         label="Dark Mode"
                         checked={theme === 'vs-dark'}
@@ -81,7 +82,10 @@ const InspectorControlsComponent = ({
                     <UnitControl
                         label="Editor Height"
                         value={editorHeight}
-                        onChange={(newHeight) => updateAttribute('editorHeight', newHeight, '/wp-json/dblocks-codepro/v1/editor-height/')}
+                        onChange={(newHeight) => {
+                            setEditorHeight(newHeight); // Update local state immediately
+                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks-codepro/v1/editor-height/');
+                        }}
                         units={[{ value: 'vh', label: 'Viewport Height', default: 50 }]}
                         min={10}
                         max={100}

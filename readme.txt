@@ -68,6 +68,11 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 == Changelog ==
 
+= 1.0.9 ~ 1.0.5  =
+* Redone it and moved CDN to Local files
+* Updated Monaco Editor to the latest version
+* Updated Emmet to the latest version
+
 = 1.0.4 =
 * Added transform form core/code and core/html
 

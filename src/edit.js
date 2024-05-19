@@ -74,6 +74,8 @@ export default function Edit({ attributes, setAttributes }) {
     };
 
     const updateAttribute = async (attribute, value, endpoint) => {
+        setAttributes({ [attribute]: value }); // Update local state immediately
+
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -85,7 +87,6 @@ export default function Edit({ attributes, setAttributes }) {
             });
 
             if (!response.ok) throw new Error('Network response was not ok.');
-            setAttributes({ [attribute]: value });
         } catch (error) {
             console.error(`Failed to update ${attribute}:`, error);
         }
@@ -198,6 +199,15 @@ export default function Edit({ attributes, setAttributes }) {
     }, [content]);
 
     useEffect(() => {
+        if (editorContainerRef.current) {
+            editorContainerRef.current.style.height = editorHeight;
+            if (editorInstanceRef.current) {
+                editorInstanceRef.current.layout();
+            }
+        }
+    }, [editorHeight]);
+
+    useEffect(() => {
         toggleAttribute('viewMode', viewMode);
     }, [viewMode]);
 
@@ -217,6 +227,7 @@ export default function Edit({ attributes, setAttributes }) {
                 fontSize={fontSize}
                 updateAttribute={updateAttribute}
                 editorHeight={editorHeight}
+                setEditorHeight={setEditorHeight} // Pass setEditorHeight to handle local state update
             />
 
             <div {...useBlockProps()}>
