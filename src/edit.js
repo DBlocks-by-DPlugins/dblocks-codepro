@@ -17,12 +17,6 @@ export default function Edit({ attributes, setAttributes }) {
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
 
-    // const toggleTheme = () => {
-    //     const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
-    //     setTheme(newTheme);
-    //     setAttributes({ theme: newTheme });
-    // };
-
     const toggleTheme = async () => {
         const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
         try {
