@@ -25,12 +25,12 @@ function DBLOCKS_CODEPRO_enqueue_highlightjs_if_block_present() {
             wp_enqueue_style('highlightjs-css', $style_url, array(), '1.0', 'all');
             wp_enqueue_script('highlightjs', DBLOCKS_CODEPRO_URL . 'vendor/highlight/highlight.min.js', array(), '1.0', true);
 
-            $languages = ['html', 'css', 'scss', 'javascript', 'php', 'typescript', 'bash', 'twig', 'yaml', 'plaintext', 'json'];
+            $languages = ['xml', 'css', 'scss', 'javascript', 'php', 'typescript', 'bash', 'twig', 'yaml', 'plaintext', 'json'];
             foreach ($languages as $lang) {
                 wp_enqueue_script("highlightjs-lang-$lang", DBLOCKS_CODEPRO_URL . "vendor/highlight/languages/$lang.min.js", array('highlightjs'), '1.0', true);
             }
 
-            wp_add_inline_script('highlightjs', 'hljs.initHighlightingOnLoad();');
+            wp_add_inline_script('highlightjs', 'hljs.highlightAll();');
         }
     }
 }

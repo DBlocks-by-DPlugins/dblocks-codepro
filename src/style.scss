@@ -21,3 +21,12 @@
 		}
 	}
 }
+
+
+pre:has(.hsl-light) {
+	background-color: #f6f8fa;
+
+	.hljs {
+		background-color: unset;
+	}
+}
