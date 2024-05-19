@@ -8,36 +8,57 @@ const MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
 
 export default function Edit() {
 	const editorContainerRef = useRef(null);
+	const editorInstanceRef = useRef(null);
 
 	useEffect(() => {
 		const isMonacoLoaderScriptPresent = (contextDoc) => {
 			return Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`));
 		};
 
+		const ensureRequireIsAvailable = (contextWindow) => {
+			return new Promise((resolve, reject) => {
+				const checkInterval = setInterval(() => {
+					if (contextWindow.require && contextWindow.require.config) {
+						clearInterval(checkInterval);
+						resolve(contextWindow.require);
+					}
+				}, 50);
+
+				setTimeout(() => {
+					clearInterval(checkInterval);
+					reject(new Error('Require is not available.'));
+				}, 5000); // Timeout after 5 seconds
+			});
+		};
+
 		const initializeMonacoEditor = (contextWindow, monaco) => {
-			const editor = monaco.editor.create(editorContainerRef.current, {
+			if (editorInstanceRef.current) {
+				editorInstanceRef.current.dispose();
+			}
+
+			editorInstanceRef.current = monaco.editor.create(editorContainerRef.current, {
 				value: "<!-- some comment -->",
-				language: "html"
+				language: "html",
+                automaticLayout: true
 			});
 			emmetHTML(monaco);
 		};
 
-		const loadMonacoEditorScript = (contextWindow, contextDoc) => {
-			if (isMonacoLoaderScriptPresent(contextDoc)) {
+		const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
+			if (!isMonacoLoaderScriptPresent(contextDoc)) {
+				const script = contextDoc.createElement('script');
+				script.src = `${contextWindow.location.origin}${MONACO_PATH}/loader.js`;
+				contextDoc.body.appendChild(script);
+			}
+
+			try {
+				await ensureRequireIsAvailable(contextWindow);
 				contextWindow.require.config({ paths: { 'vs': `${contextWindow.location.origin}${MONACO_PATH}` }});
 				contextWindow.require(['vs/editor/editor.main'], () => {
 					initializeMonacoEditor(contextWindow, contextWindow.monaco);
 				});
-			} else {
-				const script = contextDoc.createElement('script');
-				script.src = `${contextWindow.location.origin}${MONACO_PATH}/loader.js`;
-				script.onload = () => {
-					contextWindow.require.config({ paths: { 'vs': `${contextWindow.location.origin}${MONACO_PATH}` }});
-					contextWindow.require(['vs/editor/editor.main'], () => {
-						initializeMonacoEditor(contextWindow, contextWindow.monaco);
-					});
-				};
-				contextDoc.body.appendChild(script);
+			} catch (error) {
+				console.error("Failed to ensure 'require' is available:", error);
 			}
 		};
 
@@ -49,11 +70,18 @@ export default function Edit() {
 			// Load Monaco Editor in the main document
 			loadMonacoEditorScript(window, document);
 		}
+
+		// Cleanup editor instance on component unmount
+		return () => {
+			if (editorInstanceRef.current) {
+				editorInstanceRef.current.dispose();
+			}
+		};
 	}, []);
 
 	return (
 		<div {...useBlockProps()}>
-			<h2>{__('Test', 'text-domain')}</h2>
+			<h2>{__('Your Block Title 2', 'text-domain')}</h2>
 			<div ref={editorContainerRef} style={{ height: '50vh' }} />
 		</div>
 	);
