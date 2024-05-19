@@ -10,26 +10,35 @@ export default function Edit() {
 	const editorContainerRef = useRef(null);
 
 	useEffect(() => {
+		const isMonacoLoaderScriptPresent = (contextDoc) => {
+			return Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`));
+		};
+
+		const initializeMonacoEditor = (contextWindow, monaco) => {
+			const editor = monaco.editor.create(editorContainerRef.current, {
+				value: "<!-- some comment -->",
+				language: "html"
+			});
+			emmetHTML(monaco);
+		};
+
 		const loadMonacoEditorScript = (contextWindow, contextDoc) => {
-			// Inject Monaco loader script into the context (iframe or main document)
-			const script = contextDoc.createElement('script');
-			script.src = `${contextWindow.location.origin}${MONACO_PATH}/loader.js`;
-			script.onload = () => {
+			if (isMonacoLoaderScriptPresent(contextDoc)) {
 				contextWindow.require.config({ paths: { 'vs': `${contextWindow.location.origin}${MONACO_PATH}` }});
 				contextWindow.require(['vs/editor/editor.main'], () => {
-					const monaco = contextWindow.monaco;
-
-					// Create Monaco Editor instance
-					const editor = monaco.editor.create(editorContainerRef.current, {
-						value: "<!-- some comment -->",
-						language: "html"
-					});
-
-					// Initialize Emmet
-					emmetHTML(monaco);
+					initializeMonacoEditor(contextWindow, contextWindow.monaco);
 				});
-			};
-			contextDoc.body.appendChild(script);
+			} else {
+				const script = contextDoc.createElement('script');
+				script.src = `${contextWindow.location.origin}${MONACO_PATH}/loader.js`;
+				script.onload = () => {
+					contextWindow.require.config({ paths: { 'vs': `${contextWindow.location.origin}${MONACO_PATH}` }});
+					contextWindow.require(['vs/editor/editor.main'], () => {
+						initializeMonacoEditor(contextWindow, contextWindow.monaco);
+					});
+				};
+				contextDoc.body.appendChild(script);
+			}
 		};
 
 		const iframe = document.querySelector('.editor-canvas__iframe');
