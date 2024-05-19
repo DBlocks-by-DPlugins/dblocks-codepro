@@ -15,6 +15,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [viewMode, setViewMode] = useState(initialViewMode); // Manage the view mode
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
+    const [editorHeight, setEditorHeight] = useState(attributes.editorHeight || '50vh');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
@@ -98,6 +99,28 @@ export default function Edit({ attributes, setAttributes }) {
             });
     };
 
+    const setEditorHeightAndUpdate = (newHeight) => {
+        fetch('/wp-json/dblocks-codepro/v1/editor-height/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': wpApiSettings.nonce // Ensure this is correctly configured
+            },
+            body: JSON.stringify({ editorHeight: newHeight })
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok.');
+                return response.json();
+            })
+            .then(data => {
+                setEditorHeight(newHeight);
+                setAttributes({ editorHeight: newHeight });
+            })
+            .catch(error => {
+                console.error('Failed to update editor height:', error);
+            });
+    };
+
     useEffect(() => {
         fetch('/wp-json/dblocks-codepro/v1/theme')
             .then(response => response.json())
@@ -114,6 +137,14 @@ export default function Edit({ attributes, setAttributes }) {
                 setAttributes({ editorFontSize: data });
             })
             .catch(error => console.error('Error fetching editor font size:', error));
+
+        fetch('/wp-json/dblocks-codepro/v1/editor-height/')
+            .then(response => response.json())
+            .then(data => {
+                setEditorHeight(data);
+                setAttributes({ editorHeight: data });
+            })
+            .catch(error => console.error('Error fetching editor height:', error));
     }, []);
 
     useEffect(() => {
@@ -220,21 +251,6 @@ export default function Edit({ attributes, setAttributes }) {
                             onChange={toggleUseWrapper}
                         />
                     </PanelBody>
-                    <PanelBody title="Editor Global Settings">
-                        <ToggleControl
-                            label="Dark Mode"
-                            checked={theme === 'vs-dark'}
-                            onChange={toggleTheme}
-                        />
-                        <UnitControl
-                            label="Font Size"
-                            value={fontSize}
-                            onChange={setFontSizeAndUpdate}
-                            units={[{ value: 'px', label: 'Pixels', default: 14 }]}
-                            min={10}
-                            max={30}
-                        />
-                    </PanelBody>
                     <PanelBody title="Syntax Highlighting">
                         <ToggleControl
                             label="Activate Syntax Highlighting"
@@ -269,6 +285,29 @@ export default function Edit({ attributes, setAttributes }) {
                             </>
                         )}
                     </PanelBody>
+                    <PanelBody title="Editor Global Settings">
+                        <ToggleControl
+                            label="Dark Mode"
+                            checked={theme === 'vs-dark'}
+                            onChange={toggleTheme}
+                        />
+                        <UnitControl
+                            label="Font Size"
+                            value={fontSize}
+                            onChange={setFontSizeAndUpdate}
+                            units={[{ value: 'px', label: 'Pixels', default: 14 }]}
+                            min={10}
+                            max={30}
+                        />
+                        <UnitControl
+                            label="Editor Height"
+                            value={editorHeight}
+                            onChange={setEditorHeightAndUpdate}
+                            units={[{ value: 'vh', label: 'Viewport Height', default: 50 }]}
+                            min={10}
+                            max={100}
+                        />
+                    </PanelBody>
                 </Panel>
             </InspectorControls>
 
@@ -277,7 +316,7 @@ export default function Edit({ attributes, setAttributes }) {
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {(viewMode === 'code' || viewMode === 'split') && (
-                    <div ref={editorContainerRef} style={{ height: '50vh' }} />
+                    <div ref={editorContainerRef} style={{ height: editorHeight }} />
                 )}
             </div>
         </>

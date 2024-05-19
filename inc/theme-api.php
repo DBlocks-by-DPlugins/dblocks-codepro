@@ -57,4 +57,24 @@ add_action('rest_api_init', function () {
             return current_user_can('edit_posts');
         }
     ));
+
+    // Routes for editor height
+    register_rest_route('dblocks-codepro/v1', '/editor-height/', array(
+        'methods' => 'GET',
+        'callback' => function () {
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_editor_height', '50vh')), 200);
+        },
+        'permission_callback' => '__return_true'
+    ));
+    register_rest_route('dblocks-codepro/v1', '/editor-height/', array(
+        'methods' => 'POST',
+        'callback' => function ($request) {
+            update_option('dblocks_codepro_editor_height', $request->get_json_params()['editorHeight']);
+            return new WP_REST_Response('Editor height updated', 200);
+        },
+        'permission_callback' => function () {
+            return current_user_can('edit_posts');
+        }
+    ));
+    
 });
