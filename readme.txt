@@ -72,6 +72,8 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 * Redone it and moved CDN to Local files
 * Updated Monaco Editor to the latest version
 * Updated Emmet to the latest version
+* Fixed Firefox not working
+* Added height change option
 
 = 1.0.4 =
 * Added transform form core/code and core/html
