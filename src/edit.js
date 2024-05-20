@@ -1,5 +1,3 @@
-// Edit.js
-
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { useBlockProps } from '@wordpress/block-editor';
 import { RawHTML } from '@wordpress/element';
@@ -190,7 +188,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, theme, fontSize, editorLanguage, content]);
+    }, [viewMode]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
@@ -206,6 +204,16 @@ export default function Edit({ attributes, setAttributes }) {
             }
         }
     }, [editorHeight]);
+
+    useEffect(() => {
+        if (editorInstanceRef.current) {
+            editorInstanceRef.current.updateOptions({
+                theme: theme,
+                fontSize: parseInt(fontSize),
+                language: editorLanguage
+            });
+        }
+    }, [theme, fontSize, editorLanguage]);
 
     useEffect(() => {
         toggleAttribute('viewMode', viewMode);
