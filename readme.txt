@@ -1,8 +1,8 @@
 === Dblocks Codepro ===
 Contributors:      The WordPress Contributors
-Tags:              block, html block, advanced html block, WordPress code editor, Enhanced Code Editor, Monaco Editor, code editing plugin, Emmet support, theme customization, syntax highlighting, dynamic syntax highlighting, flexible editor configuration, multiple viewing modes, code preview, split view mode, developers, coding tutorials, improved usability, coding in WordPress, plugin installation, coding experience, HTML, CSS, JavaScript, PHP, coding productivity, coding workflow, development environment, plugin for developers, plugin for designers, WordPress block editor, coding interface, 
+Tags:              block, html block, advanced html block, wordPress code editor, monaco editor
 Tested up to:      6.5.2
-Stable tag:        1.0.9
+Stable tag:        1.0.10
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,10 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+
+= 1.0.10  =
+* Updated how Monaco handles changes. It was trying to reload after every type
+
 
 = 1.0.9 ~ 1.0.5  =
 * Redone it and moved CDN to Local files
