@@ -1,8 +1,8 @@
 === Dblocks Codepro ===
 Contributors:      The WordPress Contributors
-Tags:              block
+Tags:              block, html block, advanced html block, WordPress code editor, Enhanced Code Editor, Monaco Editor, code editing plugin, Emmet support, theme customization, syntax highlighting, dynamic syntax highlighting, flexible editor configuration, multiple viewing modes, code preview, split view mode, developers, coding tutorials, improved usability, coding in WordPress, plugin installation, coding experience, HTML, CSS, JavaScript, PHP, coding productivity, coding workflow, development environment, plugin for developers, plugin for designers, WordPress block editor, coding interface, 
 Tested up to:      6.5.2
-Stable tag:        1.0.2
+Stable tag:        1.0.9
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
