@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-function DBLOCKS_CODEPRO_category($block_categories) {
+function dblocks_codepro_category($block_categories) {
     $block_categories[] = array(
         'slug' => 'dblocks',
         'title' => 'DBlocks',
@@ -10,4 +10,4 @@ function DBLOCKS_CODEPRO_category($block_categories) {
 
     return $block_categories;
 }
-add_filter('block_categories_all', 'DBLOCKS_CODEPRO_category');
+add_filter('block_categories_all', 'dblocks_codepro_category');
