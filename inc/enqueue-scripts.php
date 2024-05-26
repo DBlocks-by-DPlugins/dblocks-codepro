@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-function dblocks_codepro_enqueue_highlightjs_if_block_present() {
+function dblocks_codepro_enqueue_scripts() {
     if (is_admin()) {
         return; // Skip in admin panel
     }
@@ -36,4 +36,4 @@ function dblocks_codepro_enqueue_highlightjs_if_block_present() {
         }
     }
 }
-add_action('wp_enqueue_scripts', 'dblocks_codepro_enqueue_highlightjs_if_block_present');
+add_action('wp_enqueue_scripts', 'dblocks_codepro_enqueue_scripts');

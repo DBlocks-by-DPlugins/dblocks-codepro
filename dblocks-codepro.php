@@ -30,11 +30,11 @@ require_once DBLOCKS_CODEPRO_PATH . 'inc/category.php';
 require_once DBLOCKS_CODEPRO_PATH . 'inc/enqueue-scripts.php';
 require_once DBLOCKS_CODEPRO_PATH . 'inc/theme-api.php';
 
-function register_dplugins_codepro() {
+function dblocks_codepro_register_monaco_path() {
 
 	// Localize script with plugin URL
 	wp_localize_script(
-		'dplugins_codepro_editor_script',
+		'dblocks_codepro_register_monaco_path',
 		'chbeObj',
 		[
 			'pluginUrl' => plugins_url( '', __FILE__ )
@@ -42,4 +42,4 @@ function register_dplugins_codepro() {
 	);
 
 }
-add_action( 'init', 'register_dplugins_codepro' );
+add_action( 'init', 'dblocks_codepro_register_monaco_path' );
