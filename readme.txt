@@ -2,7 +2,7 @@
 Contributors:      The WordPress Contributors
 Tags:              block
 Tested up to:      6.5.2
-Stable tag:        1.0.11
+Stable tag:        1.0.0
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,7 +45,7 @@ This section describes how to install the plugin and get it working.
 e.g.
 
 1. Upload the plugin files to the `/wp-content/plugins/dblocks-codepro` directory, or install the plugin through the WordPress plugins screen directly.
-1. Activate the plugin through the 'Plugins' screen in WordPress
+2. Activate the plugin through the 'Plugins' screen in WordPress
 
 
 == Frequently Asked Questions ==
@@ -67,34 +67,6 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
-= 1.0.11  =
-* Updated naming convetion
-
-= 1.0.10  =
-* Updated how Monaco handles changes. It was trying to reload after every type
-
-= 1.0.9 ~ 1.0.5  =
-* Redone it and moved CDN to Local files
-* Updated Monaco Editor to the latest version
-* Updated Emmet to the latest version
-* Fixed Firefox not working
-* Added height change option
-
-= 1.0.4 =
-* Added transform form core/code and core/html
-
-= 1.0.3 =
-* Moved to Api v3
-
-
-= 1.0.2 =
-* Updated header info
-
-
-= 1.0.1 =
-* Files Cleanup for wordpress.org
-
-
 = 1.0.0 =
 * Release
 
