@@ -1,12 +1,12 @@
-=== Dblocks Codepro ===
+=== DBlocks CodePro ===
 Contributors:      The WordPress Contributors
 Tags:              block
 Tested up to:      6.5.2
-Stable tag:        1.0.0
+Stable tag:        1.0.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Example block scaffolded with Create Block tool.
+Advanced HTML Block and Code Syntax Highlighterin in one.
 
 == Description ==
 
