@@ -1,5 +1,5 @@
 === DBlocks CodePro ===
-Contributors:      The WordPress Contributors
+Contributors:      dplugins, krstivoja
 Tags:              block
 Tested up to:      6.5.2
 Stable tag:        1.0.1
@@ -67,11 +67,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+
+= 1.0.1 =
+* Added check to verify if the block category exists.
+
 = 1.0.0 =
 * Release
-
-== Arbitrary section ==
-
-You may provide arbitrary sections, in the same format as the ones above. This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation." Arbitrary sections will be shown below the built-in sections outlined above.
