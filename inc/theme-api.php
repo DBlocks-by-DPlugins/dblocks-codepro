@@ -90,7 +90,8 @@ add_action('rest_api_init', function () {
 
 function get_plugin_info() {
     $plugin_info = [
-        'plugin_url' => DBLOCKS_CODEPRO_URL
+        'plugin_url' => DBLOCKS_CODEPRO_URL,
+        'plugin_name' => 'DBlocks Code Pro'
     ];
     return rest_ensure_response($plugin_info);
 }

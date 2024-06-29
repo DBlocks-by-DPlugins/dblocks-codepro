@@ -101,8 +101,6 @@ export default function Edit({ attributes, setAttributes }) {
                     fetch(`${baseUrl}wp-json/dblocks_codepro/v1/editor-height/`),
                 ]);
 
-                // console.log(`location: ${baseUrl}`)
-
                 const [themeData, fontSizeData, heightData] = await Promise.all([
                     themeResponse.json(),
                     fontSizeResponse.json(),
@@ -130,10 +128,10 @@ export default function Edit({ attributes, setAttributes }) {
         const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
             console.log("Starting to load Monaco Editor script...");
 
-            if (!pluginInfo) {
-                console.error("Plugin info not set.");
-                return;
-            }
+            // if (!pluginInfo) {
+            //     console.error("Plugin info not set.");
+            //     return;
+            // }
 
             const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
 
