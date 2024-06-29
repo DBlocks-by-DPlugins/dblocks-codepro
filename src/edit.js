@@ -7,6 +7,7 @@ import InspectorControlsComponent from './component/InspectorControlsComponent.j
 
 import './editor.scss';
 
+// Adjust MONACO_PATH to include the subfolder if necessary
 const MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
 
 export default function Edit({ attributes, setAttributes }) {
@@ -26,10 +27,14 @@ export default function Edit({ attributes, setAttributes }) {
         setAttributes({ [attribute]: value });
     };
 
+    // Use wp.data.select('core').getSite() to get the correct site URL
+    const baseUrl = wp.data.select('core').getSite().url;
+
     const toggleSyntaxHighlightTheme = async () => {
         const newSyntaxTheme = syntaxHighlightTheme === "light" ? "dark" : "light";
+
         try {
-            const response = await fetch("/wp-json/dblocks-codepro/v1/syntax-theme/", {
+            const response = await fetch(`${baseUrl}wp-json/dblocks-codepro/v1/syntax-theme/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -54,7 +59,7 @@ export default function Edit({ attributes, setAttributes }) {
     const toggleTheme = async () => {
         const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
         try {
-            const response = await fetch('/wp-json/dblocks-codepro/v1/theme', {
+            const response = await fetch(`${baseUrl}wp-json/dblocks-codepro/v1/theme`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,10 +99,12 @@ export default function Edit({ attributes, setAttributes }) {
         const fetchInitialSettings = async () => {
             try {
                 const [themeResponse, fontSizeResponse, heightResponse] = await Promise.all([
-                    fetch('/wp-json/dblocks-codepro/v1/theme'),
-                    fetch('/wp-json/dblocks-codepro/v1/editor-font-size/'),
-                    fetch('/wp-json/dblocks-codepro/v1/editor-height/'),
+                    fetch(`${baseUrl}wp-json/dblocks_codepro/v1/theme`),
+                    fetch(`${baseUrl}wp-json/dblocks_codepro/v1/editor-font-size/`),
+                    fetch(`${baseUrl}wp-json/dblocks_codepro/v1/editor-height/`),
                 ]);
+
+                console.log(`location: ${baseUrl}`)
 
                 const [themeData, fontSizeData, heightData] = await Promise.all([
                     themeResponse.json(),
@@ -124,10 +131,13 @@ export default function Edit({ attributes, setAttributes }) {
 
     useEffect(() => {
         const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
+            console.log("Starting to load Monaco Editor script...");
+
             if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
                 const script = contextDoc.createElement('script');
-                script.src = `${contextWindow.location.origin}${MONACO_PATH}/loader.js`;
+                script.src = `${baseUrl}${MONACO_PATH}/loader.js`;
                 contextDoc.body.appendChild(script);
+                console.log("Monaco Editor loader script appended to the document.");
             }
 
             const ensureRequireIsAvailable = (contextWindow) => {
@@ -148,7 +158,10 @@ export default function Edit({ attributes, setAttributes }) {
 
             try {
                 await ensureRequireIsAvailable(contextWindow);
-                contextWindow.require.config({ paths: { 'vs': `${contextWindow.location.origin}${MONACO_PATH}` } });
+                contextWindow.require.config({ paths: { 'vs': `${baseUrl}${MONACO_PATH}` } });
+
+                console.log(`vs-path: ${baseUrl}${MONACO_PATH}`);
+
                 contextWindow.require(['vs/editor/editor.main'], () => {
                     if (editorInstanceRef.current) {
                         editorInstanceRef.current.dispose();

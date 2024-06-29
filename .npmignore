@@ -1,0 +1,16 @@
+.github
+.wordpress-org
+
+node_modules/
+src/
+
+.distignore
+.editorconfig
+.gitignore
+.npmignore
+
+dblocks-codepro.zip
+dev.md
+package-lock.json
+package.json
+readme.txt

@@ -10,8 +10,12 @@
 		"build": "wp-scripts build",
 		"start": "wp-scripts start",
     	"sync": "browser-sync start --proxy 'dblocks.local' --files 'build/*'",
-		"packages-update": "wp-scripts packages-update"
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip"
 	},
+	"files": [
+		"*"
+	],
 	"devDependencies": {
 		"@wordpress/scripts": "^27.7.0",
 		"browser-sync": "^3.0.2",
