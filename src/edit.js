@@ -126,12 +126,12 @@ export default function Edit({ attributes, setAttributes }) {
 
     useEffect(() => {
         const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
-            console.log("Starting to load Monaco Editor script...");
+            // console.log("Starting to load Monaco Editor script...");
 
-            // if (!pluginInfo) {
-            //     console.error("Plugin info not set.");
-            //     return;
-            // }
+            if (!pluginInfo) {
+                console.error("Plugin info not set.");
+                return;
+            }
 
             const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
 
@@ -139,7 +139,7 @@ export default function Edit({ attributes, setAttributes }) {
                 const script = contextDoc.createElement('script');
                 script.src = `${MONACO_PATH}/loader.js`;
                 contextDoc.body.appendChild(script);
-                console.log("Monaco Editor loader script appended to the document.");
+                // console.log("Monaco Editor loader script appended to the document.");
             }
 
             const ensureRequireIsAvailable = (contextWindow) => {
@@ -190,7 +190,7 @@ export default function Edit({ attributes, setAttributes }) {
             }
         };
 
-        if (viewMode === 'code' || viewMode === 'split') {
+        if ((viewMode === 'code' || viewMode === 'split') && pluginInfo) {
             const iframe = document.querySelector('.editor-canvas__iframe');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;

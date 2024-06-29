@@ -1,8 +1,8 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
 Tags:              block
-Tested up to:      6.5.2
-Stable tag:        1.0.1
+Tested up to:      6.5.5
+Stable tag:        1.0.2
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,13 +60,15 @@ Answer to foo bar dilemma.
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+1. Preview with Emmet Abbreviation
+2. Dark and Light Theme
+3. Split Preview
+4. Supported languages
 
 == Changelog ==
+
+= 1.0.2 =
+* Fixed fetching API in subfolder wordpress installation. 
 
 = 1.0.1 =
 * Added check to verify if the block category exists.
