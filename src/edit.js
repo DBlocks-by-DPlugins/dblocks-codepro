@@ -7,9 +7,6 @@ import InspectorControlsComponent from './component/InspectorControlsComponent.j
 
 import './editor.scss';
 
-// Adjust MONACO_PATH to include the subfolder if necessary
-const MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
-
 export default function Edit({ attributes, setAttributes }) {
     const { content, viewMode: initialViewMode } = attributes;
     const [viewMode, setViewMode] = useState(initialViewMode);
@@ -19,6 +16,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
+    const [pluginInfo, setPluginInfo] = useState(null); // State to hold the plugin info
 
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
@@ -27,7 +25,6 @@ export default function Edit({ attributes, setAttributes }) {
         setAttributes({ [attribute]: value });
     };
 
-    // Use wp.data.select('core').getSite() to get the correct site URL
     const baseUrl = wp.data.select('core').getSite().url;
 
     const toggleSyntaxHighlightTheme = async () => {
@@ -104,7 +101,7 @@ export default function Edit({ attributes, setAttributes }) {
                     fetch(`${baseUrl}wp-json/dblocks_codepro/v1/editor-height/`),
                 ]);
 
-                console.log(`location: ${baseUrl}`)
+                // console.log(`location: ${baseUrl}`)
 
                 const [themeData, fontSizeData, heightData] = await Promise.all([
                     themeResponse.json(),
@@ -133,9 +130,16 @@ export default function Edit({ attributes, setAttributes }) {
         const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
             console.log("Starting to load Monaco Editor script...");
 
+            if (!pluginInfo) {
+                console.error("Plugin info not set.");
+                return;
+            }
+
+            const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
+
             if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
                 const script = contextDoc.createElement('script');
-                script.src = `${baseUrl}${MONACO_PATH}/loader.js`;
+                script.src = `${MONACO_PATH}/loader.js`;
                 contextDoc.body.appendChild(script);
                 console.log("Monaco Editor loader script appended to the document.");
             }
@@ -158,9 +162,9 @@ export default function Edit({ attributes, setAttributes }) {
 
             try {
                 await ensureRequireIsAvailable(contextWindow);
-                contextWindow.require.config({ paths: { 'vs': `${baseUrl}${MONACO_PATH}` } });
+                contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
 
-                console.log(`vs-path: ${baseUrl}${MONACO_PATH}`);
+                // console.log(`vs-path: ${MONACO_PATH}`);
 
                 contextWindow.require(['vs/editor/editor.main'], () => {
                     if (editorInstanceRef.current) {
@@ -201,7 +205,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode]);
+    }, [viewMode, pluginInfo]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
@@ -231,6 +235,21 @@ export default function Edit({ attributes, setAttributes }) {
     useEffect(() => {
         toggleAttribute('viewMode', viewMode);
     }, [viewMode]);
+
+    useEffect(() => {
+        const fetchPluginInfo = async () => {
+            try {
+                const response = await fetch(`${baseUrl}wp-json/dblocks_codepro/v1/plugin-path`);
+                if (!response.ok) throw new Error("Failed to fetch plugin info");
+                const info = await response.json();
+                setPluginInfo(info);
+            } catch (error) {
+                console.error("Failed to fetch plugin info:", error);
+            }
+        };
+
+        fetchPluginInfo();
+    }, []);
 
     return (
         <>

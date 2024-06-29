@@ -78,4 +78,19 @@ add_action('rest_api_init', function () {
             return current_user_can('edit_posts');
         }
     ));
+
+    // Register new REST API endpoint to get the plugin path
+    register_rest_route('dblocks_codepro/v1', '/plugin-path', [
+        'methods' => 'GET',
+        'callback' => 'get_plugin_info',
+        'permission_callback' => '__return_true'
+    ]);
+
 });
+
+function get_plugin_info() {
+    $plugin_info = [
+        'plugin_url' => DBLOCKS_CODEPRO_URL
+    ];
+    return rest_ensure_response($plugin_info);
+}
