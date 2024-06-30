@@ -75,7 +75,7 @@ export default function Edit({ attributes, setAttributes }) {
 
     const updateAttribute = async (attribute, value, endpoint) => {
         setAttributes({ [attribute]: value }); // Update local state immediately
-
+    
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -85,12 +85,13 @@ export default function Edit({ attributes, setAttributes }) {
                 },
                 body: JSON.stringify({ [attribute]: value }),
             });
-
+    
             if (!response.ok) throw new Error('Network response was not ok.');
         } catch (error) {
             console.error(`Failed to update ${attribute}:`, error);
         }
     };
+    
 
     useEffect(() => {
         const fetchInitialSettings = async () => {
@@ -228,7 +229,7 @@ export default function Edit({ attributes, setAttributes }) {
                 language: editorLanguage
             });
         }
-    }, [theme, fontSize, editorLanguage]);
+    }, [theme, fontSize, editorLanguage]);    
 
     useEffect(() => {
         toggleAttribute('viewMode', viewMode);
