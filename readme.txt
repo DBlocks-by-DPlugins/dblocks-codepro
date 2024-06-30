@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block
 Tested up to:      6.5.5
-Stable tag:        1.0.2
+Stable tag:        1.2.0
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.2.0 =
+* Updated version number to be higher number, then self hosted one to remove confusion witch is the latest one.
 
 = 1.0.2 =
 * Fixed fetching API in subfolder wordpress installation. 
