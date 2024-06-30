@@ -96,9 +96,9 @@ export default function Edit({ attributes, setAttributes }) {
         const fetchInitialSettings = async () => {
             try {
                 const [themeResponse, fontSizeResponse, heightResponse] = await Promise.all([
-                    fetch(`${baseUrl}wp-json/dblocks_codepro/v1/theme`),
-                    fetch(`${baseUrl}wp-json/dblocks_codepro/v1/editor-font-size/`),
-                    fetch(`${baseUrl}wp-json/dblocks_codepro/v1/editor-height/`),
+                    fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/theme`),
+                    fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/editor-font-size/`),
+                    fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/editor-height/`),
                 ]);
 
                 const [themeData, fontSizeData, heightData] = await Promise.all([
@@ -237,7 +237,7 @@ export default function Edit({ attributes, setAttributes }) {
     useEffect(() => {
         const fetchPluginInfo = async () => {
             try {
-                const response = await fetch(`${baseUrl}wp-json/dblocks_codepro/v1/plugin-path`);
+                const response = await fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/plugin-path`);
                 if (!response.ok) throw new Error("Failed to fetch plugin info");
                 const info = await response.json();
                 setPluginInfo(info);
