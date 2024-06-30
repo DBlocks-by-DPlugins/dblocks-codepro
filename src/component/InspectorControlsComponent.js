@@ -74,7 +74,7 @@ const InspectorControlsComponent = ({
                     <UnitControl
                         label="Font Size"
                         value={fontSize}
-                        onChange={(newSize) => updateAttribute('editorFontSize', newSize, '/wp-json/dblocks-codepro/v1/editor-font-size/')}
+                        onChange={(newSize) => updateAttribute('editorFontSize', newSize, '/wp-json/dblocks_codepro/v1/editor-font-size/')}
                         units={[{ value: 'px', label: 'Pixels', default: 14 }]}
                         min={10}
                         max={30}
@@ -84,7 +84,7 @@ const InspectorControlsComponent = ({
                         value={editorHeight}
                         onChange={(newHeight) => {
                             setEditorHeight(newHeight); // Update local state immediately
-                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks-codepro/v1/editor-height/');
+                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
                         }}
                         units={[{ value: 'vh', label: 'Viewport Height', default: 50 }]}
                         min={10}

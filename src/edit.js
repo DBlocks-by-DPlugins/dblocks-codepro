@@ -31,7 +31,7 @@ export default function Edit({ attributes, setAttributes }) {
         const newSyntaxTheme = syntaxHighlightTheme === "light" ? "dark" : "light";
 
         try {
-            const response = await fetch(`${baseUrl}wp-json/dblocks-codepro/v1/syntax-theme/`, {
+            const response = await fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/syntax-theme/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -56,7 +56,7 @@ export default function Edit({ attributes, setAttributes }) {
     const toggleTheme = async () => {
         const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
         try {
-            const response = await fetch(`${baseUrl}wp-json/dblocks-codepro/v1/theme`, {
+            const response = await fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/theme`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
