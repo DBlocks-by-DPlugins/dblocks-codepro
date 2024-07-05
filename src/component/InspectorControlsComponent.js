@@ -14,10 +14,16 @@ const InspectorControlsComponent = ({
     theme,
     toggleTheme,
     fontSize,
-    updateAttribute,
+    setFontSize,
     editorHeight,
     setEditorHeight, // Receive setEditorHeight as a prop
+    updateAttribute // Receive updateAttribute as a prop
 }) => {
+    const handleFontSizeChange = (newFontSize) => {
+        setFontSize(newFontSize);
+        updateAttribute('editorFontSize', newFontSize, '/wp-json/dblocks_codepro/v1/editor-font-size/');
+    };
+
     return (
         <InspectorControls>
             <Panel>
@@ -74,7 +80,7 @@ const InspectorControlsComponent = ({
                     <UnitControl
                         label="Font Size"
                         value={fontSize}
-                        onChange={(newSize) => updateAttribute('editorFontSize', newSize, '/wp-json/dblocks_codepro/v1/editor-font-size/')}
+                        onChange={(newSize) => handleFontSizeChange(newSize)}
                         units={[{ value: 'px', label: 'Pixels', default: 14 }]}
                         min={10}
                         max={30}

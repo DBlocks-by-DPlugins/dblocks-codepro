@@ -91,7 +91,6 @@ export default function Edit({ attributes, setAttributes }) {
             console.error(`Failed to update ${attribute}:`, error);
         }
     };
-    
 
     useEffect(() => {
         const fetchInitialSettings = async () => {
@@ -127,8 +126,6 @@ export default function Edit({ attributes, setAttributes }) {
 
     useEffect(() => {
         const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
-            // console.log("Starting to load Monaco Editor script...");
-
             if (!pluginInfo) {
                 console.error("Plugin info not set.");
                 return;
@@ -140,7 +137,6 @@ export default function Edit({ attributes, setAttributes }) {
                 const script = contextDoc.createElement('script');
                 script.src = `${MONACO_PATH}/loader.js`;
                 contextDoc.body.appendChild(script);
-                // console.log("Monaco Editor loader script appended to the document.");
             }
 
             const ensureRequireIsAvailable = (contextWindow) => {
@@ -162,8 +158,6 @@ export default function Edit({ attributes, setAttributes }) {
             try {
                 await ensureRequireIsAvailable(contextWindow);
                 contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
-
-                // console.log(`vs-path: ${MONACO_PATH}`);
 
                 contextWindow.require(['vs/editor/editor.main'], () => {
                     if (editorInstanceRef.current) {
@@ -229,7 +223,7 @@ export default function Edit({ attributes, setAttributes }) {
                 language: editorLanguage
             });
         }
-    }, [theme, fontSize, editorLanguage]);    
+    }, [theme, fontSize, editorLanguage]);
 
     useEffect(() => {
         toggleAttribute('viewMode', viewMode);
@@ -264,9 +258,10 @@ export default function Edit({ attributes, setAttributes }) {
                 theme={theme}
                 toggleTheme={toggleTheme}
                 fontSize={fontSize}
-                updateAttribute={updateAttribute}
+                setFontSize={setFontSize}
                 editorHeight={editorHeight}
                 setEditorHeight={setEditorHeight} // Pass setEditorHeight to handle local state update
+                updateAttribute={updateAttribute} // Pass updateAttribute as a prop
             />
 
             <div {...useBlockProps()}>
