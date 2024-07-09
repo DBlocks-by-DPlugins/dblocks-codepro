@@ -67,6 +67,13 @@ Answer to foo bar dilemma.
 
 == Changelog ==
 
+
+= 1.2.1 =
+* Updated API paths for WP subfolder installations
+* Language changes take effect immediately; previously, a reload was required
+* Font size changes take effect immediately; previously, a reload was required
+
+
 = 1.2.0 =
 * Updated version number to be higher number, then self hosted one to remove confusion witch is the latest one.
 

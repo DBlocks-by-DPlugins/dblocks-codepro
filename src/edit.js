@@ -17,6 +17,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
     const [pluginInfo, setPluginInfo] = useState(null); // State to hold the plugin info
+    const [shouldReloadEditor, setShouldReloadEditor] = useState(false);
 
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
@@ -50,6 +51,7 @@ export default function Edit({ attributes, setAttributes }) {
 
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
+        setShouldReloadEditor(true); // Flag to reload the editor
         toggleAttribute('editorLanguage', language);
     };
 
@@ -75,7 +77,7 @@ export default function Edit({ attributes, setAttributes }) {
 
     const updateAttribute = async (attribute, value, endpoint) => {
         setAttributes({ [attribute]: value }); // Update local state immediately
-    
+
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -85,7 +87,7 @@ export default function Edit({ attributes, setAttributes }) {
                 },
                 body: JSON.stringify({ [attribute]: value }),
             });
-    
+
             if (!response.ok) throw new Error('Network response was not ok.');
         } catch (error) {
             console.error(`Failed to update ${attribute}:`, error);
@@ -190,6 +192,7 @@ export default function Edit({ attributes, setAttributes }) {
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
             loadMonacoEditorScript(contextWindow, contextDoc);
+            setShouldReloadEditor(false); // Reset the reload flag after reloading the editor
         }
 
         return () => {
@@ -198,7 +201,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo]);
+    }, [viewMode, pluginInfo, shouldReloadEditor]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
