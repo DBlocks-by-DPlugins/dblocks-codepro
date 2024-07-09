@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor
 Tested up to:      6.5.5
-Stable tag:        1.2.1
+Stable tag:        1.2.2
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,8 @@ Answer to foo bar dilemma.
 
 == Changelog ==
 
+= 1.2.2 =
+* Version bump
 
 = 1.2.1 =
 * Updated API paths for WP subfolder installations
