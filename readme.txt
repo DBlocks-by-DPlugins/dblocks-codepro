@@ -1,6 +1,6 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
-Tags:              block
+Tags:              block, html, code, monaco editor
 Tested up to:      6.5.5
 Stable tag:        1.2.1
 License:           GPL-2.0-or-later
