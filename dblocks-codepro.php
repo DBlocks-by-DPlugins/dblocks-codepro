@@ -25,8 +25,9 @@ define('DBLOCKS_CODEPRO_URL',	plugin_dir_url(__FILE__));
 define('DBLOCKS_CODEPRO_BASE',	plugin_basename(__FILE__));
 
 
-// Include the components using the prefixed path constant
-require_once DBLOCKS_CODEPRO_PATH . 'inc/block-registration.php';
-require_once DBLOCKS_CODEPRO_PATH . 'inc/category.php';
-require_once DBLOCKS_CODEPRO_PATH . 'inc/enqueue-scripts.php';
-require_once DBLOCKS_CODEPRO_PATH . 'inc/theme-api.php';
+
+$inc_dir = DBLOCKS_CODEPRO_PATH . 'inc/';
+
+foreach (glob($inc_dir . '*.php') as $file) {
+	require_once $file;
+}
