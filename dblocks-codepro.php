@@ -5,7 +5,7 @@
  * Description:       Advanced HTML Block and Code Syntax Highlighterin in one
  * Requires at least: 6.3
  * Requires PHP:      7.4
- * Version:           1.2.2
+ * Version:           1.2.3
  * Author:            DPlugins
  * * Author URI:      https://dplugins.com/
  * License:           GPL-2.0-or-later
@@ -30,17 +30,3 @@ require_once DBLOCKS_CODEPRO_PATH . 'inc/block-registration.php';
 require_once DBLOCKS_CODEPRO_PATH . 'inc/category.php';
 require_once DBLOCKS_CODEPRO_PATH . 'inc/enqueue-scripts.php';
 require_once DBLOCKS_CODEPRO_PATH . 'inc/theme-api.php';
-
-function dblocks_codepro_register_monaco_path()
-{
-
-	// Localize script with plugin URL
-	wp_localize_script(
-		'dblocks_codepro_register_monaco_path',
-		'chbeObj',
-		[
-			'pluginUrl' => plugins_url('', __FILE__)
-		]
-	);
-}
-add_action('init', 'dblocks_codepro_register_monaco_path');
