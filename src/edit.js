@@ -188,7 +188,7 @@ export default function Edit({ attributes, setAttributes }) {
         };
 
         if ((viewMode === 'code' || viewMode === 'split') && pluginInfo) {
-            const iframe = document.querySelector('.editor-canvas__iframe');
+            const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
             loadMonacoEditorScript(contextWindow, contextDoc);
@@ -272,7 +272,7 @@ export default function Edit({ attributes, setAttributes }) {
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {(viewMode === 'code' || viewMode === 'split') && (
-                    <div ref={editorContainerRef} style={{ height: editorHeight }} />
+                    <div ref={editorContainerRef} id='editor-container-ref' style={{ height: editorHeight }} />
                 )}
             </div>
         </>
