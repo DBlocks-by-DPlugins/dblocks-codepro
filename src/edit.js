@@ -4,6 +4,7 @@ import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
 import BlockControlsComponent from './component/BlockControls.js';
 import InspectorControlsComponent from './component/InspectorControlsComponent.js';
+import { useSelect } from '@wordpress/data';
 
 import './editor.scss';
 
@@ -16,7 +17,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
-    const [pluginInfo, setPluginInfo] = useState(null); // State to hold the plugin info
+    const [pluginInfo, setPluginInfo] = useState(null);
     const [shouldReloadEditor, setShouldReloadEditor] = useState(false);
 
     const editorContainerRef = useRef(null);
@@ -26,7 +27,10 @@ export default function Edit({ attributes, setAttributes }) {
         setAttributes({ [attribute]: value });
     };
 
-    const baseUrl = wp.data.select('core').getSite().url;
+    const baseUrl = useSelect(select => {
+        const site = select('core').getSite();
+        return site ? site.url : '';
+    }, []);
 
     const toggleSyntaxHighlightTheme = async () => {
         const newSyntaxTheme = syntaxHighlightTheme === "light" ? "dark" : "light";
@@ -51,7 +55,7 @@ export default function Edit({ attributes, setAttributes }) {
 
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
-        setShouldReloadEditor(true); // Flag to reload the editor
+        setShouldReloadEditor(true);
         toggleAttribute('editorLanguage', language);
     };
 
@@ -76,7 +80,7 @@ export default function Edit({ attributes, setAttributes }) {
     };
 
     const updateAttribute = async (attribute, value, endpoint) => {
-        setAttributes({ [attribute]: value }); // Update local state immediately
+        setAttributes({ [attribute]: value });
 
         try {
             const response = await fetch(endpoint, {
@@ -192,7 +196,7 @@ export default function Edit({ attributes, setAttributes }) {
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
             loadMonacoEditorScript(contextWindow, contextDoc);
-            setShouldReloadEditor(false); // Reset the reload flag after reloading the editor
+            setShouldReloadEditor(false);
         }
 
         return () => {
@@ -263,8 +267,8 @@ export default function Edit({ attributes, setAttributes }) {
                 fontSize={fontSize}
                 setFontSize={setFontSize}
                 editorHeight={editorHeight}
-                setEditorHeight={setEditorHeight} // Pass setEditorHeight to handle local state update
-                updateAttribute={updateAttribute} // Pass updateAttribute as a prop
+                setEditorHeight={setEditorHeight}
+                updateAttribute={updateAttribute}
             />
 
             <div {...useBlockProps()}>
