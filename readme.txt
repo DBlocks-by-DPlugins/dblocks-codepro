@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor
 Tested up to:      6.6.2
-Stable tag:        1.2.3
+Stable tag:        1.2.4
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,10 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.2.4 =
+* Updated monaco editor to version 0.52.0
+* Updated emmet-monaco-es (for autocomplete) to version 5.5.0 to be compatible with monaco editor 0.52.0
 
 = 1.2.3 =
 * Updated monacoe editor loading. 6.6 have removed the class from editor-iframe, that we're using to load monaco editor.
