@@ -5,7 +5,7 @@
  * Description:       Advanced HTML Block and Code Syntax Highlighterin in one
  * Requires at least: 6.3
  * Requires PHP:      7.4
- * Version:           1.2.3
+ * Version:           1.2.4
  * Author:            DPlugins
  * * Author URI:      https://dplugins.com/
  * License:           GPL-2.0-or-later
@@ -25,8 +25,9 @@ define('DBLOCKS_CODEPRO_URL',	plugin_dir_url(__FILE__));
 define('DBLOCKS_CODEPRO_BASE',	plugin_basename(__FILE__));
 
 
-// Include the components using the prefixed path constant
-require_once DBLOCKS_CODEPRO_PATH . 'inc/block-registration.php';
-require_once DBLOCKS_CODEPRO_PATH . 'inc/category.php';
-require_once DBLOCKS_CODEPRO_PATH . 'inc/enqueue-scripts.php';
-require_once DBLOCKS_CODEPRO_PATH . 'inc/theme-api.php';
+
+$inc_dir = DBLOCKS_CODEPRO_PATH . 'inc/';
+
+foreach (glob($inc_dir . '*.php') as $file) {
+	require_once $file;
+}

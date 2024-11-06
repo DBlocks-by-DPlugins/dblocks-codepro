@@ -9,11 +9,13 @@
 		"develop": "npm-run-all --parallel start sync",
 		"build": "wp-scripts build",
 		"start": "wp-scripts start",
-		"sync": "browser-sync start --proxy 'dblocks.local' --files 'build/*'",
 		"packages-update": "wp-scripts packages-update",
-		"plugin-zip": "wp-scripts plugin-zip",
+		"----": "  ",
+		"delete-monaco": "rimraf vendor/monaco",
 		"copy-monaco": "cpx -C \"node_modules/monaco-editor/min/**\" \"vendor/monaco/min/\"",
-		"clean": "rimraf vendor/monaco"
+		"---": " ",
+		"sync": "browser-sync start --proxy 'dblocks.local' --files 'build/*'",
+		"plugin-zip": "wp-scripts plugin-zip"
 	},
 	"files": [
 		"*"
