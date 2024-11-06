@@ -13,7 +13,7 @@ export default function Edit({ attributes, setAttributes }) {
     const [viewMode, setViewMode] = useState(initialViewMode);
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
-    const [editorHeight, setEditorHeight] = useState(attributes.editorHeight || '50vh');
+    const [editorHeight, setEditorHeight] = useState(attributes.editorHeight || '500px');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
@@ -98,6 +98,15 @@ export default function Edit({ attributes, setAttributes }) {
         }
     };
 
+    const calculateEditorHeight = (content) => {
+        const lineCount = (content.match(/\n/g) || []).length + 1;
+        const currentFontSize = parseInt(fontSize);
+        const lineHeight = currentFontSize * 1.5;
+        const padding = currentFontSize * 2;
+        const minHeight = currentFontSize * 1.5;
+        return `${Math.max(lineCount * lineHeight + padding, minHeight)}px`;
+    };
+
     useEffect(() => {
         const fetchInitialSettings = async () => {
             try {
@@ -177,6 +186,7 @@ export default function Edit({ attributes, setAttributes }) {
                         automaticLayout: true,
                         theme: theme,
                         fontSize: parseInt(fontSize),
+                        scrollBeyondLastLine: false,
                     });
 
                     emmetHTML(contextWindow.monaco);
@@ -184,6 +194,12 @@ export default function Edit({ attributes, setAttributes }) {
                     editorInstanceRef.current.onDidChangeModelContent(() => {
                         const newValue = editorInstanceRef.current.getValue();
                         toggleAttribute('content', newValue);
+                        
+                        if (attributes.scaleHeightWithContent) {
+                            const newHeight = calculateEditorHeight(newValue);
+                            editorContainerRef.current.style.height = newHeight;
+                            editorInstanceRef.current.layout();
+                        }
                     });
                 });
             } catch (error) {
@@ -214,13 +230,16 @@ export default function Edit({ attributes, setAttributes }) {
     }, [content]);
 
     useEffect(() => {
-        if (editorContainerRef.current) {
-            editorContainerRef.current.style.height = editorHeight;
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.layout();
+        if (editorContainerRef.current && editorInstanceRef.current) {
+            if (attributes.scaleHeightWithContent) {
+                const newHeight = calculateEditorHeight(content);
+                editorContainerRef.current.style.height = newHeight;
+            } else {
+                editorContainerRef.current.style.height = editorHeight;
             }
+            editorInstanceRef.current.layout();
         }
-    }, [editorHeight]);
+    }, [attributes.scaleHeightWithContent, content, editorHeight]);
 
     useEffect(() => {
         if (editorInstanceRef.current) {
@@ -271,12 +290,20 @@ export default function Edit({ attributes, setAttributes }) {
                 updateAttribute={updateAttribute}
             />
 
-            <div {...useBlockProps()}>
+            <div {...useBlockProps()} style={{ position: 'relative', height: '100vh' }}>
                 <BlockControlsComponent viewMode={viewMode} setViewMode={setViewMode} />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {(viewMode === 'code' || viewMode === 'split') && (
-                    <div ref={editorContainerRef} id='editor-container-ref' style={{ height: editorHeight }} />
+                    <div 
+                        ref={editorContainerRef} 
+                        id='editor-container-ref' 
+                        style={{ 
+                            position: 'relative',
+                            width: '100%',
+                            height: attributes.scaleHeightWithContent ? calculateEditorHeight(content) : editorHeight
+                        }} 
+                    />
                 )}
             </div>
         </>

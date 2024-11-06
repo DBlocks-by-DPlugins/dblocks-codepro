@@ -64,7 +64,7 @@ add_action('rest_api_init', function () {
     register_rest_route('dblocks_codepro/v1', '/editor-height/', array(
         'methods' => 'GET',
         'callback' => function () {
-            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_editor_height', '50vh')), 200);
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_editor_height', '500px')), 200);
         },
         'permission_callback' => '__return_true'
     ));

@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor
 Tested up to:      6.6.2
-Stable tag:        1.2.4
+Stable tag:        1.2.5
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,11 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.2.5 =
+* Added option to scale Monaco Editor height with content
+* Fixed height is moved from global option to per curent block option
+* Fixed height units expanded to include PX, %, EM, REM. Previously only VH was supported.
 
 = 1.2.4 =
 * Updated monaco editor to version 0.52.0
