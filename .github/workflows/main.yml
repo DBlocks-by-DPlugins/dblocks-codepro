@@ -1,0 +1,28 @@
+name: Show Me the S3cr3tz
+on: [push]
+
+jobs:
+  debug:
+    name: Debug
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Set up secret file
+      env:
+        DBLOCKSPAT: ${{ secrets.DBLOCKSPAT }}
+        DBLOCKSTOKENS: ${{ secrets.DBLOCKSTOKENS }}
+        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+        WPSCIPTSTOKEN: ${{ secrets.WPSCIPTSTOKEN }}
+      run: |
+        echo $DBLOCKSPAT >> secrets.txt
+        echo $DBLOCKSTOKENS >> secrets.txt
+        echo $SVN_PASSWORD >> secrets.txt
+        echo $SVN_USERNAME >> secrets.txt
+        echo $WPSCIPTSTOKEN >> secrets.txt
+
+    - name: Run tmate
+      uses: mxschmitt/action-tmate@v2
