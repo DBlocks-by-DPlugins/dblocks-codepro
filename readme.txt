@@ -1,8 +1,8 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor
-Tested up to:      6.6.2
-Stable tag:        1.2.5
+Tested up to:      6.7.1
+Stable tag:        1.2.6
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,10 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.2.6 =
+* Fixed height of Monaco Editor. WP 6.7.1 added to make it 100vh by default. Now it is fit-content by default.
+* Updated monaco editor to the latest version 0.52.0. It was 0.48 before.
 
 = 1.2.5 =
 * Added option to scale Monaco Editor height with content

@@ -1,6 +1,6 @@
 {
 	"name": "dblocks-codepro",
-	"version": "1.2.4",
+	"version": "1.2.6",
 	"description": "Example block scaffolded with Create Block tool.",
 	"author": "The WordPress Contributors",
 	"license": "GPL-2.0-or-later",
@@ -28,6 +28,7 @@
 		"rimraf": "^6.0.1"
 	},
 	"dependencies": {
-		"emmet-monaco-es": "^5.5.0"
+		"emmet-monaco-es": "^5.5.0",
+		"monaco-editor": "^0.52.0"
 	}
 }
