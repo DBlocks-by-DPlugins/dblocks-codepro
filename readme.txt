@@ -67,6 +67,9 @@ Answer to foo bar dilemma.
 
 == Changelog ==
 
+= 1.2.7 =
+* Updated inspector controls to be compatible with WP 6.7.1. Fixed deprecation warning.
+
 = 1.2.6 =
 * Fixed height of Monaco Editor. WP 6.7.1 added to make it 100vh by default. Now it is fit-content by default.
 * Updated monaco editor to the latest version 0.52.0. It was 0.48 before.

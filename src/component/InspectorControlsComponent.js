@@ -32,12 +32,14 @@ const InspectorControlsComponent = ({
                         label="Use Wrapper"
                         checked={attributes.useWrapper}
                         onChange={() => setAttributes({ useWrapper: !attributes.useWrapper })}
+                        __nextHasNoMarginBottom={true}
                     />
 
                     <ToggleControl
                         label="Scale height with content"
                         checked={attributes.scaleHeightWithContent}
                         onChange={() => setAttributes({ scaleHeightWithContent: !attributes.scaleHeightWithContent })}
+                        __nextHasNoMarginBottom={true}
                     />
                     {!attributes.scaleHeightWithContent && (
                         <UnitControl
@@ -49,7 +51,7 @@ const InspectorControlsComponent = ({
                             }}
                             onUnitChange={(newUnit) => {
                                 // Find the default value for the new unit
-                                const units=[
+                                const units = [
                                     { value: 'px', label: 'px', default: 500 },
                                     { value: '%', label: '%', default: 50 },
                                     { value: 'em', label: 'em', default: 25 },
@@ -81,6 +83,7 @@ const InspectorControlsComponent = ({
                             setSyntaxHighlight(!syntaxHighlight);
                             setAttributes({ syntaxHighlight: !syntaxHighlight });
                         }}
+                        __nextHasNoMarginBottom={true}
                     />
                     {syntaxHighlight && (
                         <>
@@ -88,6 +91,7 @@ const InspectorControlsComponent = ({
                                 label="FrontEnd Dark Theme"
                                 checked={syntaxHighlightTheme === "dark"}
                                 onChange={toggleSyntaxHighlightTheme}
+                                __nextHasNoMarginBottom={true}
                             />
                             <SelectControl
                                 label="Language"
@@ -115,6 +119,7 @@ const InspectorControlsComponent = ({
                         label="Dark Mode"
                         checked={theme === 'vs-dark'}
                         onChange={toggleTheme}
+                        __nextHasNoMarginBottom={true}
                     />
                     <UnitControl
                         label="Font Size"
