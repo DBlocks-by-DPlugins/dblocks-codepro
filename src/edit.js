@@ -27,16 +27,13 @@ export default function Edit({ attributes, setAttributes }) {
         setAttributes({ [attribute]: value });
     };
 
-    const baseUrl = useSelect(select => {
-        const site = select('core').getSite();
-        return site ? site.url : '';
-    }, []);
+    const baseUrl = DBlocksData.restUrl
 
     const toggleSyntaxHighlightTheme = async () => {
         const newSyntaxTheme = syntaxHighlightTheme === "light" ? "dark" : "light";
 
         try {
-            const response = await fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/syntax-theme/`, {
+            const response = await fetch(`${baseUrl}syntax-theme/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,7 +59,7 @@ export default function Edit({ attributes, setAttributes }) {
     const toggleTheme = async () => {
         const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
         try {
-            const response = await fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/theme`, {
+            const response = await fetch(`${baseUrl}theme`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,9 +108,9 @@ export default function Edit({ attributes, setAttributes }) {
         const fetchInitialSettings = async () => {
             try {
                 const [themeResponse, fontSizeResponse, heightResponse] = await Promise.all([
-                    fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/theme`),
-                    fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/editor-font-size/`),
-                    fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/editor-height/`),
+                    fetch(`${baseUrl}theme`),
+                    fetch(`${baseUrl}editor-font-size/`),
+                    fetch(`${baseUrl}editor-height/`),
                 ]);
 
                 const [themeData, fontSizeData, heightData] = await Promise.all([
@@ -258,7 +255,7 @@ export default function Edit({ attributes, setAttributes }) {
     useEffect(() => {
         const fetchPluginInfo = async () => {
             try {
-                const response = await fetch(`${baseUrl}/wp-json/dblocks_codepro/v1/plugin-path`);
+                const response = await fetch(`${baseUrl}plugin-path`);
                 if (!response.ok) throw new Error("Failed to fetch plugin info");
                 const info = await response.json();
                 setPluginInfo(info);
