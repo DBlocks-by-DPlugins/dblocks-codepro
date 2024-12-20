@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
 Tested up to:      6.7.1
-Stable tag:        1.2.7
+Stable tag:        1.2.8
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.2.8 =
+* Updated yaml action
 
 = 1.2.7 =
 * Updated inspector controls to be compatible with WP 6.7.1. Fixed deprecation warning.

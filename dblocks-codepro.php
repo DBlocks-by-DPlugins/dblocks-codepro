@@ -5,7 +5,7 @@
  * Description:       Advanced HTML Block and Code Syntax Highlighterin in one
  * Requires at least: 6.3
  * Requires PHP:      7.4
- * Version:           1.2.7
+ * Version:           1.2.8
  * Author:            DPlugins
  * * Author URI:      https://dplugins.com/
  * License:           GPL-2.0-or-later
