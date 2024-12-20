@@ -19,9 +19,12 @@ jobs:
           npm install
           npm run build
 
-      # Ensure `svn` is installed
+      # Ensure `svn` is installed and available
       - name: Install SVN
-        run: sudo apt-get update && sudo apt-get install -y subversion
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y subversion
+          svn --version || { echo "SVN installation failed"; exit 1; }
 
       # Deploy the plugin to WordPress.org
       - name: WordPress Plugin Deploy
