@@ -1,12 +1,12 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
-Tags:              block, html, code, monaco editor
+Tags:              block, html, code, monaco editor, code block
 Tested up to:      6.7.1
-Stable tag:        1.2.6
+Stable tag:        1.2.7
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Advanced HTML Block and Code Syntax Highlighterin in one.
+Advanced HTML Code Block and Code Syntax Highlighterin for sharing code snippets and running code.
 
 == Description ==
 
@@ -69,6 +69,7 @@ Answer to foo bar dilemma.
 
 = 1.2.7 =
 * Updated inspector controls to be compatible with WP 6.7.1. Fixed deprecation warning.
+* Updated handling API if permalinks is set to 'Plain'
 
 = 1.2.6 =
 * Fixed height of Monaco Editor. WP 6.7.1 added to make it 100vh by default. Now it is fit-content by default.
