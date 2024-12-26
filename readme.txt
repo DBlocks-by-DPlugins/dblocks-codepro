@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
 Tested up to:      6.7.1
-Stable tag:        1.2.8
+Stable tag:        1.2.9
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,15 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.2.9 =
+* Added option to enable/disable syntax highlighting inside toolbar
+* Added option to select language inside toolbar
+* Added option to select view mode as dropdown inside toolbar
+* Added tooltip for "Use Wrapper"
+* Added tooltip for "Activate Syntax Highlighting"
+* Updated paths for build script
+
 
 = 1.2.8 =
 * Updated yaml action
