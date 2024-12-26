@@ -1,4 +1,6 @@
 import React from 'react';
+import { Icon, help } from '@wordpress/icons';
+
 import { InspectorControls } from '@wordpress/block-editor';
 import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
 
@@ -28,13 +30,18 @@ const InspectorControlsComponent = ({
         <InspectorControls>
             <Panel>
                 <PanelBody title="Element Settings">
-                    <ToggleControl
-                        label="Use Wrapper"
-                        help="Wrap the editor content in a div to use WP output for class name, width class, etc."
-                        checked={attributes.useWrapper}
-                        onChange={() => setAttributes({ useWrapper: !attributes.useWrapper })}
-                        __nextHasNoMarginBottom={true}
-                    />
+                    <div className="togglecontrol--with-info">
+                        <ToggleControl
+                            label="Use Wrapper"
+                            checked={attributes.useWrapper}
+                            onChange={() => setAttributes({ useWrapper: !attributes.useWrapper })}
+                            __nextHasNoMarginBottom={true}
+                        />
+                        <div className="togglecontrol--with-info__icon-wrapper">
+                            <Icon icon={help} size={20} />
+                            <p>Wrap the editor content in a div to use WordPress attributes such as class name, width class, etc.</p>
+                        </div>
+                    </div>
 
                     <ToggleControl
                         label="Scale height with content"
@@ -77,15 +84,21 @@ const InspectorControlsComponent = ({
                     )}
                 </PanelBody>
                 <PanelBody title="Syntax Highlighting">
-                    <ToggleControl
-                        label="Activate Syntax Highlighting"
-                        checked={syntaxHighlight}
-                        onChange={() => {
-                            setSyntaxHighlight(!syntaxHighlight);
-                            setAttributes({ syntaxHighlight: !syntaxHighlight });
-                        }}
-                        __nextHasNoMarginBottom={true}
-                    />
+                    <div className="togglecontrol--with-info">
+                        <ToggleControl
+                            label="Activate Syntax Highlighting"
+                            checked={syntaxHighlight}
+                            onChange={() => {
+                                setSyntaxHighlight(!syntaxHighlight);
+                                setAttributes({ syntaxHighlight: !syntaxHighlight });
+                            }}
+                            __nextHasNoMarginBottom={true}
+                        />
+                        <div className="togglecontrol--with-info__icon-wrapper">
+                            <Icon icon={help} size={20} />
+                            <p>If this is disabled code will be injected as HTML, otherwise the code will be displayed with syntax highlighting as code snippet preview.</p>
+                        </div>
+                    </div>
                     {syntaxHighlight && (
                         <>
                             <ToggleControl

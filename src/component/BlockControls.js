@@ -1,10 +1,13 @@
 // BlockControlsComponent.js
 
+import { Toolbar, ToolbarDropdownMenu } from '@wordpress/components';
+
+
 import React from 'react';
 import { BlockControls } from '@wordpress/block-editor';
 import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 
-const BlockControlsComponent = ({ viewMode, setViewMode }) => {
+const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight }) => {
     return (
         <BlockControls>
             <ToolbarGroup>
@@ -27,6 +30,31 @@ const BlockControlsComponent = ({ viewMode, setViewMode }) => {
                     Split
                 </ToolbarButton>
             </ToolbarGroup>
+            {syntaxHighlight && (
+                <ToolbarDropdownMenu
+                    text={'Size'}
+                    icon={null}
+                    label="Select a direction"
+                    controls={[
+                        {
+                            title: 'Up',
+                            onClick: () => console.log('up'),
+                        },
+                        {
+                            title: 'Right',
+                            onClick: () => console.log('right'),
+                        },
+                        {
+                            title: 'Down',
+                            onClick: () => console.log('down'),
+                        },
+                        {
+                            title: 'Left',
+                            onClick: () => console.log('left'),
+                        },
+                    ]}
+                />
+            )}
         </BlockControls>
     );
 };

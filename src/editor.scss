@@ -16,3 +16,40 @@
 		outline: 0;
 	}
 }
+
+.togglecontrol--with-info {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 4px;
+
+	&__icon-wrapper {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+
+		svg {
+			position: relative;
+			top: -2px;
+		}
+
+		p {
+			display: none;
+		}
+
+		&:hover {
+			p {
+				display: block;
+				position: absolute;
+				bottom: 2rem;
+				left: 0;
+				background-color: black;
+				color: white;
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				width: 100%;
+			}
+		}
+	}
+}

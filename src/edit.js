@@ -191,7 +191,7 @@ export default function Edit({ attributes, setAttributes }) {
                     editorInstanceRef.current.onDidChangeModelContent(() => {
                         const newValue = editorInstanceRef.current.getValue();
                         toggleAttribute('content', newValue);
-                        
+
                         if (attributes.scaleHeightWithContent) {
                             const newHeight = calculateEditorHeight(newValue);
                             editorContainerRef.current.style.height = newHeight;
@@ -288,18 +288,22 @@ export default function Edit({ attributes, setAttributes }) {
             />
 
             <div {...useBlockProps()} style={{ position: 'relative', height: '100vh' }}>
-                <BlockControlsComponent viewMode={viewMode} setViewMode={setViewMode} />
+                <BlockControlsComponent
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    syntaxHighlight={syntaxHighlight}
+                />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {(viewMode === 'code' || viewMode === 'split') && (
-                    <div 
-                        ref={editorContainerRef} 
-                        id='editor-container-ref' 
-                        style={{ 
+                    <div
+                        ref={editorContainerRef}
+                        id='editor-container-ref'
+                        style={{
                             position: 'relative',
                             width: '100%',
                             height: attributes.scaleHeightWithContent ? calculateEditorHeight(content) : editorHeight
-                        }} 
+                        }}
                     />
                 )}
             </div>
