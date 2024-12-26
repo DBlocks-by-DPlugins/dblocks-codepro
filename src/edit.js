@@ -294,6 +294,8 @@ export default function Edit({ attributes, setAttributes }) {
                     syntaxHighlight={syntaxHighlight}
                     setSyntaxHighlight={setSyntaxHighlight}
                     setAttributes={setAttributes}
+                    editorLanguage={editorLanguage}
+                    changeEditorLanguage={changeEditorLanguage}
                 />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}

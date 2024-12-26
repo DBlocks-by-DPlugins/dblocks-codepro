@@ -8,8 +8,11 @@ import { BlockControls } from '@wordpress/block-editor';
 import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import Languages from './Languages';
 
-const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyntaxHighlight, setAttributes }) => {
+const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyntaxHighlight, setAttributes, editorLanguage, changeEditorLanguage }) => {
     const [selectedLanguage, setSelectedLanguage] = useState(Languages[0].value);
+
+    // Find the label of the selected language
+    const selectedLanguageLabel = Languages.find(language => language.value === selectedLanguage)?.label || '';
 
     return (
         <BlockControls>
@@ -48,13 +51,14 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
             {syntaxHighlight && (
                 <ToolbarGroup>
                     <ToolbarDropdownMenu
-                        text={selectedLanguage}
+                        text={selectedLanguageLabel}
                         icon={null}
                         label="Select a language"
                         controls={Languages.map(language => ({
                             title: language.label,
                             onClick: () => {
                                 setSelectedLanguage(language.value);
+                                changeEditorLanguage(language.value);
                                 console.log(language.value);
                             },
                         }))}
