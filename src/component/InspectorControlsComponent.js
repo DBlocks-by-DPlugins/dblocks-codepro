@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon, help } from '@wordpress/icons';
+import Languages from './Languages';
 
 import { InspectorControls } from '@wordpress/block-editor';
 import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
@@ -110,19 +111,7 @@ const InspectorControlsComponent = ({
                             <SelectControl
                                 label="Language"
                                 value={editorLanguage}
-                                options={[
-                                    { label: "HTML", value: "html" },
-                                    { label: "CSS", value: "css" },
-                                    { label: "SCSS", value: "scss" },
-                                    { label: "JavaScript", value: "js" },
-                                    { label: "PHP", value: "php" },
-                                    { label: "TypeScript", value: "typescript" },
-                                    { label: "Bash", value: "bash" },
-                                    { label: "Twig", value: "twig" },
-                                    { label: "YAML", value: "yaml" },
-                                    { label: "Plaintext", value: "plaintext" },
-                                    { label: "JSON", value: "json" },
-                                ]}
+                                options={Languages}
                                 onChange={changeEditorLanguage}
                             />
                         </>

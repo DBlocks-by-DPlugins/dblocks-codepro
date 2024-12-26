@@ -31,29 +31,31 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight }) => {
                 </ToolbarButton>
             </ToolbarGroup>
             {syntaxHighlight && (
-                <ToolbarDropdownMenu
-                    text={'Size'}
-                    icon={null}
-                    label="Select a direction"
-                    controls={[
-                        {
-                            title: 'Up',
-                            onClick: () => console.log('up'),
-                        },
-                        {
-                            title: 'Right',
-                            onClick: () => console.log('right'),
-                        },
-                        {
-                            title: 'Down',
-                            onClick: () => console.log('down'),
-                        },
-                        {
-                            title: 'Left',
-                            onClick: () => console.log('left'),
-                        },
-                    ]}
-                />
+                <ToolbarGroup>
+                    <ToolbarDropdownMenu
+                        text={'Size'}
+                        icon={null}
+                        label="Select a direction"
+                        controls={[
+                            {
+                                title: 'Up',
+                                onClick: () => console.log('up'),
+                            },
+                            {
+                                title: 'Right',
+                                onClick: () => console.log('right'),
+                            },
+                            {
+                                title: 'Down',
+                                onClick: () => console.log('down'),
+                            },
+                            {
+                                title: 'Left',
+                                onClick: () => console.log('left'),
+                            },
+                        ]}
+                    />
+                </ToolbarGroup>
             )}
         </BlockControls>
     );
