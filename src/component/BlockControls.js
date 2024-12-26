@@ -1,13 +1,16 @@
 // BlockControlsComponent.js
 
-import { Toolbar, ToolbarDropdownMenu } from '@wordpress/components';
+import { Toolbar, ToggleControl, ToolbarDropdownMenu } from '@wordpress/components';
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import { BlockControls } from '@wordpress/block-editor';
 import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import Languages from './Languages';
 
-const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight }) => {
+const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyntaxHighlight, setAttributes }) => {
+    const [selectedLanguage, setSelectedLanguage] = useState(Languages[0].value);
+
     return (
         <BlockControls>
             <ToolbarGroup>
@@ -30,30 +33,31 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight }) => {
                     Split
                 </ToolbarButton>
             </ToolbarGroup>
+            <ToolbarGroup>
+                <ToggleControl
+                    className="toggle-in-toolbar"
+                    label="Highlighting"
+                    checked={syntaxHighlight}
+                    onChange={() => {
+                        setSyntaxHighlight(!syntaxHighlight);
+                        setAttributes({ syntaxHighlight: !syntaxHighlight });
+                    }}
+                    __nextHasNoMarginBottom={true}
+                />
+            </ToolbarGroup>
             {syntaxHighlight && (
                 <ToolbarGroup>
                     <ToolbarDropdownMenu
-                        text={'Size'}
+                        text={selectedLanguage}
                         icon={null}
-                        label="Select a direction"
-                        controls={[
-                            {
-                                title: 'Up',
-                                onClick: () => console.log('up'),
+                        label="Select a language"
+                        controls={Languages.map(language => ({
+                            title: language.label,
+                            onClick: () => {
+                                setSelectedLanguage(language.value);
+                                console.log(language.value);
                             },
-                            {
-                                title: 'Right',
-                                onClick: () => console.log('right'),
-                            },
-                            {
-                                title: 'Down',
-                                onClick: () => console.log('down'),
-                            },
-                            {
-                                title: 'Left',
-                                onClick: () => console.log('left'),
-                            },
-                        ]}
+                        }))}
                     />
                 </ToolbarGroup>
             )}

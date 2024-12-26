@@ -292,6 +292,8 @@ export default function Edit({ attributes, setAttributes }) {
                     viewMode={viewMode}
                     setViewMode={setViewMode}
                     syntaxHighlight={syntaxHighlight}
+                    setSyntaxHighlight={setSyntaxHighlight}
+                    setAttributes={setAttributes}
                 />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
