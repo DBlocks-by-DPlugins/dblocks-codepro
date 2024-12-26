@@ -1,13 +1,14 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if (! defined('ABSPATH')) exit; // Exit if accessed directly
 
-function dblocks_codepro_register_block() {
+function dblocks_codepro_register_block()
+{
     // Register the block type
-    register_block_type( constant('DBLOCKS_CODEPRO_PATH') . 'build/' );
+    register_block_type(constant('DBLOCKS_CODEPRO_PATH') . 'build/');
     wp_enqueue_script(
         'dblocks-codepro-script',
-        plugin_dir_url(__FILE__) . 'build/index.js',
+        plugin_dir_url(__FILE__) . '../build/index.js',
         array('wp-blocks', 'wp-element', 'wp-editor'),
         null,
         true
@@ -17,4 +18,4 @@ function dblocks_codepro_register_block() {
     ));
 }
 
-add_action( 'init', 'dblocks_codepro_register_block' );
+add_action('init', 'dblocks_codepro_register_block');

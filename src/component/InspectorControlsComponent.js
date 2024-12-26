@@ -30,6 +30,7 @@ const InspectorControlsComponent = ({
                 <PanelBody title="Element Settings">
                     <ToggleControl
                         label="Use Wrapper"
+                        help="Wrap the editor content in a div to use WP output for class name, width class, etc."
                         checked={attributes.useWrapper}
                         onChange={() => setAttributes({ useWrapper: !attributes.useWrapper })}
                         __nextHasNoMarginBottom={true}
