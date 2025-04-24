@@ -219,7 +219,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo, shouldReloadEditor]);
+    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
@@ -339,7 +339,7 @@ export default function Edit({ attributes, setAttributes }) {
                 />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {(viewMode === 'split') && (
+                {(viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
                     <ResizableBox
                         className={"code-editor-box"}
                         size={{
@@ -370,7 +370,21 @@ export default function Edit({ attributes, setAttributes }) {
                             }}
                         />
                     </ResizableBox>
-                )}
+                ) :
+                    <div
+                        ref={editorContainerRef}
+                        id='editor-container-ref'
+                        style={{
+                            height: calculateEditorHeight(content),
+                            width: '100%',
+                            position: 'fixed',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 9999,
+                            backgroundColor: '#fff',
+                        }}
+                    />}
             </div>
         </>
     );
