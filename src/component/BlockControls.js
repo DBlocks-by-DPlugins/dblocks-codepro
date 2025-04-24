@@ -13,7 +13,6 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
     const [selectedLanguage, setSelectedLanguage] = useState(Languages[0].value);
 
     const viewModeTitles = {
-        code: 'Code',
         preview: 'Preview',
         split: 'Split',
     };
@@ -29,12 +28,12 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
                     icon={viewMode === 'code' ? code : viewMode === 'preview' ? seen : pageBreak}
                     label="View Mode"
                     controls={[
-                        {
-                            title: 'Code',
-                            onClick: () => setViewMode('code'),
-                            isActive: viewMode === 'code',
-                            icon: code,
-                        },
+                        // {
+                        //     title: 'Code',
+                        //     onClick: () => setViewMode('code'),
+                        //     isActive: viewMode === 'code',
+                        //     icon: code,
+                        // },
                         {
                             title: 'Preview',
                             onClick: () => setViewMode('preview'),

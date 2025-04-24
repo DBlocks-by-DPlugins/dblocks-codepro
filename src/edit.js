@@ -4,6 +4,7 @@ import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
 import BlockControlsComponent from './component/BlockControls.js';
 import InspectorControlsComponent from './component/InspectorControlsComponent.js';
+import { ResizableBox } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
 
 import './editor.scss';
@@ -204,7 +205,7 @@ export default function Edit({ attributes, setAttributes }) {
             }
         };
 
-        if ((viewMode === 'code' || viewMode === 'split') && pluginInfo) {
+        if ((viewMode === 'split') && pluginInfo) {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
@@ -267,6 +268,45 @@ export default function Edit({ attributes, setAttributes }) {
         fetchPluginInfo();
     }, []);
 
+    // Function to handle editor resize
+    const updateEditorSize = (newHeight) => {
+        const heightValue = typeof newHeight === 'string' && newHeight.endsWith('px')
+            ? parseInt(newHeight)
+            : newHeight;
+
+        setEditorHeight(heightValue);
+        toggleAttribute('editorHeight', heightValue);
+
+        if (editorContainerRef.current) {
+            editorContainerRef.current.style.height = typeof heightValue === 'number'
+                ? `${heightValue}px`
+                : heightValue;
+
+            if (editorInstanceRef.current) {
+                editorInstanceRef.current.layout();
+            }
+        }
+    };
+
+    // function to handle units
+    const convertToPx = (value) => {
+        const normalizedValue =
+            typeof value === 'string' && /^\d+$/.test(value.trim()) ? `${value.trim()}px` :
+                typeof value === 'number' ? `${value}px` :
+                    value;
+
+        const test = document.createElement("div");
+        test.style.height = normalizedValue;
+        test.style.position = "absolute";
+        test.style.visibility = "hidden";
+        test.style.zIndex = -9999;
+        document.body.appendChild(test);
+        const px = test.offsetHeight;
+        document.body.removeChild(test);
+        return px;
+    };
+
+
     return (
         <>
             <InspectorControlsComponent
@@ -283,7 +323,7 @@ export default function Edit({ attributes, setAttributes }) {
                 fontSize={fontSize}
                 setFontSize={setFontSize}
                 editorHeight={editorHeight}
-                setEditorHeight={setEditorHeight}
+                setEditorHeight={updateEditorSize}
                 updateAttribute={updateAttribute}
             />
 
@@ -299,16 +339,37 @@ export default function Edit({ attributes, setAttributes }) {
                 />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {(viewMode === 'code' || viewMode === 'split') && (
-                    <div
-                        ref={editorContainerRef}
-                        id='editor-container-ref'
-                        style={{
-                            position: 'relative',
-                            width: '100%',
-                            height: attributes.scaleHeightWithContent ? calculateEditorHeight(content) : editorHeight
+                {(viewMode === 'split') && (
+                    <ResizableBox
+                        className={"code-editor-box"}
+                        size={{
+                            height: convertToPx(editorHeight)
                         }}
-                    />
+                        minHeight={10}
+                        enable={{ top: true }}
+                        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
+                        onResizeStop={(event, direction, ref, d) => {
+                            const currentHeight = convertToPx(editorHeight);
+                            const newHeight = currentHeight + d.height;
+                            updateEditorSize(newHeight);
+                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                        }}
+                    >
+                        <div
+                            ref={editorContainerRef}
+                            id='editor-container-ref'
+                            style={{
+                                height: '100%',
+                                width: '100%',
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                zIndex: 9999,
+                                backgroundColor: '#fff',
+                            }}
+                        />
+                    </ResizableBox>
                 )}
             </div>
         </>

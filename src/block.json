@@ -20,7 +20,7 @@
 		},
 		"viewMode": {
 			"type": "string",
-			"default": "code"
+			"default": "preview"
 		},
 		"theme": {
 			"type": "string",
