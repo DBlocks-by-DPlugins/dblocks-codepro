@@ -9,7 +9,7 @@ import { useSelect } from '@wordpress/data';
 
 import './editor.scss';
 
-export default function Edit({ attributes, setAttributes }) {
+export default function Edit({ attributes, setAttributes, clientId }) {
     const { content, viewMode: initialViewMode } = attributes;
     const [viewMode, setViewMode] = useState(initialViewMode);
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
@@ -20,9 +20,21 @@ export default function Edit({ attributes, setAttributes }) {
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
     const [pluginInfo, setPluginInfo] = useState(null);
     const [shouldReloadEditor, setShouldReloadEditor] = useState(false);
+    const [showEditor, setShowEditor] = useState(false);
 
+    const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
+
+    const selectedBlockClientId = useSelect(select =>
+        select('core/block-editor').getSelectedBlockClientId()
+    );
+
+    useEffect(() => {
+        if (showEditor && selectedBlockClientId !== clientId) {
+            setShowEditor(false);
+        }
+    }, [selectedBlockClientId, clientId, showEditor]);
 
     const toggleAttribute = (attribute, value) => {
         setAttributes({ [attribute]: value });
@@ -169,37 +181,39 @@ export default function Edit({ attributes, setAttributes }) {
             };
 
             try {
-                await ensureRequireIsAvailable(contextWindow);
-                contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
+                if (showEditor) {
+                    await ensureRequireIsAvailable(contextWindow);
+                    contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
 
-                contextWindow.require(['vs/editor/editor.main'], () => {
-                    if (editorInstanceRef.current) {
-                        editorInstanceRef.current.dispose();
-                    }
-
-                    editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
-                        minimap: { enabled: false },
-                        value: content || '<!-- some comment -->',
-                        language: editorLanguage,
-                        automaticLayout: true,
-                        theme: theme,
-                        fontSize: parseInt(fontSize),
-                        scrollBeyondLastLine: false,
-                    });
-
-                    emmetHTML(contextWindow.monaco);
-
-                    editorInstanceRef.current.onDidChangeModelContent(() => {
-                        const newValue = editorInstanceRef.current.getValue();
-                        toggleAttribute('content', newValue);
-
-                        if (attributes.scaleHeightWithContent) {
-                            const newHeight = calculateEditorHeight(newValue);
-                            editorContainerRef.current.style.height = newHeight;
-                            editorInstanceRef.current.layout();
+                    contextWindow.require(['vs/editor/editor.main'], () => {
+                        if (editorInstanceRef.current) {
+                            editorInstanceRef.current.dispose();
                         }
+
+                        editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
+                            minimap: { enabled: false },
+                            value: content || '<!-- some comment -->',
+                            language: editorLanguage,
+                            automaticLayout: true,
+                            theme: theme,
+                            fontSize: parseInt(fontSize),
+                            scrollBeyondLastLine: false,
+                        });
+
+                        emmetHTML(contextWindow.monaco);
+
+                        editorInstanceRef.current.onDidChangeModelContent(() => {
+                            const newValue = editorInstanceRef.current.getValue();
+                            toggleAttribute('content', newValue);
+
+                            if (attributes.scaleHeightWithContent) {
+                                const newHeight = calculateEditorHeight(newValue);
+                                editorContainerRef.current.style.height = newHeight;
+                                editorInstanceRef.current.layout();
+                            }
+                        });
                     });
-                });
+                }
             } catch (error) {
                 console.error("Failed to ensure 'require' is available:", error);
             }
@@ -219,7 +233,7 @@ export default function Edit({ attributes, setAttributes }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent]);
+    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
@@ -251,6 +265,9 @@ export default function Edit({ attributes, setAttributes }) {
 
     useEffect(() => {
         toggleAttribute('viewMode', viewMode);
+        if(viewMode === 'split'){
+            setShowEditor(true);
+        }
     }, [viewMode]);
 
     useEffect(() => {
@@ -327,7 +344,7 @@ export default function Edit({ attributes, setAttributes }) {
                 updateAttribute={updateAttribute}
             />
 
-            <div {...useBlockProps()} style={{ position: 'relative', height: '100vh' }}>
+            <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>
                 <BlockControlsComponent
                     viewMode={viewMode}
                     setViewMode={setViewMode}
@@ -338,8 +355,8 @@ export default function Edit({ attributes, setAttributes }) {
                     changeEditorLanguage={changeEditorLanguage}
                 />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {viewMode === 'split' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {(viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
+                {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {showEditor && ((viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
                     <ResizableBox
                         className={"code-editor-box"}
                         size={{
@@ -384,7 +401,7 @@ export default function Edit({ attributes, setAttributes }) {
                             zIndex: 9999,
                             backgroundColor: '#fff',
                         }}
-                    />}
+                    />)}
             </div>
         </>
     );
