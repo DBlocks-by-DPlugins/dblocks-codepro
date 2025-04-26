@@ -6,6 +6,7 @@ import BlockControlsComponent from './component/BlockControls.js';
 import InspectorControlsComponent from './component/InspectorControlsComponent.js';
 import { ResizableBox } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
+import { updateEditorSize, convertToPx } from './utils/editorUtils.js';
 
 import './editor.scss';
 
@@ -21,7 +22,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [pluginInfo, setPluginInfo] = useState(null);
     const [shouldReloadEditor, setShouldReloadEditor] = useState(false);
     const [showEditor, setShowEditor] = useState(false);
-
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
@@ -29,12 +29,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const selectedBlockClientId = useSelect(select =>
         select('core/block-editor').getSelectedBlockClientId()
     );
-
-    useEffect(() => {
-        if (showEditor && selectedBlockClientId !== clientId) {
-            setShowEditor(false);
-        }
-    }, [selectedBlockClientId, clientId, showEditor]);
 
     const toggleAttribute = (attribute, value) => {
         setAttributes({ [attribute]: value });
@@ -116,6 +110,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         const minHeight = currentFontSize * 1.5;
         return `${Math.max(lineCount * lineHeight + padding, minHeight)}px`;
     };
+
+    useEffect(() => {
+        if (showEditor && selectedBlockClientId !== clientId) {
+            setShowEditor(false);
+        }
+    }, [selectedBlockClientId, clientId, showEditor]);
 
     useEffect(() => {
         const fetchInitialSettings = async () => {
@@ -285,44 +285,16 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         fetchPluginInfo();
     }, []);
 
-    // Function to handle editor resize
-    const updateEditorSize = (newHeight) => {
-        const heightValue = typeof newHeight === 'string' && newHeight.endsWith('px')
-            ? parseInt(newHeight)
-            : newHeight;
-
-        setEditorHeight(heightValue);
-        toggleAttribute('editorHeight', heightValue);
-
-        if (editorContainerRef.current) {
-            editorContainerRef.current.style.height = typeof heightValue === 'number'
-                ? `${heightValue}px`
-                : heightValue;
-
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.layout();
-            }
-        }
+    // Handle editor resize by calling the utility function
+    const handleEditorResize = (newHeight) => {
+        updateEditorSize(
+            newHeight, 
+            setEditorHeight, 
+            toggleAttribute, 
+            editorContainerRef, 
+            editorInstanceRef
+        );
     };
-
-    // function to handle units
-    const convertToPx = (value) => {
-        const normalizedValue =
-            typeof value === 'string' && /^\d+$/.test(value.trim()) ? `${value.trim()}px` :
-                typeof value === 'number' ? `${value}px` :
-                    value;
-
-        const test = document.createElement("div");
-        test.style.height = normalizedValue;
-        test.style.position = "absolute";
-        test.style.visibility = "hidden";
-        test.style.zIndex = -9999;
-        document.body.appendChild(test);
-        const px = test.offsetHeight;
-        document.body.removeChild(test);
-        return px;
-    };
-
 
     return (
         <>
@@ -340,7 +312,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 fontSize={fontSize}
                 setFontSize={setFontSize}
                 editorHeight={editorHeight}
-                setEditorHeight={updateEditorSize}
+                setEditorHeight={handleEditorResize}
                 updateAttribute={updateAttribute}
             />
 
@@ -368,7 +340,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         onResizeStop={(event, direction, ref, d) => {
                             const currentHeight = convertToPx(editorHeight);
                             const newHeight = currentHeight + d.height;
-                            updateEditorSize(newHeight);
+                            handleEditorResize(newHeight);
                             updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
                         }}
                     >

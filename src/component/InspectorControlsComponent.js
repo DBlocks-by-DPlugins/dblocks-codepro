@@ -44,14 +44,7 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
 
-                    <ToggleControl
-                        label="Scale height with content"
-                        checked={attributes.scaleHeightWithContent}
-                        onChange={() => setAttributes({ scaleHeightWithContent: !attributes.scaleHeightWithContent })}
-                        __nextHasNoMarginBottom={true}
-                    />
-                    {!attributes.scaleHeightWithContent && (
-                        <UnitControl
+                    <UnitControl
                             label="Editor Height"
                             value={editorHeight}
                             onChange={(newHeight) => {
@@ -81,8 +74,7 @@ const InspectorControlsComponent = ({
                             ]}
                             min={10}
                             max={1000}
-                        />
-                    )}
+                    />
                 </PanelBody>
                 <PanelBody title="Syntax Highlighting">
                     <div className="togglecontrol--with-info">
