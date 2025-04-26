@@ -15,7 +15,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [viewMode, setViewMode] = useState(initialViewMode);
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
-    const [editorHeight, setEditorHeight] = useState(attributes.editorHeight || '500px');
+    
+    // Ensure editor height is always in px format
+    const initialEditorHeight = attributes.editorHeight || '500px';
+    const formattedHeight = typeof initialEditorHeight === 'number' ? 
+        `${initialEditorHeight}px` : 
+        (initialEditorHeight.endsWith('px') ? initialEditorHeight : `${parseInt(initialEditorHeight) || 500}px`);
+    
+    const [editorHeight, setEditorHeight] = useState(formattedHeight);
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
@@ -134,12 +141,18 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
                 setTheme(themeData);
                 setFontSize(fontSizeData);
-                setEditorHeight(heightData);
+                
+                // Ensure height is in px format
+                const formattedHeight = typeof heightData === 'number' ? 
+                    `${heightData}px` : 
+                    (heightData.endsWith('px') ? heightData : `${parseInt(heightData) || 500}px`);
+                
+                setEditorHeight(formattedHeight);
 
                 setAttributes({
                     theme: themeData,
                     editorFontSize: fontSizeData,
-                    editorHeight: heightData,
+                    editorHeight: formattedHeight,
                 });
             } catch (error) {
                 console.error('Error fetching initial settings:', error);
@@ -247,7 +260,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 const newHeight = calculateEditorHeight(content);
                 editorContainerRef.current.style.height = newHeight;
             } else {
-                editorContainerRef.current.style.height = editorHeight;
+                // Ensure height has px units
+                const heightWithPx = typeof editorHeight === 'number' ? 
+                    `${editorHeight}px` :
+                    (editorHeight.endsWith('px') ? editorHeight : `${parseInt(editorHeight) || 500}px`);
+                
+                editorContainerRef.current.style.height = heightWithPx;
             }
             editorInstanceRef.current.layout();
         }

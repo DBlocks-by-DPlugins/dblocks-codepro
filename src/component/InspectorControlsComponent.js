@@ -51,29 +51,12 @@ const InspectorControlsComponent = ({
                                 setEditorHeight(newHeight);
                                 updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
                             }}
-                            onUnitChange={(newUnit) => {
-                                // Find the default value for the new unit
-                                const units = [
-                                    { value: 'px', label: 'px', default: 500 },
-                                    { value: '%', label: '%', default: 50 },
-                                    { value: 'em', label: 'em', default: 25 },
-                                    { value: 'rem', label: 'rem', default: 25 },
-                                    { value: 'vh', label: 'vh', default: 50 }
-                                ]
-                                const defaultValue = units.find(unit => unit.value === newUnit)?.default || 50;
-                                const newHeight = `${defaultValue}${newUnit}`;
-                                setEditorHeight(newHeight);
-                                updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
-                            }}
                             units={[
-                                { value: 'px', label: 'px', default: 500 },
-                                { value: '%', label: '%', default: 50 },
-                                { value: 'em', label: 'em', default: 25 },
-                                { value: 'rem', label: 'rem', default: 25 },
-                                { value: 'vh', label: 'vh', default: 50 }
+                                { value: 'px', label: 'px', default: 500 }
                             ]}
                             min={10}
                             max={1000}
+                            __next40pxDefaultSize={true}
                     />
                 </PanelBody>
                 <PanelBody title="Syntax Highlighting">
@@ -123,6 +106,7 @@ const InspectorControlsComponent = ({
                         units={[{ value: 'px', label: 'Pixels', default: 14 }]}
                         min={10}
                         max={30}
+                        __next40pxDefaultSize={true}
                     />
 
                 </PanelBody>
