@@ -44,8 +44,13 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
 
-                    {/* Only show Editor Height control when syntax highlighting is OFF */}
-                    {!syntaxHighlight && (
+                    <ToggleControl
+                        label="Scale height with content"
+                        checked={attributes.scaleHeightWithContent}
+                        onChange={() => setAttributes({ scaleHeightWithContent: !attributes.scaleHeightWithContent })}
+                        __nextHasNoMarginBottom={true}
+                    />
+                    {!attributes.scaleHeightWithContent && (
                         <UnitControl
                             label="Editor Height"
                             value={editorHeight}
@@ -53,44 +58,54 @@ const InspectorControlsComponent = ({
                                 setEditorHeight(newHeight);
                                 updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
                             }}
+                            onUnitChange={(newUnit) => {
+                                // Find the default value for the new unit
+                                const units = [
+                                    { value: 'px', label: 'px', default: 500 },
+                                    { value: '%', label: '%', default: 50 },
+                                    { value: 'em', label: 'em', default: 25 },
+                                    { value: 'rem', label: 'rem', default: 25 },
+                                    { value: 'vh', label: 'vh', default: 50 }
+                                ]
+                                const defaultValue = units.find(unit => unit.value === newUnit)?.default || 50;
+                                const newHeight = `${defaultValue}${newUnit}`;
+                                setEditorHeight(newHeight);
+                                updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                            }}
                             units={[
-                                { value: 'px', label: 'px', default: 500 }
+                                { value: 'px', label: 'px', default: 500 },
+                                { value: '%', label: '%', default: 50 },
+                                { value: 'em', label: 'em', default: 25 },
+                                { value: 'rem', label: 'rem', default: 25 },
+                                { value: 'vh', label: 'vh', default: 50 }
                             ]}
                             min={10}
                             max={1000}
-                            __next40pxDefaultSize={true}
-                            __nextHasNoMarginBottom={true}
                         />
                     )}
                 </PanelBody>
                 <PanelBody title="Syntax Highlighting">
-                    
-                    <ToggleControl
-                        label="Syntax Highlighting"
-                        checked={syntaxHighlight}
-                        onChange={() => {
-                            setSyntaxHighlight(!syntaxHighlight);
-                            setAttributes({ syntaxHighlight: !syntaxHighlight });
-                        }}
-                        __nextHasNoMarginBottom={true}
-                    />
-                    <p style={{ fontSize: '12px'}}>Display it as code snippet instead of running the code.</p>
-                    
-                
+                    <div className="togglecontrol--with-info">
+                        <ToggleControl
+                            label="Activate Syntax Highlighting"
+                            checked={syntaxHighlight}
+                            onChange={() => {
+                                setSyntaxHighlight(!syntaxHighlight);
+                                setAttributes({ syntaxHighlight: !syntaxHighlight });
+                            }}
+                            __nextHasNoMarginBottom={true}
+                        />
+                        <div className="togglecontrol--with-info__icon-wrapper">
+                            <Icon icon={help} size={20} />
+                            <p>If this is disabled code will be injected as HTML, otherwise the code will be displayed with syntax highlighting as code snippet preview.</p>
+                        </div>
+                    </div>
                     {syntaxHighlight && (
                         <>
-                            <p style={{ fontSize: '12px', fontStyle: 'italic' }}>
-                                In highlighting mode, the editor will automatically resize based on content.
-                            </p>
-                            <SelectControl
-                                label="FrontEnd Theme"
-                                value={syntaxHighlightTheme}
-                                options={[
-                                    { value: 'light', label: 'Light' },
-                                    { value: 'dark', label: 'Dark' }
-                                ]}
+                            <ToggleControl
+                                label="FrontEnd Dark Theme"
+                                checked={syntaxHighlightTheme === "dark"}
                                 onChange={toggleSyntaxHighlightTheme}
-                                __next40pxDefaultSize={true}
                                 __nextHasNoMarginBottom={true}
                             />
                             <SelectControl
@@ -98,28 +113,7 @@ const InspectorControlsComponent = ({
                                 value={editorLanguage}
                                 options={Languages}
                                 onChange={changeEditorLanguage}
-                                __next40pxDefaultSize={true}
-                                __nextHasNoMarginBottom={true}
                             />
-                            <ToggleControl
-                                label="Display Language Badge"
-                                checked={attributes.displayLanguage || false}
-                                onChange={() => {
-                                    setAttributes({ displayLanguage: !attributes.displayLanguage });
-                                }}
-                                __nextHasNoMarginBottom={true}
-                            />
-                            <p style={{ fontSize: '12px'}}>Show the selected language name on the frontend.</p>
-                            
-                            <ToggleControl
-                                label="Enable Copy Button"
-                                checked={attributes.enableCopyButton || false}
-                                onChange={() => {
-                                    setAttributes({ enableCopyButton: !attributes.enableCopyButton });
-                                }}
-                                __nextHasNoMarginBottom={true}
-                            />
-                            <p style={{ fontSize: '12px'}}>Add a button to copy the code snippet to clipboard.</p>
                         </>
                     )}
                 </PanelBody>
@@ -137,8 +131,6 @@ const InspectorControlsComponent = ({
                         units={[{ value: 'px', label: 'Pixels', default: 14 }]}
                         min={10}
                         max={30}
-                        __next40pxDefaultSize={true}
-                        __nextHasNoMarginBottom={true}
                     />
 
                 </PanelBody>

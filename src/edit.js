@@ -4,10 +4,8 @@ import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
 import BlockControlsComponent from './component/BlockControls.js';
 import InspectorControlsComponent from './component/InspectorControlsComponent.js';
-import Languages from './component/Languages.js';
 import { ResizableBox } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
-import { updateEditorSize, convertToPx } from './utils/editorUtils.js';
 
 import './editor.scss';
 
@@ -16,43 +14,37 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [viewMode, setViewMode] = useState(initialViewMode);
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
-    
-    // Ensure editor height is always in px format
-    const initialEditorHeight = attributes.editorHeight || '500px';
-    const formattedHeight = typeof initialEditorHeight === 'number' ? 
-        `${initialEditorHeight}px` : 
-        (initialEditorHeight.endsWith('px') ? initialEditorHeight : `${parseInt(initialEditorHeight) || 500}px`);
-    
-    const [editorHeight, setEditorHeight] = useState(formattedHeight);
+    const [editorHeight, setEditorHeight] = useState(attributes.editorHeight || '500px');
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
     const [pluginInfo, setPluginInfo] = useState(null);
     const [shouldReloadEditor, setShouldReloadEditor] = useState(false);
     const [showEditor, setShowEditor] = useState(false);
+
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
-    const editorInitializedRef = useRef(false);
-
-    // Get language display name
-    const getLanguageLabel = (langValue) => {
-        const lang = Languages.find(l => l.value === langValue);
-        return lang ? lang.label : langValue;
-    };
 
     const selectedBlockClientId = useSelect(select =>
         select('core/block-editor').getSelectedBlockClientId()
     );
 
+    useEffect(() => {
+        if (showEditor && selectedBlockClientId !== clientId) {
+            setShowEditor(false);
+        }
+    }, [selectedBlockClientId, clientId, showEditor]);
+
     const toggleAttribute = (attribute, value) => {
         setAttributes({ [attribute]: value });
     };
 
-    // Safely access the API URL
-    const baseUrl = typeof DBlocksData !== 'undefined' ? DBlocksData.restUrl : '/wp-json/dblocks_codepro/v1/';
+    const baseUrl = DBlocksData.restUrl
 
-    const toggleSyntaxHighlightTheme = async (newTheme) => {
+    const toggleSyntaxHighlightTheme = async () => {
+        const newSyntaxTheme = syntaxHighlightTheme === "light" ? "dark" : "light";
+
         try {
             const response = await fetch(`${baseUrl}syntax-theme/`, {
                 method: "POST",
@@ -60,12 +52,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     "Content-Type": "application/json",
                     "X-WP-Nonce": wpApiSettings.nonce,
                 },
-                body: JSON.stringify({ syntaxTheme: newTheme }),
+                body: JSON.stringify({ syntaxTheme: newSyntaxTheme }),
             });
 
             if (!response.ok) throw new Error("Network response was not ok.");
-            setSyntaxHighlightTheme(newTheme);
-            toggleAttribute('syntaxHighlightTheme', newTheme);
+            setSyntaxHighlightTheme(newSyntaxTheme);
+            toggleAttribute('syntaxHighlightTheme', newSyntaxTheme);
         } catch (error) {
             console.error("Failed to update syntax theme:", error);
         }
@@ -73,15 +65,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
-        // Update the editor language directly if the editor instance exists
-        if (editorInstanceRef.current) {
-            editorInstanceRef.current.updateOptions({
-                language: language
-            });
-        } else {
-            // Only set shouldReloadEditor flag if editor isn't initialized yet
-            setShouldReloadEditor(true);
-        }
+        setShouldReloadEditor(true);
         toggleAttribute('editorLanguage', language);
     };
 
@@ -134,12 +118,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     };
 
     useEffect(() => {
-        if (!syntaxHighlight && showEditor && selectedBlockClientId !== clientId) {
-            setShowEditor(false);
-        }
-    }, [selectedBlockClientId, clientId, showEditor, syntaxHighlight]);
-
-    useEffect(() => {
         const fetchInitialSettings = async () => {
             try {
                 const [themeResponse, fontSizeResponse, heightResponse] = await Promise.all([
@@ -156,18 +134,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
                 setTheme(themeData);
                 setFontSize(fontSizeData);
-                
-                // Ensure height is in px format
-                const formattedHeight = typeof heightData === 'number' ? 
-                    `${heightData}px` : 
-                    (heightData.endsWith('px') ? heightData : `${parseInt(heightData) || 500}px`);
-                
-                setEditorHeight(formattedHeight);
+                setEditorHeight(heightData);
 
                 setAttributes({
                     theme: themeData,
                     editorFontSize: fontSizeData,
-                    editorHeight: formattedHeight,
+                    editorHeight: heightData,
                 });
             } catch (error) {
                 console.error('Error fetching initial settings:', error);
@@ -177,190 +149,109 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         fetchInitialSettings();
     }, [setAttributes]);
 
-    // Ensure the plugin info is fetched when the component mounts
     useEffect(() => {
-        const fetchPluginInfo = async () => {
-            if (!baseUrl) {
-                console.error("baseUrl is not defined");
+        const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
+            if (!pluginInfo) {
+                console.error("Plugin info not set.");
                 return;
             }
-            
+
+            const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
+
+            if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
+                const script = contextDoc.createElement('script');
+                script.src = `${MONACO_PATH}/loader.js`;
+                contextDoc.body.appendChild(script);
+            }
+
+            const ensureRequireIsAvailable = (contextWindow) => {
+                return new Promise((resolve, reject) => {
+                    const checkInterval = setInterval(() => {
+                        if (contextWindow.require && contextWindow.require.config) {
+                            clearInterval(checkInterval);
+                            resolve(contextWindow.require);
+                        }
+                    }, 50);
+
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        reject(new Error('Require is not available.'));
+                    }, 5000);
+                });
+            };
+
             try {
-                const response = await fetch(`${baseUrl}plugin-path`);
-                if (!response.ok) throw new Error("Failed to fetch plugin info");
-                const info = await response.json();
-                setPluginInfo(info);
+                if (showEditor) {
+                    await ensureRequireIsAvailable(contextWindow);
+                    contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
+
+                    contextWindow.require(['vs/editor/editor.main'], () => {
+                        if (editorInstanceRef.current) {
+                            editorInstanceRef.current.dispose();
+                        }
+
+                        editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
+                            minimap: { enabled: false },
+                            value: content || '<!-- some comment -->',
+                            language: editorLanguage,
+                            automaticLayout: true,
+                            theme: theme,
+                            fontSize: parseInt(fontSize),
+                            scrollBeyondLastLine: false,
+                        });
+
+                        emmetHTML(contextWindow.monaco);
+
+                        editorInstanceRef.current.onDidChangeModelContent(() => {
+                            const newValue = editorInstanceRef.current.getValue();
+                            toggleAttribute('content', newValue);
+
+                            if (attributes.scaleHeightWithContent) {
+                                const newHeight = calculateEditorHeight(newValue);
+                                editorContainerRef.current.style.height = newHeight;
+                                editorInstanceRef.current.layout();
+                            }
+                        });
+                    });
+                }
             } catch (error) {
-                console.error("Failed to fetch plugin info:", error);
+                console.error("Failed to ensure 'require' is available:", error);
             }
         };
 
-        fetchPluginInfo();
-    }, [baseUrl]);
-
-    // Add this new useEffect to handle loading monaco editor only after plugin info is ready
-    useEffect(() => {
-        // Only proceed if we need to load the editor
-        if (syntaxHighlight || viewMode === 'split') {
+        if ((viewMode === 'split') && pluginInfo) {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
-            
-            // Use a utility function to handle monaco loading
-            const loadMonacoEditor = () => {
-                const loadMonacoScript = async () => {
-                    // Define a default path as fallback
-                    let MONACO_PATH;
-                    
-                    if (!pluginInfo) {
-                        console.warn("Plugin info not set, using fallback path for Monaco editor.");
-                        MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
-                    } else {
-                        MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
-                    }
-
-                    if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
-                        const script = contextDoc.createElement('script');
-                        script.src = `${MONACO_PATH}/loader.js`;
-                        contextDoc.body.appendChild(script);
-                    }
-
-                    const ensureRequireIsAvailable = () => {
-                        return new Promise((resolve, reject) => {
-                            const checkInterval = setInterval(() => {
-                                if (contextWindow.require && contextWindow.require.config) {
-                                    clearInterval(checkInterval);
-                                    resolve(contextWindow.require);
-                                }
-                            }, 50);
-
-                            setTimeout(() => {
-                                clearInterval(checkInterval);
-                                reject(new Error('Require is not available.'));
-                            }, 5000);
-                        });
-                    };
-
-                    try {
-                        if ((syntaxHighlight || (showEditor && viewMode === 'split'))) {
-                            await ensureRequireIsAvailable();
-                            contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
-
-                            contextWindow.require(['vs/editor/editor.main'], () => {
-                                // Skip re-initialization unless we explicitly want to reload
-                                if (editorInstanceRef.current && !shouldReloadEditor && editorInitializedRef.current) {
-                                    // Just update the options instead of recreating
-                                    editorInstanceRef.current.updateOptions({
-                                        theme: theme,
-                                        fontSize: parseInt(fontSize),
-                                        language: editorLanguage
-                                    });
-                                    return;
-                                }
-                                
-                                // Dispose existing instance if it exists
-                                if (editorInstanceRef.current) {
-                                    editorInstanceRef.current.dispose();
-                                }
-
-                                editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
-                                    minimap: { enabled: false },
-                                    value: content || '<!-- some comment -->',
-                                    language: editorLanguage,
-                                    automaticLayout: true,
-                                    theme: theme,
-                                    fontSize: parseInt(fontSize),
-                                    scrollBeyondLastLine: false,
-                                });
-
-                                // Mark as initialized
-                                editorInitializedRef.current = true;
-
-                                emmetHTML(contextWindow.monaco);
-
-                                editorInstanceRef.current.onDidChangeModelContent(() => {
-                                    const newValue = editorInstanceRef.current.getValue();
-                                    toggleAttribute('content', newValue);
-
-                                    if (attributes.scaleHeightWithContent || syntaxHighlight) {
-                                        const newHeight = calculateEditorHeight(newValue);
-                                        editorContainerRef.current.style.height = newHeight;
-                                        editorInstanceRef.current.layout();
-                                    }
-                                });
-                            });
-                        }
-                    } catch (error) {
-                        console.error("Failed to ensure 'require' is available:", error);
-                    }
-                };
-
-                loadMonacoScript();
-                setShouldReloadEditor(false);
-            };
-            
-            // If plugin info is available, load monaco immediately
-            if (pluginInfo) {
-                loadMonacoEditor();
-            } else {
-                // If no plugin info yet, set a one-time check after a delay 
-                // to use the fallback path if plugin info is still not available
-                const timeoutId = setTimeout(() => {
-                    if (!pluginInfo) {
-                        console.info("Loading Monaco editor with fallback path after timeout");
-                        loadMonacoEditor();
-                    }
-                }, 1000); // Wait 1 second before using fallback
-                
-                return () => clearTimeout(timeoutId);
-            }
+            loadMonacoEditorScript(contextWindow, contextDoc);
+            setShouldReloadEditor(false);
         }
-    }, [syntaxHighlight, viewMode, pluginInfo, editorLanguage, fontSize, theme, showEditor, attributes.scaleHeightWithContent, toggleAttribute, setShouldReloadEditor]);
 
-    useEffect(() => {
         return () => {
-            if (editorInstanceRef.current && !syntaxHighlight && (viewMode === 'preview' || viewMode === 'split')) {
+            if (editorInstanceRef.current && (viewMode === 'preview' || viewMode === 'split')) {
                 editorInstanceRef.current.dispose();
                 editorInstanceRef.current = null;
             }
         };
-    }, [syntaxHighlight, viewMode]);
+    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
-            // We need to prevent recursive updates here, so we'll temporarily remove the onDidChangeModelContent event
-            const model = editorInstanceRef.current.getModel();
-            if (model) {
-                // Store the current cursor position
-                const selection = editorInstanceRef.current.getSelection();
-                
-                // Update the value without triggering the change event
-                editorInstanceRef.current.setValue(content);
-                
-                // Restore the cursor position
-                if (selection) {
-                    editorInstanceRef.current.setSelection(selection);
-                }
-            }
+            editorInstanceRef.current.setValue(content);
         }
     }, [content]);
 
     useEffect(() => {
         if (editorContainerRef.current && editorInstanceRef.current) {
-            if (attributes.scaleHeightWithContent || syntaxHighlight) {
+            if (attributes.scaleHeightWithContent) {
                 const newHeight = calculateEditorHeight(content);
                 editorContainerRef.current.style.height = newHeight;
             } else {
-                // Ensure height has px units
-                const heightWithPx = typeof editorHeight === 'number' ? 
-                    `${editorHeight}px` :
-                    (editorHeight.endsWith('px') ? editorHeight : `${parseInt(editorHeight) || 500}px`);
-                
-                editorContainerRef.current.style.height = heightWithPx;
+                editorContainerRef.current.style.height = editorHeight;
             }
             editorInstanceRef.current.layout();
         }
-    }, [attributes.scaleHeightWithContent, content, editorHeight, syntaxHighlight]);
+    }, [attributes.scaleHeightWithContent, content, editorHeight]);
 
     useEffect(() => {
         if (editorInstanceRef.current) {
@@ -374,43 +265,64 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     useEffect(() => {
         toggleAttribute('viewMode', viewMode);
-        if(viewMode === 'split' && !syntaxHighlight){
+        if(viewMode === 'split'){
             setShowEditor(true);
         }
-    }, [viewMode, syntaxHighlight]);
+    }, [viewMode]);
 
-    // When syntax highlight state changes
     useEffect(() => {
-        // If syntax highlighting is turned on, we should show the editor
-        if(syntaxHighlight) {
-            setShowEditor(true);
-        }
-    }, [syntaxHighlight]);
-
-    // Handle editor resize by calling the utility function
-    const handleEditorResize = (newHeight) => {
-        updateEditorSize(
-            newHeight, 
-            setEditorHeight, 
-            toggleAttribute, 
-            editorContainerRef, 
-            editorInstanceRef
-        );
-    };
-
-    // Add a useEffect to handle window resize events to refresh the editor layout
-    useEffect(() => {
-        const handleResize = () => {
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.layout();
+        const fetchPluginInfo = async () => {
+            try {
+                const response = await fetch(`${baseUrl}plugin-path`);
+                if (!response.ok) throw new Error("Failed to fetch plugin info");
+                const info = await response.json();
+                setPluginInfo(info);
+            } catch (error) {
+                console.error("Failed to fetch plugin info:", error);
             }
         };
 
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
+        fetchPluginInfo();
     }, []);
+
+    // Function to handle editor resize
+    const updateEditorSize = (newHeight) => {
+        const heightValue = typeof newHeight === 'string' && newHeight.endsWith('px')
+            ? parseInt(newHeight)
+            : newHeight;
+
+        setEditorHeight(heightValue);
+        toggleAttribute('editorHeight', heightValue);
+
+        if (editorContainerRef.current) {
+            editorContainerRef.current.style.height = typeof heightValue === 'number'
+                ? `${heightValue}px`
+                : heightValue;
+
+            if (editorInstanceRef.current) {
+                editorInstanceRef.current.layout();
+            }
+        }
+    };
+
+    // function to handle units
+    const convertToPx = (value) => {
+        const normalizedValue =
+            typeof value === 'string' && /^\d+$/.test(value.trim()) ? `${value.trim()}px` :
+                typeof value === 'number' ? `${value}px` :
+                    value;
+
+        const test = document.createElement("div");
+        test.style.height = normalizedValue;
+        test.style.position = "absolute";
+        test.style.visibility = "hidden";
+        test.style.zIndex = -9999;
+        document.body.appendChild(test);
+        const px = test.offsetHeight;
+        document.body.removeChild(test);
+        return px;
+    };
+
 
     return (
         <>
@@ -428,11 +340,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 fontSize={fontSize}
                 setFontSize={setFontSize}
                 editorHeight={editorHeight}
-                setEditorHeight={handleEditorResize}
+                setEditorHeight={updateEditorSize}
                 updateAttribute={updateAttribute}
             />
 
-            <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative' }}>
+            <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>
                 <BlockControlsComponent
                     viewMode={viewMode}
                     setViewMode={setViewMode}
@@ -442,81 +354,54 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     editorLanguage={editorLanguage}
                     changeEditorLanguage={changeEditorLanguage}
                 />
-                
-                {/* When syntax highlight is OFF */}
-                {!syntaxHighlight && (
-                    <>
-                        {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                        {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                        {showEditor && viewMode === 'split' && !attributes.scaleHeightWithContent && (
-                            <ResizableBox
-                                className={"code-editor-box"}
-                                size={{
-                                    height: convertToPx(editorHeight)
-                                }}
-                                minHeight={10}
-                                enable={{ top: true }}
-                                style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
-                                onResizeStop={(event, direction, ref, d) => {
-                                    const currentHeight = convertToPx(editorHeight);
-                                    const newHeight = currentHeight + d.height;
-                                    handleEditorResize(newHeight);
-                                    updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
-                                }}
-                            >
-                                <div
-                                    ref={editorContainerRef}
-                                    id='editor-container-ref'
-                                    style={{
-                                        height: '100%',
-                                        width: '100%',
-                                        position: 'absolute',
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        zIndex: 9999,
-                                        backgroundColor: '#fff',
-                                    }}
-                                />
-                            </ResizableBox>
-                        )}
-                        {showEditor && viewMode === 'split' && attributes.scaleHeightWithContent && (
-                            <div
-                                ref={editorContainerRef}
-                                id='editor-container-ref'
-                                style={{
-                                    height: calculateEditorHeight(content),
-                                    width: '100%',
-                                    position: 'fixed',
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    zIndex: 9999,
-                                    backgroundColor: '#fff',
-                                }}
-                            />
-                        )}
-                    </>
-                )}
-                
-                {/* When syntax highlight is ON - always show the editor inline */}
-                {syntaxHighlight && (
-                    <div className="syntax-highlighted-container">
-                        {/* Editor view - language will only be shown on frontend */}
+                {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {showEditor && ((viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
+                    <ResizableBox
+                        className={"code-editor-box"}
+                        size={{
+                            height: convertToPx(editorHeight)
+                        }}
+                        minHeight={10}
+                        enable={{ top: true }}
+                        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
+                        onResizeStop={(event, direction, ref, d) => {
+                            const currentHeight = convertToPx(editorHeight);
+                            const newHeight = currentHeight + d.height;
+                            updateEditorSize(newHeight);
+                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                        }}
+                    >
                         <div
                             ref={editorContainerRef}
                             id='editor-container-ref'
                             style={{
-                                height: calculateEditorHeight(content),
+                                height: '100%',
                                 width: '100%',
-                                position: 'relative',
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                zIndex: 9999,
                                 backgroundColor: '#fff',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '4px',
                             }}
                         />
-                    </div>
-                )}
+                    </ResizableBox>
+                ) :
+                    <div
+                        ref={editorContainerRef}
+                        id='editor-container-ref'
+                        style={{
+                            height: calculateEditorHeight(content),
+                            width: '100%',
+                            position: 'fixed',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 9999,
+                            backgroundColor: '#fff',
+                        }}
+                    />)}
             </div>
         </>
     );
