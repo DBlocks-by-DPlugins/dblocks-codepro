@@ -4,45 +4,35 @@ import { Toolbar, ToolbarDropdownMenu } from '@wordpress/components';
 
 import React, { useState } from 'react';
 import { BlockControls } from '@wordpress/block-editor';
-import { ToolbarGroup, ToolbarButton, Button } from '@wordpress/components';
+import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import Languages from './Languages';
 import { Icon, seen, pageBreak, code } from '@wordpress/icons';
 
 const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyntaxHighlight, setAttributes, editorLanguage, changeEditorLanguage }) => {
     const [selectedLanguage, setSelectedLanguage] = useState(Languages[0].value);
 
-    const viewModeTitles = {
-        preview: 'Preview',
-        split: 'Split',
-    };
-
     // Find the label of the selected language
     const selectedLanguageLabel = Languages.find(language => language.value === selectedLanguage)?.label || '';
+
+    // Toggle between split and preview modes
+    const toggleViewMode = () => {
+        const newMode = viewMode === 'preview' ? 'split' : 'preview';
+        setViewMode(newMode);
+    };
 
     return (
         <BlockControls>
             {/* Only show view mode controls when syntax highlighting is off */}
             {!syntaxHighlight && (
                 <ToolbarGroup>
-                    <ToolbarDropdownMenu
-                        text={viewModeTitles[viewMode] || 'Select View Mode'}
-                        icon={viewMode === 'code' ? code : viewMode === 'preview' ? seen : pageBreak}
-                        label="View Mode"
-                        controls={[
-                            {
-                                title: 'Preview',
-                                onClick: () => setViewMode('preview'),
-                                isActive: viewMode === 'preview',
-                                icon: seen,
-                            },
-                            {
-                                title: 'Split',
-                                onClick: () => setViewMode('split'),
-                                isActive: viewMode === 'split',
-                                icon: pageBreak,
-                            },
-                        ]}
-                    />
+                    <ToolbarButton
+                        icon={viewMode === 'split' ? pageBreak : seen}
+                        label={viewMode === 'split' ? 'Split View' : 'Preview'}
+                        isPressed={viewMode === 'split'}
+                        onClick={toggleViewMode}
+                    >
+                        {viewMode === 'split' ? 'Split View' : 'Preview'}
+                    </ToolbarButton>
                 </ToolbarGroup>
             )}
             <ToolbarGroup>
