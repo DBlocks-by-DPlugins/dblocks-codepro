@@ -54,16 +54,6 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
 
-                    {/* Show Scale height with content only when syntax highlighting is ON */}
-                    {syntaxHighlight && (
-                        <ToggleControl
-                            label="Scale height with content"
-                            checked={true}
-                            onChange={() => {}} // No-op since this should always be true when syntax highlighting is on
-                            __nextHasNoMarginBottom={true}
-                        />
-                    )}
-
                     {/* Show Editor Height only when syntax highlighting is OFF */}
                     {!syntaxHighlight && (
                         <UnitControl

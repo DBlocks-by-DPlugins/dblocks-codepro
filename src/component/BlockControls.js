@@ -14,15 +14,18 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
 
     return (
         <BlockControls>
-            <ToolbarGroup>
-                <ToolbarButton
-                    icon={viewMode === 'preview' ? seen : pageBreak}
-                    label={viewMode === 'preview' ? 'Switch to Split View' : 'Switch to Preview'}
-                    onClick={() => setViewMode(viewMode === 'preview' ? 'split' : 'preview')}
-                >
-                    {viewMode === 'preview' ? 'Preview' : 'Split'}
-                </ToolbarButton>
-            </ToolbarGroup>
+            {/* Only show view mode button when syntax highlighting is OFF */}
+            {!syntaxHighlight && (
+                <ToolbarGroup>
+                    <ToolbarButton
+                        icon={viewMode === 'preview' ? seen : pageBreak}
+                        label={viewMode === 'preview' ? 'Switch to Split View' : 'Switch to Preview'}
+                        onClick={() => setViewMode(viewMode === 'preview' ? 'split' : 'preview')}
+                    >
+                        {viewMode === 'preview' ? 'Preview' : 'Split'}
+                    </ToolbarButton>
+                </ToolbarGroup>
+            )}
             <ToolbarGroup>
                 <ToolbarItem>
                     {() => (
