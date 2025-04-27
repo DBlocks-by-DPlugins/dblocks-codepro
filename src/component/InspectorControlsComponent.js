@@ -102,7 +102,7 @@ const InspectorControlsComponent = ({
                                 __nextHasNoMarginBottom={true}
                             />
                             <ToggleControl
-                                label="Display Language"
+                                label="Display Language Badge"
                                 checked={attributes.displayLanguage || false}
                                 onChange={() => {
                                     setAttributes({ displayLanguage: !attributes.displayLanguage });
@@ -110,6 +110,16 @@ const InspectorControlsComponent = ({
                                 __nextHasNoMarginBottom={true}
                             />
                             <p style={{ fontSize: '12px'}}>Show the selected language name on the frontend.</p>
+                            
+                            <ToggleControl
+                                label="Enable Copy Button"
+                                checked={attributes.enableCopyButton || false}
+                                onChange={() => {
+                                    setAttributes({ enableCopyButton: !attributes.enableCopyButton });
+                                }}
+                                __nextHasNoMarginBottom={true}
+                            />
+                            <p style={{ fontSize: '12px'}}>Add a button to copy the code snippet to clipboard.</p>
                         </>
                     )}
                 </PanelBody>

@@ -57,6 +57,10 @@
 		"displayLanguage": {
 			"type": "boolean",
 			"default": false
+		},
+		"enableCopyButton": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"textdomain": "dblocks-codepro",
