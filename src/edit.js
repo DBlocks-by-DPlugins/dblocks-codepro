@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useEffect, useRef, useState, useLayoutEffect } from '@wordpress/element';
 import { useBlockProps } from '@wordpress/block-editor';
 import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
@@ -29,10 +29,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [pluginInfo, setPluginInfo] = useState(null);
     const [editorInitialized, setEditorInitialized] = useState(false);
     const [showEditor, setShowEditor] = useState(false);
+    const [editorNeedsRefresh, setEditorNeedsRefresh] = useState(false);
 
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
+    const previousViewModeRef = useRef(initialViewMode);
 
     const selectedBlockClientId = useSelect(select =>
         select('core/block-editor').getSelectedBlockClientId()
@@ -129,6 +131,39 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     };
 
+    // Handle view mode change
+    const handleViewModeChange = (newViewMode) => {
+        previousViewModeRef.current = viewMode;
+        setViewMode(newViewMode);
+        
+        if (newViewMode === 'split') {
+            setShowEditor(true);
+            setEditorNeedsRefresh(true);
+        }
+    };
+
+    // Handle syntax highlight toggle
+    const handleSyntaxHighlightToggle = (newState) => {
+        setSyntaxHighlight(newState);
+        setAttributes({ syntaxHighlight: newState });
+        setEditorNeedsRefresh(true);
+        
+        // Force editor to refresh when syntax highlighting is toggled
+        if (showEditor && viewMode === 'split') {
+            // Add a small delay to ensure UI updates first
+            setTimeout(() => {
+                if (editorInstanceRef.current) {
+                    editorInstanceRef.current.layout();
+                    const iframe = document.querySelector('[name="editor-canvas"]');
+                    const contextWindow = iframe ? iframe.contentWindow : window;
+                    if (contextWindow && contextWindow.monaco) {
+                        editorInstanceRef.current.focus();
+                    }
+                }
+            }, 50);
+        }
+    };
+
     // Monitor block selection changes
     useEffect(() => {
         if (selectedBlockClientId !== clientId) {
@@ -177,9 +212,32 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             return;
         }
 
-        if (monacoEditorCache.instance && monacoEditorCache.lastClientId === clientId) {
+        // Force fresh editor when syntax highlight is toggled or view mode changes from preview to split
+        const needsRefresh = editorNeedsRefresh || 
+                            (previousViewModeRef.current === 'preview' && viewMode === 'split');
+
+        if (needsRefresh && monacoEditorCache.instance) {
+            monacoEditorCache.instance.dispose();
+            monacoEditorCache.instance = null;
+            monacoEditorCache.lastClientId = null;
+            setEditorNeedsRefresh(false);
+        }
+
+        if (monacoEditorCache.instance && monacoEditorCache.lastClientId === clientId && !needsRefresh) {
             // Reuse existing editor instance for the same block
             editorInstanceRef.current = monacoEditorCache.instance;
+            if (!editorInitialized) {
+                setEditorInitialized(true);
+            }
+            
+            // Ensure the editor gets focus and updates its layout
+            setTimeout(() => {
+                if (editorInstanceRef.current) {
+                    editorInstanceRef.current.layout();
+                    editorInstanceRef.current.focus();
+                }
+            }, 50);
+            
             return;
         }
 
@@ -221,6 +279,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         editorInstanceRef.current.dispose();
                     }
 
+                    // Ensure the container is visible and has dimensions
+                    if (editorContainerRef.current) {
+                        editorContainerRef.current.style.display = 'block';
+                        editorContainerRef.current.style.visibility = 'visible';
+                    }
+
                     // Create a new editor instance
                     editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
                         minimap: { enabled: false },
@@ -247,6 +311,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         }
                     });
 
+                    // Make sure editor is visible and gets focus
+                    setTimeout(() => {
+                        if (editorInstanceRef.current) {
+                            editorInstanceRef.current.layout();
+                            editorInstanceRef.current.focus();
+                        }
+                    }, 10);
+
                     // Cache the editor instance
                     monacoEditorCache.instance = editorInstanceRef.current;
                     monacoEditorCache.lastClientId = clientId;
@@ -261,6 +333,32 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     };
 
+    // Handle syntax highlight changes
+    useEffect(() => {
+        if (showEditor && viewMode === 'split') {
+            setEditorNeedsRefresh(true);
+        }
+    }, [syntaxHighlight]);
+
+    // Handle view mode changes
+    useEffect(() => {
+        // Track when changing from preview to split
+        if (previousViewModeRef.current === 'preview' && viewMode === 'split') {
+            setEditorNeedsRefresh(true);
+        }
+        
+        // Update attribute
+        toggleAttribute('viewMode', viewMode);
+        
+        // Show editor in split mode
+        if (viewMode === 'split') {
+            setShowEditor(true);
+        }
+        
+        // Update previous view mode after effect is applied
+        previousViewModeRef.current = viewMode;
+    }, [viewMode]);
+
     // Initialize or reuse editor when needed
     useEffect(() => {
         if (showEditor && viewMode === 'split' && pluginInfo) {
@@ -268,7 +366,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
             
-            initMonacoEditor(contextWindow, contextDoc);
+            // Small delay to ensure DOM is ready
+            const initTimer = setTimeout(() => {
+                initMonacoEditor(contextWindow, contextDoc);
+            }, 10);
+            
+            return () => clearTimeout(initTimer);
         }
 
         return () => {
@@ -279,7 +382,22 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo, showEditor, clientId]);
+    }, [viewMode, pluginInfo, showEditor, clientId, editorNeedsRefresh]);
+
+    // Force re-render when editor container is first created or refreshed
+    useLayoutEffect(() => {
+        if (editorContainerRef.current && editorNeedsRefresh) {
+            // Force a redraw of the container
+            const display = editorContainerRef.current.style.display;
+            editorContainerRef.current.style.display = 'none';
+            
+            // This forces a reflow
+            void editorContainerRef.current.offsetHeight;
+            
+            // Restore original display
+            editorContainerRef.current.style.display = display || 'block';
+        }
+    }, [editorContainerRef.current, editorNeedsRefresh]);
 
     // Update editor content when content changes from outside
     useEffect(() => {
@@ -313,14 +431,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             });
         }
     }, [theme, fontSize]);
-
-    // Toggle viewMode when it changes
-    useEffect(() => {
-        toggleAttribute('viewMode', viewMode);
-        if (viewMode === 'split') {
-            setShowEditor(true);
-        }
-    }, [viewMode]);
 
     // Fetch plugin info on component mount
     useEffect(() => {
@@ -356,7 +466,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 attributes={attributes}
                 setAttributes={setAttributes}
                 syntaxHighlight={syntaxHighlight}
-                setSyntaxHighlight={setSyntaxHighlight}
+                setSyntaxHighlight={handleSyntaxHighlightToggle}
                 syntaxHighlightTheme={syntaxHighlightTheme}
                 toggleSyntaxHighlightTheme={toggleSyntaxHighlightTheme}
                 editorLanguage={editorLanguage}
@@ -373,9 +483,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>
                 <BlockControlsComponent
                     viewMode={viewMode}
-                    setViewMode={setViewMode}
+                    setViewMode={handleViewModeChange}
                     syntaxHighlight={syntaxHighlight}
-                    setSyntaxHighlight={setSyntaxHighlight}
+                    setSyntaxHighlight={handleSyntaxHighlightToggle}
                     setAttributes={setAttributes}
                     editorLanguage={editorLanguage}
                     changeEditorLanguage={changeEditorLanguage}
@@ -410,6 +520,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                                 right: 0,
                                 zIndex: 9999,
                                 backgroundColor: '#fff',
+                                visibility: 'visible',
+                                display: 'block'
                             }}
                         />
                     </ResizableBox>
@@ -426,6 +538,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             right: 0,
                             zIndex: 9999,
                             backgroundColor: '#fff',
+                            visibility: 'visible',
+                            display: 'block'
                         }}
                     />)}
             </div>
