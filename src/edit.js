@@ -168,96 +168,139 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         fetchInitialSettings();
     }, [setAttributes]);
 
+    // Ensure the plugin info is fetched when the component mounts
     useEffect(() => {
-        const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
-            // Define a default path as fallback
-            let MONACO_PATH;
+        const fetchPluginInfo = async () => {
+            if (!baseUrl) {
+                console.error("baseUrl is not defined");
+                return;
+            }
             
-            if (!pluginInfo) {
-                console.warn("Plugin info not set, using fallback path for Monaco editor.");
-                MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
-            } else {
-                MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
-            }
-
-            if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
-                const script = contextDoc.createElement('script');
-                script.src = `${MONACO_PATH}/loader.js`;
-                contextDoc.body.appendChild(script);
-            }
-
-            const ensureRequireIsAvailable = (contextWindow) => {
-                return new Promise((resolve, reject) => {
-                    const checkInterval = setInterval(() => {
-                        if (contextWindow.require && contextWindow.require.config) {
-                            clearInterval(checkInterval);
-                            resolve(contextWindow.require);
-                        }
-                    }, 50);
-
-                    setTimeout(() => {
-                        clearInterval(checkInterval);
-                        reject(new Error('Require is not available.'));
-                    }, 5000);
-                });
-            };
-
             try {
-                if ((syntaxHighlight || (showEditor && viewMode === 'split'))) {
-                    await ensureRequireIsAvailable(contextWindow);
-                    contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
-
-                    contextWindow.require(['vs/editor/editor.main'], () => {
-                        if (editorInstanceRef.current) {
-                            editorInstanceRef.current.dispose();
-                        }
-
-                        editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
-                            minimap: { enabled: false },
-                            value: content || '<!-- some comment -->',
-                            language: editorLanguage,
-                            automaticLayout: true,
-                            theme: theme,
-                            fontSize: parseInt(fontSize),
-                            scrollBeyondLastLine: false,
-                        });
-
-                        emmetHTML(contextWindow.monaco);
-
-                        editorInstanceRef.current.onDidChangeModelContent(() => {
-                            const newValue = editorInstanceRef.current.getValue();
-                            toggleAttribute('content', newValue);
-
-                            if (attributes.scaleHeightWithContent || syntaxHighlight) {
-                                const newHeight = calculateEditorHeight(newValue);
-                                editorContainerRef.current.style.height = newHeight;
-                                editorInstanceRef.current.layout();
-                            }
-                        });
-                    });
-                }
+                const response = await fetch(`${baseUrl}plugin-path`);
+                if (!response.ok) throw new Error("Failed to fetch plugin info");
+                const info = await response.json();
+                setPluginInfo(info);
             } catch (error) {
-                console.error("Failed to ensure 'require' is available:", error);
+                console.error("Failed to fetch plugin info:", error);
             }
         };
 
-        // Load the Monaco editor when syntax highlighting is on or in split view mode
-        // We don't need to wait for pluginInfo since we have a fallback path
+        fetchPluginInfo();
+    }, [baseUrl]);
+
+    // Add this new useEffect to handle loading monaco editor only after plugin info is ready
+    useEffect(() => {
+        // Only proceed if we need to load the editor
         if (syntaxHighlight || viewMode === 'split') {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
-            loadMonacoEditorScript(contextWindow, contextDoc);
-            setShouldReloadEditor(false);
-        }
+            
+            // Use a utility function to handle monaco loading
+            const loadMonacoEditor = () => {
+                const loadMonacoScript = async () => {
+                    // Define a default path as fallback
+                    let MONACO_PATH;
+                    
+                    if (!pluginInfo) {
+                        console.warn("Plugin info not set, using fallback path for Monaco editor.");
+                        MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
+                    } else {
+                        MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
+                    }
 
+                    if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
+                        const script = contextDoc.createElement('script');
+                        script.src = `${MONACO_PATH}/loader.js`;
+                        contextDoc.body.appendChild(script);
+                    }
+
+                    const ensureRequireIsAvailable = () => {
+                        return new Promise((resolve, reject) => {
+                            const checkInterval = setInterval(() => {
+                                if (contextWindow.require && contextWindow.require.config) {
+                                    clearInterval(checkInterval);
+                                    resolve(contextWindow.require);
+                                }
+                            }, 50);
+
+                            setTimeout(() => {
+                                clearInterval(checkInterval);
+                                reject(new Error('Require is not available.'));
+                            }, 5000);
+                        });
+                    };
+
+                    try {
+                        if ((syntaxHighlight || (showEditor && viewMode === 'split'))) {
+                            await ensureRequireIsAvailable();
+                            contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
+
+                            contextWindow.require(['vs/editor/editor.main'], () => {
+                                if (editorInstanceRef.current) {
+                                    editorInstanceRef.current.dispose();
+                                }
+
+                                editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
+                                    minimap: { enabled: false },
+                                    value: content || '<!-- some comment -->',
+                                    language: editorLanguage,
+                                    automaticLayout: true,
+                                    theme: theme,
+                                    fontSize: parseInt(fontSize),
+                                    scrollBeyondLastLine: false,
+                                });
+
+                                emmetHTML(contextWindow.monaco);
+
+                                editorInstanceRef.current.onDidChangeModelContent(() => {
+                                    const newValue = editorInstanceRef.current.getValue();
+                                    toggleAttribute('content', newValue);
+
+                                    if (attributes.scaleHeightWithContent || syntaxHighlight) {
+                                        const newHeight = calculateEditorHeight(newValue);
+                                        editorContainerRef.current.style.height = newHeight;
+                                        editorInstanceRef.current.layout();
+                                    }
+                                });
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Failed to ensure 'require' is available:", error);
+                    }
+                };
+
+                loadMonacoScript();
+                setShouldReloadEditor(false);
+            };
+            
+            // If plugin info is available, load monaco immediately
+            if (pluginInfo) {
+                loadMonacoEditor();
+            } else {
+                // If no plugin info yet, set a one-time check after a delay 
+                // to use the fallback path if plugin info is still not available
+                const timeoutId = setTimeout(() => {
+                    if (!pluginInfo) {
+                        console.info("Loading Monaco editor with fallback path after timeout");
+                        loadMonacoEditor();
+                    }
+                }, 1000); // Wait 1 second before using fallback
+                
+                return () => clearTimeout(timeoutId);
+            }
+        }
+    }, [syntaxHighlight, viewMode, pluginInfo, content, editorLanguage, fontSize, theme, showEditor, attributes.scaleHeightWithContent, toggleAttribute, setShouldReloadEditor]);
+
+    useEffect(() => {
         return () => {
             if (editorInstanceRef.current && !syntaxHighlight && (viewMode === 'preview' || viewMode === 'split')) {
                 editorInstanceRef.current.dispose();
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor, syntaxHighlight, content, fontSize, theme, editorLanguage]);
+    }, [syntaxHighlight, viewMode]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
@@ -307,27 +350,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     }, [syntaxHighlight]);
 
-    // Ensure the plugin info is fetched when the component mounts
-    useEffect(() => {
-        const fetchPluginInfo = async () => {
-            if (!baseUrl) {
-                console.error("baseUrl is not defined");
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${baseUrl}plugin-path`);
-                if (!response.ok) throw new Error("Failed to fetch plugin info");
-                const info = await response.json();
-                setPluginInfo(info);
-            } catch (error) {
-                console.error("Failed to fetch plugin info:", error);
-            }
-        };
-
-        fetchPluginInfo();
-    }, [baseUrl]);
-
     // Handle editor resize by calling the utility function
     const handleEditorResize = (newHeight) => {
         updateEditorSize(
@@ -338,6 +360,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             editorInstanceRef
         );
     };
+
+    // Add a useEffect to handle window resize events to refresh the editor layout
+    useEffect(() => {
+        const handleResize = () => {
+            if (editorInstanceRef.current) {
+                editorInstanceRef.current.layout();
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     return (
         <>
