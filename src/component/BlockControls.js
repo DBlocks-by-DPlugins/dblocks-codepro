@@ -27,7 +27,7 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
                 <ToolbarItem>
                     {() => (
                         <ToolbarButton
-                            // icon={syntaxHighlight ? 'yes' : 'no'}
+                            icon={syntaxHighlight ? 'yes' : 'no'}
                             label="Highlighting"
                             isPressed={syntaxHighlight}
                             onClick={() => {
