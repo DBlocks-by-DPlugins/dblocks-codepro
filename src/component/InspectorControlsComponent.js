@@ -59,6 +59,7 @@ const InspectorControlsComponent = ({
                             min={10}
                             max={1000}
                             __next40pxDefaultSize={true}
+                            __nextHasNoMarginBottom={true}
                         />
                     )}
                 </PanelBody>
@@ -89,13 +90,26 @@ const InspectorControlsComponent = ({
                                     { value: 'dark', label: 'Dark' }
                                 ]}
                                 onChange={toggleSyntaxHighlightTheme}
+                                __next40pxDefaultSize={true}
+                                __nextHasNoMarginBottom={true}
                             />
                             <SelectControl
                                 label="Language"
                                 value={editorLanguage}
                                 options={Languages}
                                 onChange={changeEditorLanguage}
+                                __next40pxDefaultSize={true}
+                                __nextHasNoMarginBottom={true}
                             />
+                            <ToggleControl
+                                label="Display Language"
+                                checked={attributes.displayLanguage || false}
+                                onChange={() => {
+                                    setAttributes({ displayLanguage: !attributes.displayLanguage });
+                                }}
+                                __nextHasNoMarginBottom={true}
+                            />
+                            <p style={{ fontSize: '12px'}}>Show the selected language name on the frontend.</p>
                         </>
                     )}
                 </PanelBody>
@@ -114,6 +128,7 @@ const InspectorControlsComponent = ({
                         min={10}
                         max={30}
                         __next40pxDefaultSize={true}
+                        __nextHasNoMarginBottom={true}
                     />
 
                 </PanelBody>

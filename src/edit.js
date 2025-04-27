@@ -4,6 +4,7 @@ import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
 import BlockControlsComponent from './component/BlockControls.js';
 import InspectorControlsComponent from './component/InspectorControlsComponent.js';
+import Languages from './component/Languages.js';
 import { ResizableBox } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
 import { updateEditorSize, convertToPx } from './utils/editorUtils.js';
@@ -33,6 +34,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
 
+    // Get language display name
+    const getLanguageLabel = (langValue) => {
+        const lang = Languages.find(l => l.value === langValue);
+        return lang ? lang.label : langValue;
+    };
+
     const selectedBlockClientId = useSelect(select =>
         select('core/block-editor').getSelectedBlockClientId()
     );
@@ -41,7 +48,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         setAttributes({ [attribute]: value });
     };
 
-    const baseUrl = DBlocksData.restUrl
+    // Safely access the API URL
+    const baseUrl = typeof DBlocksData !== 'undefined' ? DBlocksData.restUrl : '/wp-json/dblocks_codepro/v1/';
 
     const toggleSyntaxHighlightTheme = async (newTheme) => {
         try {
@@ -162,12 +170,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     useEffect(() => {
         const loadMonacoEditorScript = async (contextWindow, contextDoc) => {
+            // Define a default path as fallback
+            let MONACO_PATH;
+            
             if (!pluginInfo) {
-                console.error("Plugin info not set.");
-                return;
+                console.warn("Plugin info not set, using fallback path for Monaco editor.");
+                MONACO_PATH = '/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs';
+            } else {
+                MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
             }
-
-            const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
 
             if (!Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
                 const script = contextDoc.createElement('script');
@@ -230,7 +241,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             }
         };
 
-        if (syntaxHighlight || ((viewMode === 'split') && pluginInfo)) {
+        // Load the Monaco editor when syntax highlighting is on or in split view mode
+        // We don't need to wait for pluginInfo since we have a fallback path
+        if (syntaxHighlight || viewMode === 'split') {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
@@ -244,7 +257,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor, syntaxHighlight]);
+    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor, syntaxHighlight, content, fontSize, theme, editorLanguage]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
@@ -294,8 +307,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     }, [syntaxHighlight]);
 
+    // Ensure the plugin info is fetched when the component mounts
     useEffect(() => {
         const fetchPluginInfo = async () => {
+            if (!baseUrl) {
+                console.error("baseUrl is not defined");
+                return;
+            }
+            
             try {
                 const response = await fetch(`${baseUrl}plugin-path`);
                 if (!response.ok) throw new Error("Failed to fetch plugin info");
@@ -307,7 +326,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         };
 
         fetchPluginInfo();
-    }, []);
+    }, [baseUrl]);
 
     // Handle editor resize by calling the utility function
     const handleEditorResize = (newHeight) => {
@@ -409,18 +428,21 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 
                 {/* When syntax highlight is ON - always show the editor inline */}
                 {syntaxHighlight && (
-                    <div
-                        ref={editorContainerRef}
-                        id='editor-container-ref'
-                        style={{
-                            height: calculateEditorHeight(content),
-                            width: '100%',
-                            position: 'relative',
-                            backgroundColor: '#fff',
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '4px',
-                        }}
-                    />
+                    <div className="syntax-highlighted-container">
+                        {/* Editor view - language will only be shown on frontend */}
+                        <div
+                            ref={editorContainerRef}
+                            id='editor-container-ref'
+                            style={{
+                                height: calculateEditorHeight(content),
+                                width: '100%',
+                                position: 'relative',
+                                backgroundColor: '#fff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '4px',
+                            }}
+                        />
+                    </div>
                 )}
             </div>
         </>
