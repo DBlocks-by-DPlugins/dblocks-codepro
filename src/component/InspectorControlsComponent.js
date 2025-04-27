@@ -54,13 +54,18 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
 
-                    <ToggleControl
-                        label="Scale height with content"
-                        checked={attributes.scaleHeightWithContent}
-                        onChange={() => setAttributes({ scaleHeightWithContent: !attributes.scaleHeightWithContent })}
-                        __nextHasNoMarginBottom={true}
-                    />
-                    {!attributes.scaleHeightWithContent && (
+                    {/* Show Scale height with content only when syntax highlighting is ON */}
+                    {syntaxHighlight && (
+                        <ToggleControl
+                            label="Scale height with content"
+                            checked={true}
+                            onChange={() => {}} // No-op since this should always be true when syntax highlighting is on
+                            __nextHasNoMarginBottom={true}
+                        />
+                    )}
+
+                    {/* Show Editor Height only when syntax highlighting is OFF */}
+                    {!syntaxHighlight && (
                         <UnitControl
                             label="Editor Height"
                             value={editorHeight}
@@ -78,8 +83,15 @@ const InspectorControlsComponent = ({
                             label="Activate Syntax Highlighting"
                             checked={syntaxHighlight}
                             onChange={() => {
-                                setSyntaxHighlight(!syntaxHighlight);
-                                setAttributes({ syntaxHighlight: !syntaxHighlight });
+                                const newState = !syntaxHighlight;
+                                setSyntaxHighlight(newState);
+                                // Update both syntaxHighlight and scaleHeightWithContent
+                                setAttributes({ 
+                                    syntaxHighlight: newState,
+                                    // When highlighting is ON: enable scale height with content
+                                    // When highlighting is OFF: disable scale height with content
+                                    scaleHeightWithContent: newState
+                                });
                             }}
                             __nextHasNoMarginBottom={true}
                         />

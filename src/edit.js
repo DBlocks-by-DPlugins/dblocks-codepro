@@ -145,7 +145,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     // Handle syntax highlight toggle
     const handleSyntaxHighlightToggle = (newState) => {
         setSyntaxHighlight(newState);
-        setAttributes({ syntaxHighlight: newState });
+        setAttributes({ 
+            syntaxHighlight: newState,
+            // When highlighting is ON: enable scale height with content
+            // When highlighting is OFF: disable scale height with content
+            scaleHeightWithContent: newState
+        });
         setEditorNeedsRefresh(true);
         
         // Force editor to refresh when syntax highlighting is toggled
