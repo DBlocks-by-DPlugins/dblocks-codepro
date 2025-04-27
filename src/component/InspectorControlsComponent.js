@@ -106,6 +106,18 @@ const InspectorControlsComponent = ({
                                 options={Languages}
                                 onChange={changeEditorLanguage}
                             />
+                            <div className="togglecontrol--with-info">
+                                <ToggleControl
+                                    label="Scale height with content"
+                                    checked={true}
+                                    disabled={true}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                                <div className="togglecontrol--with-info__icon-wrapper">
+                                    <Icon icon={help} size={20} />
+                                    <p>When syntax highlighting is active, editor always scales with content.</p>
+                                </div>
+                            </div>
                         </>
                     )}
                 </PanelBody>
