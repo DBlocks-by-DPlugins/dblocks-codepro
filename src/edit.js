@@ -208,32 +208,51 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
 
                     contextWindow.require(['vs/editor/editor.main'], () => {
-                        if (editorInstanceRef.current) {
-                            editorInstanceRef.current.dispose();
-                        }
-
-                        editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
-                            minimap: { enabled: false },
-                            value: content || '<!-- some comment -->',
-                            language: editorLanguage,
-                            automaticLayout: true,
-                            theme: theme,
-                            fontSize: parseInt(fontSize),
-                            scrollBeyondLastLine: false,
-                        });
-
-                        emmetHTML(contextWindow.monaco);
-
-                        editorInstanceRef.current.onDidChangeModelContent(() => {
-                            const newValue = editorInstanceRef.current.getValue();
-                            toggleAttribute('content', newValue);
-
-                            if (attributes.scaleHeightWithContent || syntaxHighlight) {
-                                const newHeight = calculateEditorHeight(newValue);
-                                editorContainerRef.current.style.height = newHeight;
-                                editorInstanceRef.current.layout();
+                        // Only create a new instance if we don't already have one
+                        // or if we explicitly need to reload the editor
+                        if (!editorInstanceRef.current || shouldReloadEditor) {
+                            if (editorInstanceRef.current) {
+                                editorInstanceRef.current.dispose();
                             }
-                        });
+
+                            editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
+                                minimap: { enabled: false },
+                                value: content || '<!-- some comment -->',
+                                language: editorLanguage,
+                                automaticLayout: true,
+                                theme: theme,
+                                fontSize: parseInt(fontSize),
+                                scrollBeyondLastLine: false,
+                            });
+
+                            emmetHTML(contextWindow.monaco);
+
+                            editorInstanceRef.current.onDidChangeModelContent(() => {
+                                const newValue = editorInstanceRef.current.getValue();
+                                toggleAttribute('content', newValue);
+
+                                if (attributes.scaleHeightWithContent || syntaxHighlight) {
+                                    const newHeight = calculateEditorHeight(newValue);
+                                    editorContainerRef.current.style.height = newHeight;
+                                    editorInstanceRef.current.layout();
+                                }
+                            });
+                        } else {
+                            // If editor already exists, update its options and content
+                            editorInstanceRef.current.updateOptions({
+                                language: editorLanguage,
+                                theme: theme,
+                                fontSize: parseInt(fontSize)
+                            });
+                            
+                            // Only update content if it's different to avoid cursor jumps
+                            if (editorInstanceRef.current.getValue() !== content) {
+                                editorInstanceRef.current.setValue(content);
+                            }
+                            
+                            // Make sure layout is updated
+                            editorInstanceRef.current.layout();
+                        }
                     });
                 }
             } catch (error) {
@@ -248,7 +267,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
             loadMonacoEditorScript(contextWindow, contextDoc);
-            setShouldReloadEditor(false);
+            if (shouldReloadEditor) {
+                setShouldReloadEditor(false);
+            }
         }
 
         return () => {
@@ -257,13 +278,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor, syntaxHighlight, content, fontSize, theme, editorLanguage]);
-
-    useEffect(() => {
-        if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
-            editorInstanceRef.current.setValue(content);
-        }
-    }, [content]);
+    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor, syntaxHighlight, fontSize, theme, editorLanguage]);
 
     useEffect(() => {
         if (editorContainerRef.current && editorInstanceRef.current) {
@@ -338,6 +353,39 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             editorInstanceRef
         );
     };
+
+    useEffect(() => {
+        // This useEffect only updates content if the editor exists and content changes
+        // Without triggering a full editor reload
+        if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
+            // We need to preserve cursor position and selection
+            const model = editorInstanceRef.current.getModel();
+            if (model) {
+                const position = editorInstanceRef.current.getPosition();
+                const selection = editorInstanceRef.current.getSelection();
+                
+                // Update the content
+                editorInstanceRef.current.setValue(content);
+                
+                // Restore position and selection if they existed
+                if (position) {
+                    editorInstanceRef.current.setPosition(position);
+                }
+                if (selection) {
+                    editorInstanceRef.current.setSelection(selection);
+                }
+                
+                // Update layout if needed
+                if (syntaxHighlight || attributes.scaleHeightWithContent) {
+                    const newHeight = calculateEditorHeight(content);
+                    if (editorContainerRef.current) {
+                        editorContainerRef.current.style.height = newHeight;
+                        editorInstanceRef.current.layout();
+                    }
+                }
+            }
+        }
+    }, [content, syntaxHighlight, attributes.scaleHeightWithContent]);
 
     return (
         <>
