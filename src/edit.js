@@ -500,7 +500,13 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         }}
                         minHeight={10}
                         enable={{ top: true }}
-                        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
+                        style={{ 
+                            position: syntaxHighlight ? 'relative' : 'fixed',
+                            bottom: syntaxHighlight ? 'auto' : 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 9999
+                        }}
                         onResizeStop={(event, direction, ref, d) => {
                             const currentHeight = convertToPx(editorHeight);
                             const newHeight = currentHeight + d.height;
@@ -514,8 +520,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             style={{
                                 height: '100%',
                                 width: '100%',
-                                position: 'absolute',
-                                bottom: 0,
+                                position: syntaxHighlight ? 'relative' : 'absolute',
+                                bottom: syntaxHighlight ? 'auto' : 0,
                                 left: 0,
                                 right: 0,
                                 zIndex: 9999,
@@ -532,8 +538,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         style={{
                             height: calculateEditorHeight(content),
                             width: '100%',
-                            position: 'fixed',
-                            bottom: 0,
+                            position: syntaxHighlight ? 'relative' : 'fixed',
+                            bottom: syntaxHighlight ? 'auto' : 0,
                             left: 0,
                             right: 0,
                             zIndex: 9999,
