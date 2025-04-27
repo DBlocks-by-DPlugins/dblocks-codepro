@@ -44,7 +44,9 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
 
-                    <UnitControl
+                    {/* Only show Editor Height control when syntax highlighting is OFF */}
+                    {!syntaxHighlight && (
+                        <UnitControl
                             label="Editor Height"
                             value={editorHeight}
                             onChange={(newHeight) => {
@@ -57,7 +59,8 @@ const InspectorControlsComponent = ({
                             min={10}
                             max={1000}
                             __next40pxDefaultSize={true}
-                    />
+                        />
+                    )}
                 </PanelBody>
                 <PanelBody title="Syntax Highlighting">
                     
@@ -75,6 +78,9 @@ const InspectorControlsComponent = ({
                 
                     {syntaxHighlight && (
                         <>
+                            <p style={{ fontSize: '12px', fontStyle: 'italic' }}>
+                                In highlighting mode, the editor will automatically resize based on content.
+                            </p>
                             <SelectControl
                                 label="FrontEnd Theme"
                                 value={syntaxHighlightTheme}

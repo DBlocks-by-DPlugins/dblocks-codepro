@@ -117,10 +117,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     };
 
     useEffect(() => {
-        if (showEditor && selectedBlockClientId !== clientId) {
+        if (!syntaxHighlight && showEditor && selectedBlockClientId !== clientId) {
             setShowEditor(false);
         }
-    }, [selectedBlockClientId, clientId, showEditor]);
+    }, [selectedBlockClientId, clientId, showEditor, syntaxHighlight]);
 
     useEffect(() => {
         const fetchInitialSettings = async () => {
@@ -192,7 +192,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             };
 
             try {
-                if (showEditor) {
+                if ((syntaxHighlight || (showEditor && viewMode === 'split'))) {
                     await ensureRequireIsAvailable(contextWindow);
                     contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
 
@@ -217,7 +217,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             const newValue = editorInstanceRef.current.getValue();
                             toggleAttribute('content', newValue);
 
-                            if (attributes.scaleHeightWithContent) {
+                            if (attributes.scaleHeightWithContent || syntaxHighlight) {
                                 const newHeight = calculateEditorHeight(newValue);
                                 editorContainerRef.current.style.height = newHeight;
                                 editorInstanceRef.current.layout();
@@ -230,7 +230,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             }
         };
 
-        if ((viewMode === 'split') && pluginInfo) {
+        if (syntaxHighlight || ((viewMode === 'split') && pluginInfo)) {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
@@ -239,12 +239,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
 
         return () => {
-            if (editorInstanceRef.current && (viewMode === 'preview' || viewMode === 'split')) {
+            if (editorInstanceRef.current && !syntaxHighlight && (viewMode === 'preview' || viewMode === 'split')) {
                 editorInstanceRef.current.dispose();
                 editorInstanceRef.current = null;
             }
         };
-    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor]);
+    }, [viewMode, pluginInfo, shouldReloadEditor, attributes.scaleHeightWithContent, showEditor, syntaxHighlight]);
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
@@ -254,7 +254,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     useEffect(() => {
         if (editorContainerRef.current && editorInstanceRef.current) {
-            if (attributes.scaleHeightWithContent) {
+            if (attributes.scaleHeightWithContent || syntaxHighlight) {
                 const newHeight = calculateEditorHeight(content);
                 editorContainerRef.current.style.height = newHeight;
             } else {
@@ -267,7 +267,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             }
             editorInstanceRef.current.layout();
         }
-    }, [attributes.scaleHeightWithContent, content, editorHeight]);
+    }, [attributes.scaleHeightWithContent, content, editorHeight, syntaxHighlight]);
 
     useEffect(() => {
         if (editorInstanceRef.current) {
@@ -281,10 +281,18 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     useEffect(() => {
         toggleAttribute('viewMode', viewMode);
-        if(viewMode === 'split'){
+        if(viewMode === 'split' && !syntaxHighlight){
             setShowEditor(true);
         }
-    }, [viewMode]);
+    }, [viewMode, syntaxHighlight]);
+
+    // When syntax highlight state changes
+    useEffect(() => {
+        // If syntax highlighting is turned on, we should show the editor
+        if(syntaxHighlight) {
+            setShowEditor(true);
+        }
+    }, [syntaxHighlight]);
 
     useEffect(() => {
         const fetchPluginInfo = async () => {
@@ -332,7 +340,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 updateAttribute={updateAttribute}
             />
 
-            <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>
+            <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative' }}>
                 <BlockControlsComponent
                     viewMode={viewMode}
                     setViewMode={setViewMode}
@@ -342,54 +350,78 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     editorLanguage={editorLanguage}
                     changeEditorLanguage={changeEditorLanguage}
                 />
-                {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {showEditor && ((viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
-                    <ResizableBox
-                        className={"code-editor-box"}
-                        size={{
-                            height: convertToPx(editorHeight)
-                        }}
-                        minHeight={10}
-                        enable={{ top: true }}
-                        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
-                        onResizeStop={(event, direction, ref, d) => {
-                            const currentHeight = convertToPx(editorHeight);
-                            const newHeight = currentHeight + d.height;
-                            handleEditorResize(newHeight);
-                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
-                        }}
-                    >
-                        <div
-                            ref={editorContainerRef}
-                            id='editor-container-ref'
-                            style={{
-                                height: '100%',
-                                width: '100%',
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                zIndex: 9999,
-                                backgroundColor: '#fff',
-                            }}
-                        />
-                    </ResizableBox>
-                ) :
+                
+                {/* When syntax highlight is OFF */}
+                {!syntaxHighlight && (
+                    <>
+                        {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                        {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                        {showEditor && viewMode === 'split' && !attributes.scaleHeightWithContent && (
+                            <ResizableBox
+                                className={"code-editor-box"}
+                                size={{
+                                    height: convertToPx(editorHeight)
+                                }}
+                                minHeight={10}
+                                enable={{ top: true }}
+                                style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
+                                onResizeStop={(event, direction, ref, d) => {
+                                    const currentHeight = convertToPx(editorHeight);
+                                    const newHeight = currentHeight + d.height;
+                                    handleEditorResize(newHeight);
+                                    updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                                }}
+                            >
+                                <div
+                                    ref={editorContainerRef}
+                                    id='editor-container-ref'
+                                    style={{
+                                        height: '100%',
+                                        width: '100%',
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        left: 0,
+                                        right: 0,
+                                        zIndex: 9999,
+                                        backgroundColor: '#fff',
+                                    }}
+                                />
+                            </ResizableBox>
+                        )}
+                        {showEditor && viewMode === 'split' && attributes.scaleHeightWithContent && (
+                            <div
+                                ref={editorContainerRef}
+                                id='editor-container-ref'
+                                style={{
+                                    height: calculateEditorHeight(content),
+                                    width: '100%',
+                                    position: 'fixed',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    zIndex: 9999,
+                                    backgroundColor: '#fff',
+                                }}
+                            />
+                        )}
+                    </>
+                )}
+                
+                {/* When syntax highlight is ON - always show the editor inline */}
+                {syntaxHighlight && (
                     <div
                         ref={editorContainerRef}
                         id='editor-container-ref'
                         style={{
                             height: calculateEditorHeight(content),
                             width: '100%',
-                            position: 'fixed',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            zIndex: 9999,
+                            position: 'relative',
                             backgroundColor: '#fff',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '4px',
                         }}
-                    />)}
+                    />
+                )}
             </div>
         </>
     );

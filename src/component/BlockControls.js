@@ -21,27 +21,30 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
 
     return (
         <BlockControls>
-            <ToolbarGroup>
-                <ToolbarDropdownMenu
-                    text={viewModeTitles[viewMode] || 'Select View Mode'}
-                    icon={viewMode === 'code' ? code : viewMode === 'preview' ? seen : pageBreak}
-                    label="View Mode"
-                    controls={[
-                        {
-                            title: 'Preview',
-                            onClick: () => setViewMode('preview'),
-                            isActive: viewMode === 'preview',
-                            icon: seen,
-                        },
-                        {
-                            title: 'Split',
-                            onClick: () => setViewMode('split'),
-                            isActive: viewMode === 'split',
-                            icon: pageBreak,
-                        },
-                    ]}
-                />
-            </ToolbarGroup>
+            {/* Only show view mode controls when syntax highlighting is off */}
+            {!syntaxHighlight && (
+                <ToolbarGroup>
+                    <ToolbarDropdownMenu
+                        text={viewModeTitles[viewMode] || 'Select View Mode'}
+                        icon={viewMode === 'code' ? code : viewMode === 'preview' ? seen : pageBreak}
+                        label="View Mode"
+                        controls={[
+                            {
+                                title: 'Preview',
+                                onClick: () => setViewMode('preview'),
+                                isActive: viewMode === 'preview',
+                                icon: seen,
+                            },
+                            {
+                                title: 'Split',
+                                onClick: () => setViewMode('split'),
+                                isActive: viewMode === 'split',
+                                icon: pageBreak,
+                            },
+                        ]}
+                    />
+                </ToolbarGroup>
+            )}
             <ToolbarGroup>
                 <ToolbarButton
                     icon="editor-code"
