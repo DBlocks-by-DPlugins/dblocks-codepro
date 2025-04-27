@@ -43,9 +43,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     const baseUrl = DBlocksData.restUrl
 
-    const toggleSyntaxHighlightTheme = async () => {
-        const newSyntaxTheme = syntaxHighlightTheme === "light" ? "dark" : "light";
-
+    const toggleSyntaxHighlightTheme = async (newTheme) => {
         try {
             const response = await fetch(`${baseUrl}syntax-theme/`, {
                 method: "POST",
@@ -53,12 +51,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     "Content-Type": "application/json",
                     "X-WP-Nonce": wpApiSettings.nonce,
                 },
-                body: JSON.stringify({ syntaxTheme: newSyntaxTheme }),
+                body: JSON.stringify({ syntaxTheme: newTheme }),
             });
 
             if (!response.ok) throw new Error("Network response was not ok.");
-            setSyntaxHighlightTheme(newSyntaxTheme);
-            toggleAttribute('syntaxHighlightTheme', newSyntaxTheme);
+            setSyntaxHighlightTheme(newTheme);
+            toggleAttribute('syntaxHighlightTheme', newTheme);
         } catch (error) {
             console.error("Failed to update syntax theme:", error);
         }

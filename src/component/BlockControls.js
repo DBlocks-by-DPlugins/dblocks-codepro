@@ -27,12 +27,6 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
                     icon={viewMode === 'code' ? code : viewMode === 'preview' ? seen : pageBreak}
                     label="View Mode"
                     controls={[
-                        // {
-                        //     title: 'Code',
-                        //     onClick: () => setViewMode('code'),
-                        //     isActive: viewMode === 'code',
-                        //     icon: code,
-                        // },
                         {
                             title: 'Preview',
                             onClick: () => setViewMode('preview'),

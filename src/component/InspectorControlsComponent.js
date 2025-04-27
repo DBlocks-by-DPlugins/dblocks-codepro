@@ -77,11 +77,14 @@ const InspectorControlsComponent = ({
                     </div>
                     {syntaxHighlight && (
                         <>
-                            <ToggleControl
-                                label="FrontEnd Dark Theme"
-                                checked={syntaxHighlightTheme === "dark"}
+                            <SelectControl
+                                label="FrontEnd Theme"
+                                value={syntaxHighlightTheme}
+                                options={[
+                                    { value: 'light', label: 'Light' },
+                                    { value: 'dark', label: 'Dark' }
+                                ]}
                                 onChange={toggleSyntaxHighlightTheme}
-                                __nextHasNoMarginBottom={true}
                             />
                             <SelectControl
                                 label="Language"
