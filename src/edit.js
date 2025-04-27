@@ -133,15 +133,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     // Handle view mode change
     const handleViewModeChange = (newViewMode) => {
-        // Only change view mode when syntax highlighting is off
-        if (!syntaxHighlight) {
-            previousViewModeRef.current = viewMode;
-            setViewMode(newViewMode);
-            
-            if (newViewMode === 'split') {
-                setShowEditor(true);
-                setEditorNeedsRefresh(true);
-            }
+        previousViewModeRef.current = viewMode;
+        setViewMode(newViewMode);
+        
+        if (newViewMode === 'split') {
+            setShowEditor(true);
+            setEditorNeedsRefresh(true);
         }
     };
 
@@ -154,18 +151,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             // When highlighting is OFF: disable scale height with content
             scaleHeightWithContent: newState
         });
-        
-        // When turning syntax highlighting ON, force editor to show
-        if (newState) {
-            setShowEditor(true);
-            // Force split view when syntax highlighting is on
-            setViewMode('split');
-        }
-        
         setEditorNeedsRefresh(true);
         
         // Force editor to refresh when syntax highlighting is toggled
-        if (showEditor) {
+        if (showEditor && viewMode === 'split') {
             // Add a small delay to ensure UI updates first
             setTimeout(() => {
                 if (editorInstanceRef.current) {
@@ -497,7 +486,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             />
 
             <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>
-                {/* Always show block controls */}
                 <BlockControlsComponent
                     viewMode={viewMode}
                     setViewMode={handleViewModeChange}
@@ -507,79 +495,65 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     editorLanguage={editorLanguage}
                     changeEditorLanguage={changeEditorLanguage}
                 />
-                
-                {/* Display content based on view mode only when syntax highlighting is OFF */}
-                {!syntaxHighlight && viewMode === 'preview' && (
-                    <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>
-                )}
-                
-                {!syntaxHighlight && viewMode === 'split' && (
-                    <RawHTML 
-                        onClick={() => { setShowEditor(true) }} 
-                        className={`syntax-${syntaxHighlightTheme}`}
-                    >
-                        {content}
-                    </RawHTML>
-                )}
-                
-                {/* Show editor in two different scenarios */}
-                {/* Scenario 1: Syntax highlight ON - Always show Monaco editor */}
-                {syntaxHighlight && (
-                    <div
-                        ref={editorContainerRef}
-                        id='editor-container-ref'
-                        style={{
-                            height: calculateEditorHeight(content),
-                            width: '100%',
-                            position: 'relative',
-                            zIndex: 999,
-                            backgroundColor: '#fff',
-                            visibility: 'visible',
-                            display: 'block'
-                        }}
-                    />
-                )}
-                
-                {/* Scenario 2: Syntax highlight OFF, but in split mode with editor showing */}
-                {!syntaxHighlight && showEditor && viewMode === 'split' && (
-                    <ResizableBox
-                        className={"code-editor-box"}
-                        size={{
-                            height: convertToPx(editorHeight)
-                        }}
-                        minHeight={10}
-                        enable={{ top: true }}
-                        style={{ 
-                            position: 'fixed',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            zIndex: 9999
-                        }}
-                        onResizeStop={(event, direction, ref, d) => {
-                            const currentHeight = convertToPx(editorHeight);
-                            const newHeight = currentHeight + d.height;
-                            updateEditorSize(newHeight);
-                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
-                        }}
-                    >
+                {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {showEditor && viewMode === 'split' && (
+                    syntaxHighlight ? (
+                        // When syntax highlighting is ON: regular div inside the block
                         <div
                             ref={editorContainerRef}
                             id='editor-container-ref'
                             style={{
-                                height: '100%',
+                                height: calculateEditorHeight(content),
                                 width: '100%',
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
+                                position: 'relative',
                                 zIndex: 9999,
                                 backgroundColor: '#fff',
                                 visibility: 'visible',
                                 display: 'block'
                             }}
                         />
-                    </ResizableBox>
+                    ) : (
+                        // When syntax highlighting is OFF: resizable box at the bottom
+                        <ResizableBox
+                            className={"code-editor-box"}
+                            size={{
+                                height: convertToPx(editorHeight)
+                            }}
+                            minHeight={10}
+                            enable={{ top: true }}
+                            style={{ 
+                                position: 'fixed',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                zIndex: 9999
+                            }}
+                            onResizeStop={(event, direction, ref, d) => {
+                                const currentHeight = convertToPx(editorHeight);
+                                const newHeight = currentHeight + d.height;
+                                updateEditorSize(newHeight);
+                                updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                            }}
+                        >
+                            <div
+                                ref={editorContainerRef}
+                                id='editor-container-ref'
+                                style={{
+                                    height: '100%',
+                                    width: '100%',
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    zIndex: 9999,
+                                    backgroundColor: '#fff',
+                                    visibility: 'visible',
+                                    display: 'block'
+                                }}
+                            />
+                        </ResizableBox>
+                    )
                 )}
             </div>
         </>
