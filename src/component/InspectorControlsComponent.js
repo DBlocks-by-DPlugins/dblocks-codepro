@@ -27,6 +27,16 @@ const InspectorControlsComponent = ({
         updateAttribute('editorFontSize', newFontSize, '/wp-json/dblocks_codepro/v1/editor-font-size/');
     };
 
+    const handleHeightChange = (newHeight) => {
+        // Ensure the value always has 'px' at the end
+        const heightInPx = newHeight.toString().endsWith('px') 
+            ? newHeight 
+            : `${newHeight}px`;
+        
+        setEditorHeight(heightInPx);
+        updateAttribute('editorHeight', heightInPx, '/wp-json/dblocks_codepro/v1/editor-height/');
+    };
+
     return (
         <InspectorControls>
             <Panel>
@@ -54,31 +64,8 @@ const InspectorControlsComponent = ({
                         <UnitControl
                             label="Editor Height"
                             value={editorHeight}
-                            onChange={(newHeight) => {
-                                setEditorHeight(newHeight);
-                                updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
-                            }}
-                            onUnitChange={(newUnit) => {
-                                // Find the default value for the new unit
-                                const units = [
-                                    { value: 'px', label: 'px', default: 500 },
-                                    { value: '%', label: '%', default: 50 },
-                                    { value: 'em', label: 'em', default: 25 },
-                                    { value: 'rem', label: 'rem', default: 25 },
-                                    { value: 'vh', label: 'vh', default: 50 }
-                                ]
-                                const defaultValue = units.find(unit => unit.value === newUnit)?.default || 50;
-                                const newHeight = `${defaultValue}${newUnit}`;
-                                setEditorHeight(newHeight);
-                                updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
-                            }}
-                            units={[
-                                { value: 'px', label: 'px', default: 500 },
-                                { value: '%', label: '%', default: 50 },
-                                { value: 'em', label: 'em', default: 25 },
-                                { value: 'rem', label: 'rem', default: 25 },
-                                { value: 'vh', label: 'vh', default: 50 }
-                            ]}
+                            onChange={handleHeightChange}
+                            units={[{ value: 'px', label: 'px', default: 500 }]}
                             min={10}
                             max={1000}
                             __next40pxDefaultSize={true}

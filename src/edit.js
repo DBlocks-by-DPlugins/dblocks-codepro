@@ -6,6 +6,7 @@ import BlockControlsComponent from './component/BlockControls.js';
 import InspectorControlsComponent from './component/InspectorControlsComponent.js';
 import { ResizableBox } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
+import { parseHeightValue, formatHeightWithPx, convertToPx } from './utils/editor-utils';
 
 import './editor.scss';
 
@@ -30,11 +31,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         select('core/block-editor').getSelectedBlockClientId()
     );
 
-    useEffect(() => {
-        if (showEditor && selectedBlockClientId !== clientId) {
-            setShowEditor(false);
-        }
-    }, [selectedBlockClientId, clientId, showEditor]);
+    const calculateEditorHeight = (content) => {
+        const lineCount = (content.match(/\n/g) || []).length + 1;
+        const currentFontSize = parseInt(fontSize);
+        const lineHeight = currentFontSize * 1.5;
+        const padding = currentFontSize * 2;
+        const minHeight = currentFontSize * 1.5;
+        return `${Math.max(lineCount * lineHeight + padding, minHeight)}px`;
+    };
+
 
     const toggleAttribute = (attribute, value) => {
         setAttributes({ [attribute]: value });
@@ -108,14 +113,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     };
 
-    const calculateEditorHeight = (content) => {
-        const lineCount = (content.match(/\n/g) || []).length + 1;
-        const currentFontSize = parseInt(fontSize);
-        const lineHeight = currentFontSize * 1.5;
-        const padding = currentFontSize * 2;
-        const minHeight = currentFontSize * 1.5;
-        return `${Math.max(lineCount * lineHeight + padding, minHeight)}px`;
-    };
+    useEffect(() => {
+        if (showEditor && selectedBlockClientId !== clientId) {
+            setShowEditor(false);
+        }
+    }, [selectedBlockClientId, clientId, showEditor]);
 
     useEffect(() => {
         const fetchInitialSettings = async () => {
@@ -285,44 +287,17 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         fetchPluginInfo();
     }, []);
 
-    // Function to handle editor resize
+    // Function to handle editor resize - using utilities from editor-utils.js
     const updateEditorSize = (newHeight) => {
-        const heightValue = typeof newHeight === 'string' && newHeight.endsWith('px')
-            ? parseInt(newHeight)
-            : newHeight;
-
-        setEditorHeight(heightValue);
-        toggleAttribute('editorHeight', heightValue);
+        const heightWithPx = formatHeightWithPx(newHeight);
+        setEditorHeight(heightWithPx);
+        toggleAttribute('editorHeight', heightWithPx);
 
         if (editorContainerRef.current) {
-            editorContainerRef.current.style.height = typeof heightValue === 'number'
-                ? `${heightValue}px`
-                : heightValue;
-
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.layout();
-            }
+            editorContainerRef.current.style.height = heightWithPx;
+            editorInstanceRef.current?.layout();
         }
     };
-
-    // function to handle units
-    const convertToPx = (value) => {
-        const normalizedValue =
-            typeof value === 'string' && /^\d+$/.test(value.trim()) ? `${value.trim()}px` :
-                typeof value === 'number' ? `${value}px` :
-                    value;
-
-        const test = document.createElement("div");
-        test.style.height = normalizedValue;
-        test.style.position = "absolute";
-        test.style.visibility = "hidden";
-        test.style.zIndex = -9999;
-        document.body.appendChild(test);
-        const px = test.offsetHeight;
-        document.body.removeChild(test);
-        return px;
-    };
-
 
     return (
         <>
