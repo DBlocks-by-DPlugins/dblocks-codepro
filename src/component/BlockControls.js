@@ -1,11 +1,11 @@
 // BlockControlsComponent.js
 
-import { Toolbar, ToggleControl, ToolbarDropdownMenu } from '@wordpress/components';
+import { ToolbarDropdownMenu } from '@wordpress/components';
 
 
 import React, { useState } from 'react';
 import { BlockControls } from '@wordpress/block-editor';
-import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import { ToolbarGroup, ToolbarButton, ToolbarItem } from '@wordpress/components';
 import Languages from './Languages';
 import { Icon, seen, pageBreak, code } from '@wordpress/icons';
 
@@ -50,16 +50,21 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
                 />
             </ToolbarGroup>
             <ToolbarGroup>
-                <ToggleControl
-                    className="toggle-in-toolbar"
-                    label="Highlighting"
-                    checked={syntaxHighlight}
-                    onChange={() => {
-                        setSyntaxHighlight(!syntaxHighlight);
-                        setAttributes({ syntaxHighlight: !syntaxHighlight });
-                    }}
-                    __nextHasNoMarginBottom={true}
-                />
+                <ToolbarItem>
+                    {() => (
+                        <ToolbarButton
+                            icon={syntaxHighlight ? 'yes' : 'no'}
+                            label="Highlighting"
+                            isPressed={syntaxHighlight}
+                            onClick={() => {
+                                setSyntaxHighlight(!syntaxHighlight);
+                                setAttributes({ syntaxHighlight: !syntaxHighlight });
+                            }}
+                        >
+                            {syntaxHighlight ? 'Highlighting On' : 'Highlighting Off'}
+                        </ToolbarButton>
+                    )}
+                </ToolbarItem>
             </ToolbarGroup>
             {syntaxHighlight && (
                 <ToolbarGroup>
