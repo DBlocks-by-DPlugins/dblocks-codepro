@@ -2,43 +2,90 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-// Helper function to register GET/POST endpoints with standard patterns
-function register_dblocks_option_endpoints($route, $option_name, $default_value, $post_param_name) {
-    // GET endpoint
-    register_rest_route('dblocks_codepro/v1', $route, array(
+add_action('rest_api_init', function () {
+    // Routes for the main editor theme
+    register_rest_route('dblocks_codepro/v1', '/theme/', array(
         'methods' => 'GET',
-        'callback' => function() use ($option_name, $default_value) {
-            return new WP_REST_Response(esc_attr(get_option($option_name, $default_value)), 200);
+        'callback' => function () {
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_theme', 'vs-light')), 200);
         },
         'permission_callback' => '__return_true'
     ));
-    
-    // POST endpoint
-    register_rest_route('dblocks_codepro/v1', $route, array(
+    register_rest_route('dblocks_codepro/v1', '/theme/', array(
         'methods' => 'POST',
-        'callback' => function($request) use ($option_name, $post_param_name) {
-            update_option($option_name, $request->get_json_params()[$post_param_name]);
-            return new WP_REST_Response(sprintf('%s updated', ucfirst($post_param_name)), 200);
+        'callback' => function ($request) {
+            update_option('dblocks_codepro_theme', $request->get_json_params()['theme']);
+            return new WP_REST_Response('Theme updated', 200);
         },
-        'permission_callback' => function() {
+        'permission_callback' => function () {
             return current_user_can('edit_posts');
         }
     ));
-}
 
-add_action('rest_api_init', function() {
-    // Register all option endpoints using the helper function
-    register_dblocks_option_endpoints('/theme/', 'dblocks_codepro_theme', 'vs-light', 'theme');
-    register_dblocks_option_endpoints('/syntax-theme/', 'dblocks_codepro_syntax_theme', 'light', 'syntaxTheme');
-    register_dblocks_option_endpoints('/editor-font-size/', 'dblocks_codepro_editor_font_size', '14px', 'editorFontSize');
-    register_dblocks_option_endpoints('/editor-height/', 'dblocks_codepro_editor_height', '500px', 'editorHeight');
+    // New routes for the syntax highlight theme
+    register_rest_route('dblocks_codepro/v1', '/syntax-theme/', array(
+        'methods' => 'GET',
+        'callback' => function () {
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_syntax_theme', 'light')), 200);
+        },
+        'permission_callback' => '__return_true'
+    ));
+    register_rest_route('dblocks_codepro/v1', '/syntax-theme/', array(
+        'methods' => 'POST',
+        'callback' => function ($request) {
+            update_option('dblocks_codepro_syntax_theme', $request->get_json_params()['syntaxTheme']);
+            return new WP_REST_Response('Syntax theme updated', 200);
+        },
+        'permission_callback' => function () {
+            return current_user_can('edit_posts');
+        }
+    ));
 
-    // Register plugin path endpoint (different pattern)
+    // Routes for editor font size
+    register_rest_route('dblocks_codepro/v1', '/editor-font-size/', array(
+        'methods' => 'GET',
+        'callback' => function () {
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_editor_font_size', '14px')), 200);
+        },
+        'permission_callback' => '__return_true'
+    ));
+    register_rest_route('dblocks_codepro/v1', '/editor-font-size/', array(
+        'methods' => 'POST',
+        'callback' => function ($request) {
+            update_option('dblocks_codepro_editor_font_size', $request->get_json_params()['editorFontSize']);
+            return new WP_REST_Response('Editor font size updated', 200);
+        },
+        'permission_callback' => function () {
+            return current_user_can('edit_posts');
+        }
+    ));
+
+    // Routes for editor height
+    register_rest_route('dblocks_codepro/v1', '/editor-height/', array(
+        'methods' => 'GET',
+        'callback' => function () {
+            return new WP_REST_Response(esc_attr(get_option('dblocks_codepro_editor_height', '500px')), 200);
+        },
+        'permission_callback' => '__return_true'
+    ));
+    register_rest_route('dblocks_codepro/v1', '/editor-height/', array(
+        'methods' => 'POST',
+        'callback' => function ($request) {
+            update_option('dblocks_codepro_editor_height', $request->get_json_params()['editorHeight']);
+            return new WP_REST_Response('Editor height updated', 200);
+        },
+        'permission_callback' => function () {
+            return current_user_can('edit_posts');
+        }
+    ));
+
+    // Register new REST API endpoint to get the plugin path
     register_rest_route('dblocks_codepro/v1', '/plugin-path', [
         'methods' => 'GET',
         'callback' => 'get_plugin_info',
         'permission_callback' => '__return_true'
     ]);
+
 });
 
 function get_plugin_info() {
