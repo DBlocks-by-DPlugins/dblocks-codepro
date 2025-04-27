@@ -60,21 +60,19 @@ const InspectorControlsComponent = ({
                     />
                 </PanelBody>
                 <PanelBody title="Syntax Highlighting">
-                    <div className="togglecontrol--with-info">
-                        <ToggleControl
-                            label="Activate Syntax Highlighting"
-                            checked={syntaxHighlight}
-                            onChange={() => {
-                                setSyntaxHighlight(!syntaxHighlight);
-                                setAttributes({ syntaxHighlight: !syntaxHighlight });
-                            }}
-                            __nextHasNoMarginBottom={true}
-                        />
-                        <div className="togglecontrol--with-info__icon-wrapper">
-                            <Icon icon={help} size={20} />
-                            <p>If this is disabled code will be injected as HTML, otherwise the code will be displayed with syntax highlighting as code snippet preview.</p>
-                        </div>
-                    </div>
+                    
+                    <ToggleControl
+                        label="Syntax Highlighting"
+                        checked={syntaxHighlight}
+                        onChange={() => {
+                            setSyntaxHighlight(!syntaxHighlight);
+                            setAttributes({ syntaxHighlight: !syntaxHighlight });
+                        }}
+                        __nextHasNoMarginBottom={true}
+                    />
+                    <p style={{ fontSize: '12px'}}>Display it as code snippet instead of running the code.</p>
+                    
+                
                     {syntaxHighlight && (
                         <>
                             <SelectControl
