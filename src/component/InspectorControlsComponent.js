@@ -54,22 +54,26 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
 
-                    <ToggleControl
-                        label="Scale height with content"
-                        checked={attributes.scaleHeightWithContent}
-                        onChange={() => setAttributes({ scaleHeightWithContent: !attributes.scaleHeightWithContent })}
-                        __nextHasNoMarginBottom={true}
-                    />
-                    {!attributes.scaleHeightWithContent && (
-                        <UnitControl
-                            label="Editor Height"
-                            value={editorHeight}
-                            onChange={handleHeightChange}
-                            units={[{ value: 'px', label: 'px', default: 500 }]}
-                            min={10}
-                            max={1000}
-                            __next40pxDefaultSize={true}
-                        />
+                    {!syntaxHighlight && (
+                        <>
+                            <ToggleControl
+                                label="Scale height with content"
+                                checked={attributes.scaleHeightWithContent}
+                                onChange={() => setAttributes({ scaleHeightWithContent: !attributes.scaleHeightWithContent })}
+                                __nextHasNoMarginBottom={true}
+                            />
+                            {!attributes.scaleHeightWithContent && (
+                                <UnitControl
+                                    label="Editor Height"
+                                    value={editorHeight}
+                                    onChange={handleHeightChange}
+                                    units={[{ value: 'px', label: 'px', default: 500 }]}
+                                    min={10}
+                                    max={1000}
+                                    __next40pxDefaultSize={true}
+                                />
+                            )}
+                        </>
                     )}
                 </PanelBody>
                 <PanelBody title="Syntax Highlighting">
