@@ -33,6 +33,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
     const editorInstanceRef = useRef(null);
+    const editorInitializedRef = useRef(false);
 
     // Get language display name
     const getLanguageLabel = (langValue) => {
@@ -72,7 +73,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
-        setShouldReloadEditor(true);
+        // Update the editor language directly if the editor instance exists
+        if (editorInstanceRef.current) {
+            editorInstanceRef.current.updateOptions({
+                language: language
+            });
+        } else {
+            // Only set shouldReloadEditor flag if editor isn't initialized yet
+            setShouldReloadEditor(true);
+        }
         toggleAttribute('editorLanguage', language);
     };
 
@@ -238,6 +247,18 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             contextWindow.require.config({ paths: { 'vs': `${MONACO_PATH}` } });
 
                             contextWindow.require(['vs/editor/editor.main'], () => {
+                                // Skip re-initialization unless we explicitly want to reload
+                                if (editorInstanceRef.current && !shouldReloadEditor && editorInitializedRef.current) {
+                                    // Just update the options instead of recreating
+                                    editorInstanceRef.current.updateOptions({
+                                        theme: theme,
+                                        fontSize: parseInt(fontSize),
+                                        language: editorLanguage
+                                    });
+                                    return;
+                                }
+                                
+                                // Dispose existing instance if it exists
                                 if (editorInstanceRef.current) {
                                     editorInstanceRef.current.dispose();
                                 }
@@ -251,6 +272,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                                     fontSize: parseInt(fontSize),
                                     scrollBeyondLastLine: false,
                                 });
+
+                                // Mark as initialized
+                                editorInitializedRef.current = true;
 
                                 emmetHTML(contextWindow.monaco);
 
@@ -291,7 +315,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 return () => clearTimeout(timeoutId);
             }
         }
-    }, [syntaxHighlight, viewMode, pluginInfo, content, editorLanguage, fontSize, theme, showEditor, attributes.scaleHeightWithContent, toggleAttribute, setShouldReloadEditor]);
+    }, [syntaxHighlight, viewMode, pluginInfo, editorLanguage, fontSize, theme, showEditor, attributes.scaleHeightWithContent, toggleAttribute, setShouldReloadEditor]);
 
     useEffect(() => {
         return () => {
@@ -304,7 +328,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     useEffect(() => {
         if (editorInstanceRef.current && editorInstanceRef.current.getValue() !== content) {
-            editorInstanceRef.current.setValue(content);
+            // We need to prevent recursive updates here, so we'll temporarily remove the onDidChangeModelContent event
+            const model = editorInstanceRef.current.getModel();
+            if (model) {
+                // Store the current cursor position
+                const selection = editorInstanceRef.current.getSelection();
+                
+                // Update the value without triggering the change event
+                editorInstanceRef.current.setValue(content);
+                
+                // Restore the cursor position
+                if (selection) {
+                    editorInstanceRef.current.setSelection(selection);
+                }
+            }
         }
     }, [content]);
 
