@@ -148,49 +148,32 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         setAttributes({ syntaxHighlight: newState });
         setEditorNeedsRefresh(true);
         
-        // When turning syntax highlight on:
-        // 1. Always force split view mode (no preview/split toggle)
-        // 2. Force editor to be visible
-        if (newState === true) {
-            setViewMode('split');
-            setShowEditor(true);
-            
-            // If scaleHeightWithContent was false, update to true
-            if (!attributes.scaleHeightWithContent) {
-                setAttributes({ scaleHeightWithContent: true });
-            }
-        }
-        
         // Force editor to refresh when syntax highlighting is toggled
-        setTimeout(() => {
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.layout();
-                const iframe = document.querySelector('[name="editor-canvas"]');
-                const contextWindow = iframe ? iframe.contentWindow : window;
-                if (contextWindow && contextWindow.monaco) {
-                    editorInstanceRef.current.focus();
+        if (showEditor && viewMode === 'split') {
+            // Add a small delay to ensure UI updates first
+            setTimeout(() => {
+                if (editorInstanceRef.current) {
+                    editorInstanceRef.current.layout();
+                    const iframe = document.querySelector('[name="editor-canvas"]');
+                    const contextWindow = iframe ? iframe.contentWindow : window;
+                    if (contextWindow && contextWindow.monaco) {
+                        editorInstanceRef.current.focus();
+                    }
                 }
-            }
-        }, 50);
+            }, 50);
+        }
     };
 
     // Monitor block selection changes
     useEffect(() => {
         if (selectedBlockClientId !== clientId) {
-            // Hide editor when switching to another block, but only when syntax highlighting is off
-            if (!syntaxHighlight) {
-                setShowEditor(false);
-            }
-        } else {
-            // When syntax highlighting is on, always show editor
-            // When syntax highlighting is off, follow viewMode
-            if (syntaxHighlight) {
-                setShowEditor(true);
-            } else if (viewMode === 'split') {
-                setShowEditor(true);
-            }
+            // Hide editor when switching to another block
+            setShowEditor(false);
+        } else if (viewMode === 'split') {
+            // Show editor when this block is selected and in split mode
+            setShowEditor(true);
         }
-    }, [selectedBlockClientId, clientId, viewMode, syntaxHighlight]);
+    }, [selectedBlockClientId, clientId, viewMode]);
 
     useEffect(() => {
         const fetchInitialSettings = async () => {
@@ -497,7 +480,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 updateAttribute={updateAttribute}
             />
 
-            <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: syntaxHighlight ? 'auto' : '100vh' }}>
+            <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>
                 <BlockControlsComponent
                     viewMode={viewMode}
                     setViewMode={handleViewModeChange}
@@ -507,74 +490,61 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     editorLanguage={editorLanguage}
                     changeEditorLanguage={changeEditorLanguage}
                 />
-                
-                {syntaxHighlight ? (
-                    // When syntax highlighting is ON:
-                    // 1. Don't show preview
-                    // 2. Place Monaco inside block
-                    // 3. Keep Monaco visible
-                    <div className="editor-inside-block">
-                        <div
-                            ref={editorContainerRef}
-                            id='editor-container-ref'
-                            style={{
-                                height: calculateEditorHeight(content),
-                                width: '100%',
-                                backgroundColor: theme === 'vs-dark' ? '#1e1e1e' : '#fff',
-                                visibility: 'visible',
-                                display: 'block',
-                                border: '1px solid #ddd',
-                                marginTop: '10px',
-                                marginBottom: '10px',
-                                borderRadius: '4px'
-                            }}
-                        />
-                    </div>
-                ) : (
-                    // When syntax highlighting is OFF:
-                    // 1. Show preview/split based on viewMode
-                    // 2. Place Monaco at the bottom
-                    // 3. Show/hide Monaco based on viewMode
+                {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {viewMode === 'split' && (
                     <>
-                        {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                        {viewMode === 'split' && (
-                            <>
-                                <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>
-                                {showEditor && (
-                                    <ResizableBox
-                                        className={"code-editor-box"}
-                                        size={{
-                                            height: convertToPx(editorHeight)
+                        <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>
+                        {showEditor && (
+                            syntaxHighlight ? (
+                                // When syntax highlighting is on, always scale with content
+                                <div className="editor-inside-block">
+                                    <div
+                                        ref={editorContainerRef}
+                                        id='editor-container-ref'
+                                        style={{
+                                            height: calculateEditorHeight(content),
+                                            width: '100%',
+                                            backgroundColor: '#fff',
+                                            visibility: 'visible',
+                                            display: 'block'
                                         }}
-                                        minHeight={10}
-                                        enable={{ top: true }}
-                                        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
-                                        onResizeStop={(event, direction, ref, d) => {
-                                            const currentHeight = convertToPx(editorHeight);
-                                            const newHeight = currentHeight + d.height;
-                                            updateEditorSize(newHeight);
-                                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                                    />
+                                </div>
+                            ) : (
+                                // When syntax highlighting is off, always use fixed height with editorHeight
+                                <ResizableBox
+                                    className={"code-editor-box"}
+                                    size={{
+                                        height: convertToPx(editorHeight)
+                                    }}
+                                    minHeight={10}
+                                    enable={{ top: true }}
+                                    style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}
+                                    onResizeStop={(event, direction, ref, d) => {
+                                        const currentHeight = convertToPx(editorHeight);
+                                        const newHeight = currentHeight + d.height;
+                                        updateEditorSize(newHeight);
+                                        updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                                    }}
+                                >
+                                    <div
+                                        ref={editorContainerRef}
+                                        id='editor-container-ref'
+                                        style={{
+                                            height: '100%',
+                                            width: '100%',
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            zIndex: 9999,
+                                            backgroundColor: '#fff',
+                                            visibility: 'visible',
+                                            display: 'block'
                                         }}
-                                    >
-                                        <div
-                                            ref={editorContainerRef}
-                                            id='editor-container-ref'
-                                            style={{
-                                                height: '100%',
-                                                width: '100%',
-                                                position: 'absolute',
-                                                bottom: 0,
-                                                left: 0,
-                                                right: 0,
-                                                zIndex: 9999,
-                                                backgroundColor: theme === 'vs-dark' ? '#1e1e1e' : '#fff',
-                                                visibility: 'visible',
-                                                display: 'block'
-                                            }}
-                                        />
-                                    </ResizableBox>
-                                )}
-                            </>
+                                    />
+                                </ResizableBox>
+                            )
                         )}
                     </>
                 )}
