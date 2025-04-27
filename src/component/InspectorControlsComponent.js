@@ -81,6 +81,7 @@ const InspectorControlsComponent = ({
                             ]}
                             min={10}
                             max={1000}
+                            __next40pxDefaultSize={true}
                         />
                     )}
                 </PanelBody>
@@ -131,6 +132,7 @@ const InspectorControlsComponent = ({
                         units={[{ value: 'px', label: 'Pixels', default: 14 }]}
                         min={10}
                         max={30}
+                        __next40pxDefaultSize={true}
                     />
 
                 </PanelBody>
