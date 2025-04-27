@@ -497,64 +497,62 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 />
                 {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {showEditor && viewMode === 'split' && (
-                    syntaxHighlight ? (
-                        // When syntax highlighting is ON: regular div inside the block
+                {showEditor && ((viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
+                    <ResizableBox
+                        className={"code-editor-box"}
+                        size={{
+                            height: convertToPx(editorHeight)
+                        }}
+                        minHeight={10}
+                        enable={{ top: true }}
+                        style={{ 
+                            position: syntaxHighlight ? 'relative' : 'fixed',
+                            bottom: syntaxHighlight ? 'auto' : 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 9999
+                        }}
+                        onResizeStop={(event, direction, ref, d) => {
+                            const currentHeight = convertToPx(editorHeight);
+                            const newHeight = currentHeight + d.height;
+                            updateEditorSize(newHeight);
+                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                        }}
+                    >
                         <div
                             ref={editorContainerRef}
                             id='editor-container-ref'
                             style={{
-                                height: calculateEditorHeight(content),
+                                height: '100%',
                                 width: '100%',
-                                position: 'relative',
+                                position: syntaxHighlight ? 'relative' : 'absolute',
+                                bottom: syntaxHighlight ? 'auto' : 0,
+                                left: 0,
+                                right: 0,
                                 zIndex: 9999,
                                 backgroundColor: '#fff',
                                 visibility: 'visible',
                                 display: 'block'
                             }}
                         />
-                    ) : (
-                        // When syntax highlighting is OFF: resizable box at the bottom
-                        <ResizableBox
-                            className={"code-editor-box"}
-                            size={{
-                                height: convertToPx(editorHeight)
-                            }}
-                            minHeight={10}
-                            enable={{ top: true }}
-                            style={{ 
-                                position: 'fixed',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                zIndex: 9999
-                            }}
-                            onResizeStop={(event, direction, ref, d) => {
-                                const currentHeight = convertToPx(editorHeight);
-                                const newHeight = currentHeight + d.height;
-                                updateEditorSize(newHeight);
-                                updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
-                            }}
-                        >
-                            <div
-                                ref={editorContainerRef}
-                                id='editor-container-ref'
-                                style={{
-                                    height: '100%',
-                                    width: '100%',
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    zIndex: 9999,
-                                    backgroundColor: '#fff',
-                                    visibility: 'visible',
-                                    display: 'block'
-                                }}
-                            />
-                        </ResizableBox>
-                    )
-                )}
+                    </ResizableBox>
+                ) :
+                    <div
+                        ref={editorContainerRef}
+                        id='editor-container-ref'
+                        style={{
+                            height: calculateEditorHeight(content),
+                            width: '100%',
+                            position: syntaxHighlight ? 'relative' : 'fixed',
+                            bottom: syntaxHighlight ? 'auto' : 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 9999,
+                            backgroundColor: '#fff',
+                            visibility: 'visible',
+                            display: 'block'
+                        }}
+                    />)}
             </div>
         </>
     );
