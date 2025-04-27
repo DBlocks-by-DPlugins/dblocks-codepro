@@ -3,6 +3,11 @@
 if (! defined('ABSPATH')) exit; // Exit if accessed directly
 
 function dblocks_codepro_register_block() {
+    // Check if block is already registered to prevent duplicate registration
+    if (WP_Block_Type_Registry::get_instance()->is_registered('dblocks/dblocks-codepro')) {
+        return;
+    }
+    
     register_block_type(constant('DBLOCKS_CODEPRO_PATH') . 'build/');
 }
 add_action('init', 'dblocks_codepro_register_block');

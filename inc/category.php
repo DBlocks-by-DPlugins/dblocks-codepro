@@ -13,4 +13,7 @@ if (!function_exists('dblocks_block_category')) {
     }
 }
 
-add_filter('block_categories_all', 'dblocks_block_category');
+// Only add the filter if WordPress core is loaded
+if (function_exists('add_filter')) {
+    add_filter('block_categories_all', 'dblocks_block_category');
+}
