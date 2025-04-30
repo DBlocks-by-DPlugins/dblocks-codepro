@@ -31,7 +31,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         return attributes.editorHeight || '500px';
     });
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
-    const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
+    const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(() => {
+        // Try to get from localStorage first
+        const savedTheme = localStorage.getItem('dblocks_syntax_theme');
+        if (savedTheme) {
+            return savedTheme;
+        }
+        // Fall back to attributes or default
+        return attributes.syntaxHighlightTheme || "light";
+    });
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
     const [pluginInfo, setPluginInfo] = useState(null);
     const [editorInitialized, setEditorInitialized] = useState(false);
@@ -77,12 +85,48 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             });
 
             if (!response.ok) throw new Error("Network response was not ok.");
+            
+            // Update localStorage first
+            localStorage.setItem('dblocks_syntax_theme', newSyntaxTheme);
+            // Then update state
             setSyntaxHighlightTheme(newSyntaxTheme);
+            // Finally update block attribute
             toggleAttribute('syntaxHighlightTheme', newSyntaxTheme);
+
+            // Dispatch custom event to notify all blocks
+            const event = new CustomEvent('dblocks_syntax_theme_changed', {
+                detail: { theme: newSyntaxTheme }
+            });
+            window.dispatchEvent(event);
         } catch (error) {
             console.error("Failed to update syntax theme:", error);
         }
     };
+
+    // Listen for syntax theme changes from other blocks
+    useEffect(() => {
+        const handleThemeChange = (event) => {
+            const newTheme = event.detail.theme;
+            if (newTheme !== syntaxHighlightTheme) {
+                setSyntaxHighlightTheme(newTheme);
+                setAttributes({ syntaxHighlightTheme: newTheme });
+            }
+        };
+
+        window.addEventListener('dblocks_syntax_theme_changed', handleThemeChange);
+        return () => {
+            window.removeEventListener('dblocks_syntax_theme_changed', handleThemeChange);
+        };
+    }, [syntaxHighlightTheme]);
+
+    // Check for theme changes on mount
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('dblocks_syntax_theme');
+        if (savedTheme && savedTheme !== syntaxHighlightTheme) {
+            setSyntaxHighlightTheme(savedTheme);
+            setAttributes({ syntaxHighlightTheme: savedTheme });
+        }
+    }, []);
 
     const changeEditorLanguage = (language) => {
         setEditorLanguage(language);
@@ -223,6 +267,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         } else if (viewMode === 'split') {
             // Show editor when this block is selected and in split mode
             setShowEditor(true);
+            
             // Check and update height from localStorage when block is selected
             const savedHeight = localStorage.getItem('dblocks_editor_height');
             if (savedHeight && savedHeight !== editorHeight) {
@@ -232,6 +277,13 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     editorContainerRef.current.style.height = savedHeight;
                     editorInstanceRef.current?.layout();
                 }
+            }
+
+            // Check and update syntax theme from localStorage when block is selected
+            const savedTheme = localStorage.getItem('dblocks_syntax_theme');
+            if (savedTheme && savedTheme !== syntaxHighlightTheme) {
+                setSyntaxHighlightTheme(savedTheme);
+                setAttributes({ syntaxHighlightTheme: savedTheme });
             }
         }
     }, [selectedBlockClientId, clientId, viewMode, syntaxHighlight]);
