@@ -55,6 +55,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         // Fall back to attributes or default
         return attributes.displayLanguage ?? true;
     });
+    const [copyButton, setCopyButton] = useState(() => {
+        // Try to get from localStorage first
+        const savedCopyButton = localStorage.getItem('dblocks_copy_button');
+        if (savedCopyButton !== null) {
+            return savedCopyButton === 'true';
+        }
+        // Fall back to attributes or default
+        return attributes.copyButton ?? true;
+    });
 
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
@@ -194,6 +203,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 localStorage.setItem('dblocks_display_language', value);
                 const event = new CustomEvent('dblocks_display_language_changed', {
                     detail: { displayLanguage: value }
+                });
+                window.dispatchEvent(event);
+            }
+            // If this is the copy button attribute, update localStorage and dispatch event
+            else if (attribute === 'copyButton') {
+                localStorage.setItem('dblocks_copy_button', value);
+                const event = new CustomEvent('dblocks_copy_button_changed', {
+                    detail: { copyButton: value }
                 });
                 window.dispatchEvent(event);
             }
@@ -576,6 +593,34 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     }, []);
 
+    // Listen for copy button changes from other blocks
+    useEffect(() => {
+        const handleCopyButtonChange = (event) => {
+            const newValue = event.detail.copyButton;
+            if (newValue !== copyButton) {
+                setCopyButton(newValue);
+                setAttributes({ copyButton: newValue });
+            }
+        };
+
+        window.addEventListener('dblocks_copy_button_changed', handleCopyButtonChange);
+        return () => {
+            window.removeEventListener('dblocks_copy_button_changed', handleCopyButtonChange);
+        };
+    }, [copyButton]);
+
+    // Check for copy button changes on mount
+    useEffect(() => {
+        const savedCopyButton = localStorage.getItem('dblocks_copy_button');
+        if (savedCopyButton !== null) {
+            const newValue = savedCopyButton === 'true';
+            if (newValue !== copyButton) {
+                setCopyButton(newValue);
+                setAttributes({ copyButton: newValue });
+            }
+        }
+    }, []);
+
     return (
         <>
             <InspectorControlsComponent
@@ -595,6 +640,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 setEditorHeight={updateEditorSize}
                 updateAttribute={updateAttribute}
                 displayLanguage={displayLanguage}
+                copyButton={copyButton}
             />
 
             <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>

@@ -2,7 +2,7 @@ import { RawHTML } from '@wordpress/element';
 import { useBlockProps } from '@wordpress/block-editor';
 
 export default function save({ attributes }) {
-    const { syntaxHighlight, content, theme, syntaxHighlightTheme, editorLanguage, displayLanguage } = attributes;
+    const { syntaxHighlight, content, theme, syntaxHighlightTheme, editorLanguage, displayLanguage, copyButton } = attributes;
     const blockProps = useBlockProps.save();
     const syntaxThemeClass = syntaxHighlightTheme === 'light' ? 'hsl-light' : '';
 
@@ -10,11 +10,21 @@ export default function save({ attributes }) {
         // Display the code with syntax highlighting
         return (
             <pre {...blockProps}>
-                {displayLanguage && (
-                    <div className="code-language-label">
-                        {editorLanguage.toUpperCase()}
-                    </div>
-                )}
+                <div className='tag-wrapper'>
+                    
+                    {copyButton && (
+                        <button className="copy-button tag-button">
+                            Copy
+                        </button>
+                    )}
+
+                    {displayLanguage && (
+                        <div className="code-language-label tag-button">
+                            {editorLanguage.toUpperCase()}
+                        </div>
+                    )}
+                    
+                </div>
                 <code className={`language-${editorLanguage} ${syntaxThemeClass}`}>
                     {content}
                 </code>

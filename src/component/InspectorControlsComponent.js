@@ -21,7 +21,8 @@ const InspectorControlsComponent = ({
     editorHeight,
     setEditorHeight,
     updateAttribute,
-    displayLanguage
+    displayLanguage,
+    copyButton
 }) => {
     const handleFontSizeChange = (newFontSize) => {
         setFontSize(newFontSize);
@@ -51,6 +52,10 @@ const InspectorControlsComponent = ({
 
     const handleDisplayLanguageChange = (value) => {
         updateAttribute('displayLanguage', value, '/wp-json/dblocks_codepro/v1/display-language/');
+    };
+
+    const handleCopyButtonChange = (value) => {
+        updateAttribute('copyButton', value, '/wp-json/dblocks_codepro/v1/copy-button/');
     };
 
     return (
@@ -106,21 +111,17 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
 
-                    <div className="togglecontrol--with-info">
-                        <ToggleControl
-                            label="Display Language"
-                            checked={displayLanguage}
-                            onChange={handleDisplayLanguageChange}
-                            __nextHasNoMarginBottom={true}
-                        />
-                        <div className="togglecontrol--with-info__icon-wrapper">
-                            <Icon icon={help} size={20} />
-                            <p>Show or hide the language indicator in all code blocks across the website.</p>
-                        </div>
-                    </div>
+                  
 
+                   
                     {syntaxHighlight && (
-                        <div style={{ padding: '20px 0px 20px 20px'}}>
+                        <div style={{ padding: '10px 0px 10px 15px'}}>
+                             <SelectControl
+                                label="Language"
+                                value={editorLanguage}
+                                options={Languages}
+                                onChange={changeEditorLanguage}
+                            />
                             <SelectControl
                                 label="Front End Theme"
                                 value={syntaxHighlightTheme}
@@ -130,12 +131,18 @@ const InspectorControlsComponent = ({
                                 ]}
                                 onChange={handleFrontEndThemeChange}
                             />
-                            <SelectControl
-                                label="Language"
-                                value={editorLanguage}
-                                options={Languages}
-                                onChange={changeEditorLanguage}
+                             <ToggleControl
+                                label="Display Language"
+                                checked={displayLanguage}
+                                onChange={handleDisplayLanguageChange}
+                                __nextHasNoMarginBottom={true}
                             />
+                            <ToggleControl
+                                label="Copy Button"
+                                checked={copyButton}
+                                onChange={handleCopyButtonChange}
+                                __nextHasNoMarginBottom={true}
+                            />                           
                         </div>
                     )}
 
