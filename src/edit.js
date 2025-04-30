@@ -22,7 +22,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [viewMode, setViewMode] = useState(initialViewMode);
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
-    const [editorHeight, setEditorHeight] = useState(attributes.editorHeight || '500px');
+    const [editorHeight, setEditorHeight] = useState(() => {
+        // Try to get height from localStorage first, then fallback to attributes or default
+        const savedHeight = localStorage.getItem('dblocks_editor_height');
+        return savedHeight || attributes.editorHeight || '500px';
+    });
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
@@ -478,6 +482,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         const heightWithPx = formatHeightWithPx(newHeight);
         setEditorHeight(heightWithPx);
         toggleAttribute('editorHeight', heightWithPx);
+        // Save to localStorage
+        localStorage.setItem('dblocks_editor_height', heightWithPx);
 
         if (editorContainerRef.current) {
             editorContainerRef.current.style.height = heightWithPx;
