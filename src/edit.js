@@ -4,7 +4,7 @@ import { RawHTML } from '@wordpress/element';
 import { emmetHTML } from 'emmet-monaco-es';
 import BlockControlsComponent from './component/BlockControls.js';
 import InspectorControlsComponent from './component/InspectorControlsComponent.js';
-import { ResizableBox } from "@wordpress/components";
+import { ResizableBox, Spinner } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
 import { parseHeightValue, formatHeightWithPx, convertToPx } from './utils/editor-utils';
 
@@ -30,6 +30,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [editorInitialized, setEditorInitialized] = useState(false);
     const [showEditor, setShowEditor] = useState(false);
     const [editorNeedsRefresh, setEditorNeedsRefresh] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
@@ -221,6 +222,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             return;
         }
 
+        setIsLoading(true);
+
         // Force fresh editor when syntax highlight is toggled or view mode changes from preview to split
         const needsRefresh = editorNeedsRefresh || 
                             (previousViewModeRef.current === 'preview' && viewMode === 'split');
@@ -246,6 +249,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 }
             }, 50);
             
+            setIsLoading(false);
             return;
         }
 
@@ -337,6 +341,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             console.error("Failed to initialize Monaco editor:", error);
         } finally {
             monacoEditorCache.isInitializing = false;
+            setIsLoading(false);
         }
     };
 
@@ -550,24 +555,58 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                                 display: shouldShowEditor ? 'block' : 'none'
                             }}
                         />
+                        {isLoading && (
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                zIndex: 10000
+                            }}>
+                                <Spinner />
+                            </div>
+                        )}
                     </ResizableBox>
                 ) :
-                    <div
-                        ref={editorContainerRef}
-                        id='editor-container-ref'
-                        style={{
-                            height: calculateEditorHeight(content),
-                            width: '100%',
-                            position: syntaxHighlight ? 'relative' : 'fixed',
-                            bottom: syntaxHighlight ? 'auto' : 0,
-                            left: 0,
-                            right: 0,
-                            zIndex: 9999,
-                            backgroundColor: '#fff',
-                            visibility: shouldShowEditor ? 'visible' : 'hidden',
-                            display: shouldShowEditor ? 'block' : 'none'
-                        }}
-                    />)}
+                    <div style={{ position: 'relative' }}>
+                        <div
+                            ref={editorContainerRef}
+                            id='editor-container-ref'
+                            style={{
+                                height: calculateEditorHeight(content),
+                                width: '100%',
+                                position: syntaxHighlight ? 'relative' : 'fixed',
+                                bottom: syntaxHighlight ? 'auto' : 0,
+                                left: 0,
+                                right: 0,
+                                zIndex: 9999,
+                                backgroundColor: '#fff',
+                                visibility: shouldShowEditor ? 'visible' : 'hidden',
+                                display: shouldShowEditor ? 'block' : 'none'
+                            }}
+                        />
+                        {isLoading && (
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                zIndex: 10000
+                            }}>
+                                <Spinner />
+                            </div>
+                        )}
+                    </div>)}
             </div>
         </>
     );
