@@ -170,6 +170,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     // Monitor block selection changes
     useEffect(() => {
+        // Skip the initial mount to prevent automatic selection
+        if (!selectedBlockClientId) {
+            return;
+        }
+
         if (selectedBlockClientId !== clientId) {
             // Hide editor when switching to another block
             setShowEditor(false);
@@ -234,11 +239,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 setEditorInitialized(true);
             }
             
-            // Ensure the editor gets focus and updates its layout
+            // Only update layout, don't focus
             setTimeout(() => {
                 if (editorInstanceRef.current) {
                     editorInstanceRef.current.layout();
-                    editorInstanceRef.current.focus();
                 }
             }, 50);
             
@@ -315,11 +319,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         }
                     });
 
-                    // Make sure editor is visible and gets focus
+                    // Only update layout, don't focus
                     setTimeout(() => {
                         if (editorInstanceRef.current) {
                             editorInstanceRef.current.layout();
-                            editorInstanceRef.current.focus();
                         }
                     }, 10);
 
@@ -365,7 +368,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     // Initialize or reuse editor when needed
     useEffect(() => {
-        if (showEditor && viewMode === 'split' && pluginInfo) {
+        // Initialize if syntax highlighting is enabled OR if block is selected and in split mode
+        if (syntaxHighlight || (selectedBlockClientId === clientId && viewMode === 'split')) {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             const contextDoc = iframe ? iframe.contentWindow.document : document;
@@ -379,14 +383,26 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
 
         return () => {
-            // Don't dispose the editor when hiding - we'll reuse it
-            // Only clean up when component unmounts
-            if (!showEditor && editorInstanceRef.current && monacoEditorCache.lastClientId !== clientId) {
+            // Clean up editor if neither condition is met
+            if (!syntaxHighlight && selectedBlockClientId !== clientId && editorInstanceRef.current && monacoEditorCache.lastClientId === clientId) {
                 editorInstanceRef.current.dispose();
                 editorInstanceRef.current = null;
+                monacoEditorCache.instance = null;
+                monacoEditorCache.lastClientId = null;
             }
         };
-    }, [viewMode, pluginInfo, showEditor, clientId, editorNeedsRefresh]);
+    }, [syntaxHighlight, selectedBlockClientId, clientId, viewMode, pluginInfo]);
+
+    // Set initial view mode to split when syntax highlighting is off
+    useEffect(() => {
+        if (!syntaxHighlight && viewMode === 'preview') {
+            setViewMode('split');
+            toggleAttribute('viewMode', 'split');
+        }
+    }, [syntaxHighlight]);
+
+    // Update editor container visibility
+    const shouldShowEditor = syntaxHighlight || (selectedBlockClientId === clientId && viewMode === 'split');
 
     // Force re-render when editor container is first created or refreshed
     useLayoutEffect(() => {
@@ -496,7 +512,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 />
                 {!syntaxHighlight && viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {!syntaxHighlight && viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {(showEditor || syntaxHighlight) && ((!syntaxHighlight && viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
+                {shouldShowEditor && ((!syntaxHighlight && viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
                     <ResizableBox
                         className={"code-editor-box"}
                         size={{
@@ -530,8 +546,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                                 right: 0,
                                 zIndex: 9999,
                                 backgroundColor: '#fff',
-                                visibility: 'visible',
-                                display: 'block'
+                                visibility: shouldShowEditor ? 'visible' : 'hidden',
+                                display: shouldShowEditor ? 'block' : 'none'
                             }}
                         />
                     </ResizableBox>
@@ -548,8 +564,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             right: 0,
                             zIndex: 9999,
                             backgroundColor: '#fff',
-                            visibility: 'visible',
-                            display: 'block'
+                            visibility: shouldShowEditor ? 'visible' : 'hidden',
+                            display: shouldShowEditor ? 'block' : 'none'
                         }}
                     />)}
             </div>
