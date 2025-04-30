@@ -495,9 +495,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     editorLanguage={editorLanguage}
                     changeEditorLanguage={changeEditorLanguage}
                 />
-                {viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {showEditor && ((viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
+                {!syntaxHighlight && viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {!syntaxHighlight && viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
+                {(showEditor || syntaxHighlight) && ((viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
                     <ResizableBox
                         className={"code-editor-box"}
                         size={{
