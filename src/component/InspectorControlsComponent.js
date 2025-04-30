@@ -90,7 +90,7 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
                     {syntaxHighlight && (
-                        <div style={{ borderLeft: '1px solid #a8a8a8', paddingLeft: '20px 20px 0 20px', marginLeft: '10px' }}>
+                        <div style={{ borderLeft: '1px solid #a8a8a8', paddingLeft: '20px', margin: '10px 0 10px 10px' }}>
                             <ToggleControl
                                 label="FrontEnd Dark Theme"
                                 checked={syntaxHighlightTheme === "dark"}

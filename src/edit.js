@@ -12,9 +12,8 @@ import './editor.scss';
 
 // Monaco editor instance cache to prevent reloading when switching blocks
 const monacoEditorCache = {
-    instance: null,
-    isInitializing: false,
-    lastClientId: null
+    instances: new Map(), // Map of clientId -> editor instance
+    isInitializing: false
 };
 
 export default function Edit({ attributes, setAttributes, clientId }) {
@@ -173,211 +172,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     };
 
-    // Monitor block selection changes
-    useEffect(() => {
-        // Skip the initial mount to prevent automatic selection
-        if (!selectedBlockClientId) {
-            return;
-        }
-
-        if (selectedBlockClientId !== clientId) {
-            // Hide editor when switching to another block
-            setShowEditor(false);
-        } else if (viewMode === 'split') {
-            // Show editor when this block is selected and in split mode
-            setShowEditor(true);
-        }
-    }, [selectedBlockClientId, clientId, viewMode]);
-
-    useEffect(() => {
-        const fetchInitialSettings = async () => {
-            try {
-                const [themeResponse, fontSizeResponse, heightResponse] = await Promise.all([
-                    fetch(`${baseUrl}theme`),
-                    fetch(`${baseUrl}editor-font-size/`),
-                    fetch(`${baseUrl}editor-height/`),
-                ]);
-
-                const [themeData, fontSizeData, heightData] = await Promise.all([
-                    themeResponse.json(),
-                    fontSizeResponse.json(),
-                    heightResponse.json(),
-                ]);
-
-                setTheme(themeData);
-                setFontSize(fontSizeData);
-                setEditorHeight(heightData);
-
-                setAttributes({
-                    theme: themeData,
-                    editorFontSize: fontSizeData,
-                    editorHeight: heightData,
-                });
-            } catch (error) {
-                console.error('Error fetching initial settings:', error);
-            }
-        };
-
-        fetchInitialSettings();
-    }, [setAttributes]);
-
-    const initMonacoEditor = async (contextWindow, contextDoc) => {
-        if (!pluginInfo || monacoEditorCache.isInitializing) {
-            return;
-        }
-
-        setIsLoading(true);
-
-        // Force fresh editor when syntax highlight is toggled or view mode changes from preview to split
-        const needsRefresh = editorNeedsRefresh || 
-                            (previousViewModeRef.current === 'preview' && viewMode === 'split');
-
-        if (needsRefresh && monacoEditorCache.instance) {
-            monacoEditorCache.instance.dispose();
-            monacoEditorCache.instance = null;
-            monacoEditorCache.lastClientId = null;
-            setEditorNeedsRefresh(false);
-        }
-
-        if (monacoEditorCache.instance && monacoEditorCache.lastClientId === clientId && !needsRefresh) {
-            // Reuse existing editor instance for the same block
-            editorInstanceRef.current = monacoEditorCache.instance;
-            if (!editorInitialized) {
-                setEditorInitialized(true);
-            }
-            
-            // Only update layout, don't focus
-            setTimeout(() => {
-                if (editorInstanceRef.current) {
-                    editorInstanceRef.current.layout();
-                }
-            }, 50);
-            
-            setIsLoading(false);
-            return;
-        }
-
-        monacoEditorCache.isInitializing = true;
-        const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
-
-        try {
-            // Load Monaco script if not already loaded
-            if (!contextWindow.monaco && !Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
-                const script = contextDoc.createElement('script');
-                script.src = `${MONACO_PATH}/loader.js`;
-                
-                await new Promise((resolve, reject) => {
-                    script.onload = resolve;
-                    script.onerror = reject;
-                    contextDoc.body.appendChild(script);
-                });
-            }
-
-            // Wait for require to be available
-            if (!contextWindow.require) {
-                await new Promise((resolve) => {
-                    const checkInterval = setInterval(() => {
-                        if (contextWindow.require) {
-                            clearInterval(checkInterval);
-                            resolve();
-                        }
-                    }, 50);
-                });
-            }
-
-            contextWindow.require.config({ paths: { 'vs': MONACO_PATH } });
-
-            // Create editor instance
-            await new Promise((resolve) => {
-                contextWindow.require(['vs/editor/editor.main'], () => {
-                    // Dispose previous editor if it exists
-                    if (editorInstanceRef.current) {
-                        editorInstanceRef.current.dispose();
-                    }
-
-                    // Ensure the container is visible and has dimensions
-                    if (editorContainerRef.current) {
-                        editorContainerRef.current.style.display = 'block';
-                        editorContainerRef.current.style.visibility = 'visible';
-                    }
-
-                    // Create a new editor instance
-                    editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
-                        minimap: { enabled: false },
-                        value: content || '<!-- some comment -->',
-                        language: editorLanguage,
-                        automaticLayout: true,
-                        theme: theme,
-                        fontSize: parseInt(fontSize),
-                        scrollBeyondLastLine: false,
-                    });
-
-                    // Add Emmet support
-                    emmetHTML(contextWindow.monaco);
-
-                    // Add change handler
-                    editorInstanceRef.current.onDidChangeModelContent(() => {
-                        const newValue = editorInstanceRef.current.getValue();
-                        toggleAttribute('content', newValue);
-
-                        if (attributes.scaleHeightWithContent) {
-                            const newHeight = calculateEditorHeight(newValue);
-                            editorContainerRef.current.style.height = newHeight;
-                            editorInstanceRef.current.layout();
-                        }
-                    });
-
-                    // Only update layout, don't focus
-                    setTimeout(() => {
-                        if (editorInstanceRef.current) {
-                            editorInstanceRef.current.layout();
-                        }
-                    }, 10);
-
-                    // Cache the editor instance
-                    monacoEditorCache.instance = editorInstanceRef.current;
-                    monacoEditorCache.lastClientId = clientId;
-                    setEditorInitialized(true);
-                    resolve();
-                });
-            });
-        } catch (error) {
-            console.error("Failed to initialize Monaco editor:", error);
-        } finally {
-            monacoEditorCache.isInitializing = false;
-            setIsLoading(false);
-        }
-    };
-
-    // Handle syntax highlight changes
-    useEffect(() => {
-        if (showEditor && viewMode === 'split') {
-            setEditorNeedsRefresh(true);
-        }
-    }, [syntaxHighlight]);
-
-    // Handle view mode changes
-    useEffect(() => {
-        // Track when changing from preview to split
-        if (previousViewModeRef.current === 'preview' && viewMode === 'split') {
-            setEditorNeedsRefresh(true);
-        }
-        
-        // Update attribute
-        toggleAttribute('viewMode', viewMode);
-        
-        // Show editor in split mode
-        if (viewMode === 'split') {
-            setShowEditor(true);
-        }
-        
-        // Update previous view mode after effect is applied
-        previousViewModeRef.current = viewMode;
-    }, [viewMode]);
-
     // Initialize or reuse editor when needed
     useEffect(() => {
-        // Initialize if syntax highlighting is enabled OR if block is selected and in split mode
         if (syntaxHighlight || (selectedBlockClientId === clientId && viewMode === 'split')) {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
@@ -392,23 +188,39 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
 
         return () => {
-            // Clean up editor if neither condition is met
-            if (!syntaxHighlight && selectedBlockClientId !== clientId && editorInstanceRef.current && monacoEditorCache.lastClientId === clientId) {
+            // Clean up editor instance when:
+            // 1. Block is deselected and syntax highlighting is off
+            // 2. View mode is not split and syntax highlighting is off
+            if (!syntaxHighlight && 
+                ((selectedBlockClientId !== clientId) || viewMode !== 'split') && 
+                editorInstanceRef.current) {
                 editorInstanceRef.current.dispose();
                 editorInstanceRef.current = null;
-                monacoEditorCache.instance = null;
-                monacoEditorCache.lastClientId = null;
+                monacoEditorCache.instances.delete(clientId);
             }
         };
     }, [syntaxHighlight, selectedBlockClientId, clientId, viewMode, pluginInfo]);
 
-    // Set initial view mode to split when syntax highlighting is off
+    // Monitor block selection changes
     useEffect(() => {
-        if (!syntaxHighlight && viewMode === 'preview') {
-            setViewMode('split');
-            toggleAttribute('viewMode', 'split');
+        // Skip the initial mount to prevent automatic selection
+        if (!selectedBlockClientId) {
+            return;
         }
-    }, [syntaxHighlight]);
+
+        if (selectedBlockClientId !== clientId) {
+            setShowEditor(false);
+            // Clean up editor instance if syntax highlighting is off
+            if (!syntaxHighlight && editorInstanceRef.current) {
+                editorInstanceRef.current.dispose();
+                editorInstanceRef.current = null;
+                monacoEditorCache.instances.delete(clientId);
+            }
+        } else if (viewMode === 'split') {
+            // Show editor when this block is selected and in split mode
+            setShowEditor(true);
+        }
+    }, [selectedBlockClientId, clientId, viewMode, syntaxHighlight]);
 
     // Update editor container visibility
     const shouldShowEditor = syntaxHighlight || (selectedBlockClientId === clientId && viewMode === 'split');
@@ -490,6 +302,164 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             editorInstanceRef.current?.layout();
         }
     };
+
+    const initMonacoEditor = async (contextWindow, contextDoc) => {
+        if (!pluginInfo || monacoEditorCache.isInitializing) {
+            return;
+        }
+
+        setIsLoading(true);
+
+        // Only force refresh when syntax highlight is toggled or view mode changes from preview to split
+        const needsRefresh = editorNeedsRefresh || 
+                            (previousViewModeRef.current === 'preview' && viewMode === 'split');
+
+        // Reuse existing editor instance if available and no refresh is needed
+        if (monacoEditorCache.instances.has(clientId) && !needsRefresh) {
+            editorInstanceRef.current = monacoEditorCache.instances.get(clientId);
+            if (!editorInitialized) {
+                setEditorInitialized(true);
+            }
+            
+            // Only update layout, don't focus
+            setTimeout(() => {
+                if (editorInstanceRef.current) {
+                    editorInstanceRef.current.layout();
+                }
+            }, 50);
+            
+            setIsLoading(false);
+            return;
+        }
+
+        monacoEditorCache.isInitializing = true;
+        const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
+
+        try {
+            // Load Monaco script if not already loaded
+            if (!contextWindow.monaco && !Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
+                const script = contextDoc.createElement('script');
+                script.src = `${MONACO_PATH}/loader.js`;
+                
+                await new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    contextDoc.body.appendChild(script);
+                });
+            }
+
+            // Wait for require to be available
+            if (!contextWindow.require) {
+                await new Promise((resolve) => {
+                    const checkInterval = setInterval(() => {
+                        if (contextWindow.require) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 50);
+                });
+            }
+
+            contextWindow.require.config({ paths: { 'vs': MONACO_PATH } });
+
+            // Create editor instance
+            await new Promise((resolve) => {
+                contextWindow.require(['vs/editor/editor.main'], () => {
+                    // Only dispose if we need a fresh instance
+                    if (needsRefresh && editorInstanceRef.current) {
+                        editorInstanceRef.current.dispose();
+                        editorInstanceRef.current = null;
+                        monacoEditorCache.instances.delete(clientId);
+                    }
+
+                    // Ensure the container is visible and has dimensions
+                    if (editorContainerRef.current) {
+                        editorContainerRef.current.style.display = 'block';
+                        editorContainerRef.current.style.visibility = 'visible';
+                    }
+
+                    // Create a new editor instance if needed
+                    if (!editorInstanceRef.current) {
+                        editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
+                            minimap: { enabled: false },
+                            value: content || '<!-- some comment -->',
+                            language: editorLanguage,
+                            automaticLayout: true,
+                            theme: theme,
+                            fontSize: parseInt(fontSize),
+                            scrollBeyondLastLine: false,
+                        });
+
+                        // Add Emmet support
+                        emmetHTML(contextWindow.monaco);
+
+                        // Add change handler
+                        editorInstanceRef.current.onDidChangeModelContent(() => {
+                            const newValue = editorInstanceRef.current.getValue();
+                            toggleAttribute('content', newValue);
+
+                            if (attributes.scaleHeightWithContent) {
+                                const newHeight = calculateEditorHeight(newValue);
+                                editorContainerRef.current.style.height = newHeight;
+                                editorInstanceRef.current.layout();
+                            }
+                        });
+                    }
+
+                    // Only update layout, don't focus
+                    setTimeout(() => {
+                        if (editorInstanceRef.current) {
+                            editorInstanceRef.current.layout();
+                        }
+                    }, 10);
+
+                    // Cache the editor instance
+                    monacoEditorCache.instances.set(clientId, editorInstanceRef.current);
+                    setEditorInitialized(true);
+                    resolve();
+                });
+            });
+        } catch (error) {
+            console.error("Failed to initialize Monaco editor:", error);
+        } finally {
+            monacoEditorCache.isInitializing = false;
+            setIsLoading(false);
+        }
+    };
+
+    // Handle syntax highlight changes
+    useEffect(() => {
+        if (showEditor && viewMode === 'split') {
+            setEditorNeedsRefresh(true);
+        }
+    }, [syntaxHighlight]);
+
+    // Handle view mode changes
+    useEffect(() => {
+        // Track when changing from preview to split
+        if (previousViewModeRef.current === 'preview' && viewMode === 'split') {
+            setEditorNeedsRefresh(true);
+        }
+        
+        // Update attribute
+        toggleAttribute('viewMode', viewMode);
+        
+        // Show editor in split mode
+        if (viewMode === 'split') {
+            setShowEditor(true);
+        }
+        
+        // Update previous view mode after effect is applied
+        previousViewModeRef.current = viewMode;
+    }, [viewMode]);
+
+    // Set initial view mode to split when syntax highlighting is off
+    useEffect(() => {
+        if (!syntaxHighlight && viewMode === 'preview') {
+            setViewMode('split');
+            toggleAttribute('viewMode', 'split');
+        }
+    }, [syntaxHighlight]);
 
     return (
         <>
