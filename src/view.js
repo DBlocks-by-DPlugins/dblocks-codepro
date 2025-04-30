@@ -1,80 +1,75 @@
-const copyButtonLabel = "Copy";
+const COPY_BUTTON_LABEL = "Copy";
+const COPY_SUCCESS_LABEL = "Copied!";
+const COPY_ERROR_LABEL = "Failed to copy";
+const FEEDBACK_DURATION = 2000;
 
-// use a class selector if available
-let blocks = document.querySelectorAll("pre");
+const copyToClipboard = async (text) => {
+    try {
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        }
+        
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return true;
+    } catch (error) {
+        console.error('Failed to copy text:', error);
+        return false;
+    }
+};
 
-blocks.forEach((block) => {
-  // only add button if browser supports Clipboard API
-  if (navigator.clipboard) {
-    let button = document.createElement("button");
+const updateButtonText = (button, text, duration) => {
+    const originalText = button.textContent;
+    button.textContent = text;
+    setTimeout(() => {
+        button.textContent = originalText;
+    }, duration);
+};
 
-    button.innerText = copyButtonLabel;
-    block.appendChild(button);
+const handleCopyClick = async (button) => {
+    const codeBlock = button.closest('pre')?.querySelector('code');
+    if (!codeBlock) return;
 
-    button.addEventListener("click", async () => {
-      await copyCode(block, button);
-    });
-  }
-});
+    const success = await copyToClipboard(codeBlock.textContent);
+    updateButtonText(
+        button,
+        success ? COPY_SUCCESS_LABEL : COPY_ERROR_LABEL,
+        FEEDBACK_DURATION
+    );
+};
 
-async function copyCode(block, button) {
-  let code = block.querySelector("code");
-  let text = code.innerText;
-
-  await navigator.clipboard.writeText(text);
-
-  // visual feedback that task is completed
-  button.innerText = "Code Copied";
-
-  setTimeout(() => {
-    button.innerText = copyButtonLabel;
-  }, 700);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click event listeners to all copy buttons
+// Initialize copy buttons
+const initializeCopyButtons = () => {
     document.querySelectorAll('.wp-block-dblocks-dblocks-codepro .copy-button').forEach(button => {
-        button.addEventListener('click', async function() {
-            const codeBlock = this.closest('pre').querySelector('code');
-            if (!codeBlock) return;
-
-            // Get the text content
-            const text = codeBlock.textContent;
-
-            try {
-                // Try using the modern Clipboard API first
-                if (navigator.clipboard) {
-                    await navigator.clipboard.writeText(text);
-                } else {
-                    // Fallback to the older method
-                    const textarea = document.createElement('textarea');
-                    textarea.value = text;
-                    textarea.style.position = 'fixed';
-                    textarea.style.left = '-9999px';
-                    textarea.style.top = '0';
-                    document.body.appendChild(textarea);
-                    textarea.focus();
-                    textarea.select();
-                    textarea.setSelectionRange(0, 99999);
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                }
-                
-                // Visual feedback for success
-                const originalText = this.textContent;
-                this.textContent = 'Copied!';
-                setTimeout(() => {
-                    this.textContent = originalText;
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                // Visual feedback for error
-                const originalText = this.textContent;
-                this.textContent = 'Failed to copy';
-                setTimeout(() => {
-                    this.textContent = originalText;
-                }, 2000);
-            }
-        });
+        button.addEventListener('click', () => handleCopyClick(button));
     });
+};
+
+// Initialize legacy copy buttons
+const initializeLegacyCopyButtons = () => {
+    if (!navigator.clipboard) return;
+
+    document.querySelectorAll("pre").forEach((block) => {
+        const button = document.createElement("button");
+        button.innerText = COPY_BUTTON_LABEL;
+        block.appendChild(button);
+        button.addEventListener("click", () => handleCopyClick(button));
+    });
+};
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initializeCopyButtons();
+    initializeLegacyCopyButtons();
 });

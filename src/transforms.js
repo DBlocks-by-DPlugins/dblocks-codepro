@@ -1,18 +1,24 @@
 import { createBlock } from '@wordpress/blocks';
 
+const DEFAULT_ATTRIBUTES = {
+    viewMode: 'code',
+    theme: 'vs-light',
+    syntaxHighlight: true,
+    syntaxHighlightTheme: 'light',
+    editorLanguage: 'html'
+};
+
+const SUPPORTED_BLOCKS = ['core/html', 'core/code'];
+
 const transforms = {
     from: [
         {
             type: 'block',
-            blocks: ['core/html', 'core/code'],
+            blocks: SUPPORTED_BLOCKS,
             transform: ({ content }) => {
                 return createBlock('dblocks/dblocks-codepro', {
-                    content: content,
-                    viewMode: 'code',
-                    theme: 'vs-light',
-                    syntaxHighlight: true,
-                    syntaxHighlightTheme: 'light',
-                    editorLanguage: 'html'
+                    content,
+                    ...DEFAULT_ATTRIBUTES
                 });
             },
         },

@@ -5,6 +5,13 @@ import Languages from './Languages';
 import { InspectorControls } from '@wordpress/block-editor';
 import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
 
+const THEME_OPTIONS = [
+    { label: 'Light', value: 'light' },
+    { label: 'Dark', value: 'dark' }
+];
+
+const PADDING_STYLE = { padding: '10px 0px 10px 15px' };
+
 const InspectorControlsComponent = ({
     attributes,
     setAttributes,
@@ -30,23 +37,17 @@ const InspectorControlsComponent = ({
     };
 
     const handleHeightChange = (newHeight) => {
-        // Ensure the value always has 'px' at the end
-        const heightInPx = newHeight.toString().endsWith('px') 
-            ? newHeight 
-            : `${newHeight}px`;
-        
-        // Update state and localStorage first
+        const heightInPx = newHeight.toString().endsWith('px') ? newHeight : `${newHeight}px`;
         setEditorHeight(heightInPx);
         localStorage.setItem('dblocks_editor_height', heightInPx);
-        // Then update block attribute
         setAttributes({ editorHeight: heightInPx });
     };
 
-    const handleFrontEndThemeChange = (newTheme) => {
+    const handleFrontEndThemeChange = () => {
         toggleSyntaxHighlightTheme();
     };
 
-    const handleThemeChange = (newTheme) => {
+    const handleThemeChange = () => {
         toggleTheme();
     };
 
@@ -58,6 +59,18 @@ const InspectorControlsComponent = ({
         updateAttribute('copyButton', value, '/wp-json/dblocks_codepro/v1/copy-button/');
     };
 
+    const handleWrapperChange = (value) => {
+        setAttributes({ useWrapper: value });
+    };
+
+    const handleSyntaxHighlightChange = (value) => {
+        setSyntaxHighlight(value);
+        setAttributes({ 
+            syntaxHighlight: value,
+            scaleHeightWithContent: value
+        });
+    };
+
     return (
         <InspectorControls>
             <Panel>
@@ -66,7 +79,7 @@ const InspectorControlsComponent = ({
                         <ToggleControl
                             label="Use Wrapper"
                             checked={attributes.useWrapper}
-                            onChange={() => setAttributes({ useWrapper: !attributes.useWrapper })}
+                            onChange={handleWrapperChange}
                             __nextHasNoMarginBottom={true}
                         />
                         <div className="togglecontrol--with-info__icon-wrapper">
@@ -92,17 +105,7 @@ const InspectorControlsComponent = ({
                         <ToggleControl
                             label="Syntax Highlighting"
                             checked={syntaxHighlight}
-                            onChange={() => {
-                                const newState = !syntaxHighlight;
-                                setSyntaxHighlight(newState);
-                                // Update both syntaxHighlight and scaleHeightWithContent
-                                setAttributes({ 
-                                    syntaxHighlight: newState,
-                                    // When highlighting is ON: enable scale height with content
-                                    // When highlighting is OFF: disable scale height with content
-                                    scaleHeightWithContent: newState
-                                });
-                            }}
+                            onChange={handleSyntaxHighlightChange}
                             __nextHasNoMarginBottom={true}
                         />
                         <div className="togglecontrol--with-info__icon-wrapper">
@@ -115,7 +118,7 @@ const InspectorControlsComponent = ({
 
                    
                     {syntaxHighlight && (
-                        <div style={{ padding: '10px 0px 10px 15px'}}>
+                        <div style={PADDING_STYLE}>
                              <SelectControl
                                 label="Language"
                                 value={editorLanguage}
@@ -127,10 +130,7 @@ const InspectorControlsComponent = ({
                             <SelectControl
                                 label="Front End Theme"
                                 value={syntaxHighlightTheme}
-                                options={[
-                                    { label: 'Light', value: 'light' },
-                                    { label: 'Dark', value: 'dark' }
-                                ]}
+                                options={THEME_OPTIONS}
                                 onChange={handleFrontEndThemeChange}
                                 __next40pxDefaultSize={true}
                                 __nextHasNoMarginBottom={true}
@@ -156,10 +156,7 @@ const InspectorControlsComponent = ({
                     <SelectControl
                         label="Editor Theme"
                         value={theme === 'vs-dark' ? 'dark' : 'light'}
-                        options={[
-                            { label: 'Light', value: 'light' },
-                            { label: 'Dark', value: 'dark' }
-                        ]}
+                        options={THEME_OPTIONS}
                         onChange={handleThemeChange}
                         __next40pxDefaultSize={true}
                         __nextHasNoMarginBottom={true}
