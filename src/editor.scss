@@ -17,6 +17,15 @@
 	}
 }
 
+// Custom styles for resize handle
+.code-editor-box {
+	.resize-handle {
+		height: 10px !important;
+		background-color: red !important;
+		cursor: ns-resize;
+	}
+}
+
 .togglecontrol--with-info {
 	position: relative;
 	display: flex;
@@ -58,4 +67,29 @@
 	padding: 6px 12px;
 	display: flex;
 	align-items: center;
+}
+
+
+
+.wp-block-dblocks-dblocks-codepro {
+	.components-resizable-box__handle  {
+		background-color: white;
+		border: 1px solid #e0e0e0;
+
+		&:after {
+			border-radius: 100px;
+			box-shadow: unset;
+			height: 6px;
+			right: calc(50% - 8px);
+			top: calc(50% - 4px);
+			background: #a4a4a4;
+			width: 50px;
+		}
+	
+	}
+
+	
+	.components-resizable-box__handle-top {
+		top: -20px;
+	}
 }
