@@ -101,7 +101,7 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
                     {syntaxHighlight && (
-                        <div style={{ padding: '20px 0px 10px 20px'}}>
+                        <div style={{ padding: '20px 0px 20px 20px'}}>
                             <SelectControl
                                 label="Front End Theme"
                                 value={syntaxHighlightTheme}
@@ -124,7 +124,7 @@ const InspectorControlsComponent = ({
 
                     <h2>Editor Global Settings</h2>
                     <SelectControl
-                        label="Theme"
+                        label="Editor Theme"
                         value={theme === 'vs-dark' ? 'dark' : 'light'}
                         options={[
                             { label: 'Light', value: 'light' },
@@ -133,7 +133,7 @@ const InspectorControlsComponent = ({
                         onChange={handleThemeChange}
                     />
                     <UnitControl
-                        label="Font Size"
+                        label="Editor Font Size"
                         value={fontSize}
                         onChange={(newSize) => handleFontSizeChange(newSize)}
                         units={[{ value: 'px', label: 'Pixels', default: 14 }]}
