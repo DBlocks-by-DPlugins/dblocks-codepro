@@ -121,6 +121,8 @@ const InspectorControlsComponent = ({
                                 value={editorLanguage}
                                 options={Languages}
                                 onChange={changeEditorLanguage}
+                                __next40pxDefaultSize={true}
+                                __nextHasNoMarginBottom={true}
                             />
                             <SelectControl
                                 label="Front End Theme"
@@ -130,6 +132,8 @@ const InspectorControlsComponent = ({
                                     { label: 'Dark', value: 'dark' }
                                 ]}
                                 onChange={handleFrontEndThemeChange}
+                                __next40pxDefaultSize={true}
+                                __nextHasNoMarginBottom={true}
                             />
                              <ToggleControl
                                 label="Display Language"
@@ -157,6 +161,8 @@ const InspectorControlsComponent = ({
                             { label: 'Dark', value: 'dark' }
                         ]}
                         onChange={handleThemeChange}
+                        __next40pxDefaultSize={true}
+                        __nextHasNoMarginBottom={true}
                     />
                     <UnitControl
                         label="Editor Font Size"
