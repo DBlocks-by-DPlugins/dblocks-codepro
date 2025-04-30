@@ -19,8 +19,8 @@ const InspectorControlsComponent = ({
     fontSize,
     setFontSize,
     editorHeight,
-    setEditorHeight, // Receive setEditorHeight as a prop
-    updateAttribute // Receive updateAttribute as a prop
+    setEditorHeight,
+    updateAttribute
 }) => {
     const handleFontSizeChange = (newFontSize) => {
         setFontSize(newFontSize);
@@ -33,8 +33,11 @@ const InspectorControlsComponent = ({
             ? newHeight 
             : `${newHeight}px`;
         
+        // Update state and localStorage first
         setEditorHeight(heightInPx);
-        updateAttribute('editorHeight', heightInPx, '/wp-json/dblocks_codepro/v1/editor-height/');
+        localStorage.setItem('dblocks_editor_height', heightInPx);
+        // Then update block attribute
+        setAttributes({ editorHeight: heightInPx });
     };
 
     return (

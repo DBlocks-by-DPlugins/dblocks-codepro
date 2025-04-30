@@ -34,33 +34,8 @@ function register_dblocks_option_endpoints($route, $option_name, $default_value,
 }
 
 add_action('rest_api_init', function() {
-    // Define settings as array for better maintainability
-    $settings = array(
-        array(
-            'route' => '/theme/',
-            'option_name' => 'dblocks_codepro_theme',
-            'default_value' => 'vs-light',
-            'post_param_name' => 'theme',
-        ),
-        array(
-            'route' => '/syntax-theme/',
-            'option_name' => 'dblocks_codepro_syntax_theme',
-            'default_value' => 'light',
-            'post_param_name' => 'syntaxTheme',
-        ),
-        array(
-            'route' => '/editor-font-size/',
-            'option_name' => 'dblocks_codepro_editor_font_size',
-            'default_value' => '14px',
-            'post_param_name' => 'editorFontSize',
-        ),
-        array(
-            'route' => '/editor-height/',
-            'option_name' => 'dblocks_codepro_editor_height',
-            'default_value' => '500px',
-            'post_param_name' => 'editorHeight',
-        ),
-    );
+    // Load settings from config file
+    $settings = require_once DBLOCKS_CODEPRO_PATH . 'inc/config/settings.php';
     
     // Register all option endpoints using the helper function
     foreach ($settings as $setting) {

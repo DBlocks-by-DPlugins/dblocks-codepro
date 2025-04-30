@@ -22,9 +22,13 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [theme, setTheme] = useState(attributes.theme || 'vs-light');
     const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
     const [editorHeight, setEditorHeight] = useState(() => {
-        // Try to get height from localStorage first, then fallback to attributes or default
+        // Always use localStorage if available
         const savedHeight = localStorage.getItem('dblocks_editor_height');
-        return savedHeight || attributes.editorHeight || '500px';
+        if (savedHeight) {
+            return savedHeight;
+        }
+        // Only fall back to attributes or default if no localStorage value
+        return attributes.editorHeight || '500px';
     });
     const [syntaxHighlight, setSyntaxHighlight] = useState(attributes.syntaxHighlight);
     const [syntaxHighlightTheme, setSyntaxHighlightTheme] = useState(attributes.syntaxHighlightTheme || "light");
@@ -219,6 +223,16 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         } else if (viewMode === 'split') {
             // Show editor when this block is selected and in split mode
             setShowEditor(true);
+            // Check and update height from localStorage when block is selected
+            const savedHeight = localStorage.getItem('dblocks_editor_height');
+            if (savedHeight && savedHeight !== editorHeight) {
+                setEditorHeight(savedHeight);
+                setAttributes({ editorHeight: savedHeight });
+                if (editorContainerRef.current) {
+                    editorContainerRef.current.style.height = savedHeight;
+                    editorInstanceRef.current?.layout();
+                }
+            }
         }
     }, [selectedBlockClientId, clientId, viewMode, syntaxHighlight]);
 
@@ -257,6 +271,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 const newHeight = calculateEditorHeight(content);
                 editorContainerRef.current.style.height = newHeight;
             } else {
+                // Always use the current editorHeight state which is synced with localStorage
                 editorContainerRef.current.style.height = editorHeight;
             }
             editorInstanceRef.current.layout();
@@ -293,9 +308,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const updateEditorSize = (newHeight) => {
         const heightWithPx = formatHeightWithPx(newHeight);
         setEditorHeight(heightWithPx);
-        toggleAttribute('editorHeight', heightWithPx);
-        // Save to localStorage
+        // Save to localStorage first
         localStorage.setItem('dblocks_editor_height', heightWithPx);
+        // Then update block attribute
+        toggleAttribute('editorHeight', heightWithPx);
 
         if (editorContainerRef.current) {
             editorContainerRef.current.style.height = heightWithPx;
@@ -511,8 +527,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         onResizeStop={(event, direction, ref, d) => {
                             const currentHeight = convertToPx(editorHeight);
                             const newHeight = currentHeight + d.height;
-                            updateEditorSize(newHeight);
-                            updateAttribute('editorHeight', newHeight, '/wp-json/dblocks_codepro/v1/editor-height/');
+                            const heightWithPx = formatHeightWithPx(newHeight);
+                            
+                            // Update localStorage first
+                            localStorage.setItem('dblocks_editor_height', heightWithPx);
+                            // Then update state
+                            setEditorHeight(heightWithPx);
+                            // Finally update block attribute
+                            setAttributes({ editorHeight: heightWithPx });
+                            
+                            // Update editor size
+                            if (editorContainerRef.current) {
+                                editorContainerRef.current.style.height = heightWithPx;
+                                editorInstanceRef.current?.layout();
+                            }
                         }}
                     >
                         <div
