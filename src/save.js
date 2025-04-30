@@ -16,20 +16,28 @@ const CodeDisplay = ({ content, editorLanguage, syntaxThemeClass, displayLanguag
     </div>
 );
 
-const SyntaxHighlightedCode = ({ blockProps, content, editorLanguage, syntaxThemeClass, displayLanguage, copyButton }) => (
-    <pre {...blockProps}>
-        <CodeDisplay 
-            content={content}
-            editorLanguage={editorLanguage}
-            syntaxThemeClass={syntaxThemeClass}
-            displayLanguage={displayLanguage}
-            copyButton={copyButton}
-        />
-        <code className={`language-${editorLanguage} ${syntaxThemeClass}`}>
-            {content}
-        </code>
-    </pre>
-);
+const SyntaxHighlightedCode = ({ blockProps, content, editorLanguage, syntaxThemeClass, displayLanguage, copyButton }) => {
+    // Create new blockProps with the theme class
+    const newBlockProps = {
+        ...blockProps,
+        className: `wp-block-dblocks-dblocks-codepro ${syntaxThemeClass} syntax-highlighted-container`
+    };
+
+    return (
+        <pre {...newBlockProps}>
+            <CodeDisplay 
+                content={content}
+                editorLanguage={editorLanguage}
+                syntaxThemeClass={syntaxThemeClass}
+                displayLanguage={displayLanguage}
+                copyButton={copyButton}
+            />
+            <code className={`language-${editorLanguage}`}>
+                {content}
+            </code>
+        </pre>
+    );
+};
 
 const RawHTMLDisplay = ({ blockProps, content, useWrapper }) => {
     const contentElement = <RawHTML>{content}</RawHTML>;
@@ -49,7 +57,7 @@ export default function save({ attributes }) {
     } = attributes;
     
     const blockProps = useBlockProps.save();
-    const syntaxThemeClass = syntaxHighlightTheme === 'light' ? 'hsl-light' : '';
+    const syntaxThemeClass = syntaxHighlightTheme === 'light' ? 'syntax-light' : 'syntax-dark';
 
     if (syntaxHighlight) {
         return (

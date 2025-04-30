@@ -1,20 +1,29 @@
 .wp-block-dblocks-dblocks-codepro {
 	position: relative;
 	
-	.copy-button {		
-		
+	// Code container
+	pre {
+		position: relative;
+		margin: 0;
+		padding: 1em;
+		overflow: auto;
+		border-radius: 4px;
 	}
 
-	&:has(.hsl-light) {
-		background-color: #f6f8fa;
-	
-		.hljs {
-			background-color: unset;
-		}		
+	code {
+		font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+		font-size: 14px;
+		line-height: 1.5;
 	}
 
-	.code-language-label {
-		
+	// Tag wrapper and buttons
+	.tag-wrapper {
+		display: flex;
+		gap: 0.4rem;
+		position: absolute;
+		z-index: 1;
+		top: 0.4rem;
+		right: 0.4rem;
 	}
 
 	.tag-button {
@@ -32,29 +41,16 @@
 		}
 	}
 
-
-	.tag-wrapper {
-		display: flex;
-		gap: 0.4rem;
-		position: absolute;
-		z-index: 1;
-		top: 0.4rem;
-		right: 0.4rem;
-	}
-
-	pre {
-		position: relative;
-		margin: 0;
-		padding: 1em;
-		overflow: auto;
-		background: #f5f5f5;
-		border-radius: 4px;
-	}
-
-	code {
-		font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-		font-size: 14px;
-		line-height: 1.5;
+	// Light theme
+	&.syntax-light {
+		code {
+			background-color: #f6f8fa;
+		}
+		
+		.tag-button {
+			background-color: #dee3e8;
+			color: black;
+		}
 	}
 }
 
