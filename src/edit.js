@@ -71,8 +71,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     const baseUrl = DBlocksData.restUrl
 
-    const toggleSyntaxHighlightTheme = async () => {
-        const newSyntaxTheme = syntaxHighlightTheme === "light" ? "dark" : "light";
+    const toggleSyntaxHighlightTheme = async (newTheme) => {
+        // If no theme is provided, toggle between light and dark
+        const newSyntaxTheme = newTheme || (syntaxHighlightTheme === "light" ? "dark" : "light");
 
         try {
             const response = await fetch(`${baseUrl}syntax-theme/`, {

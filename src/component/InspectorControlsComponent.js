@@ -40,6 +40,10 @@ const InspectorControlsComponent = ({
         setAttributes({ editorHeight: heightInPx });
     };
 
+    const handleFrontEndThemeChange = (newTheme) => {
+        toggleSyntaxHighlightTheme();
+    };
+
     return (
         <InspectorControls>
             <Panel>
@@ -93,12 +97,15 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
                     {syntaxHighlight && (
-                        <div style={{ borderLeft: '1px solid #a8a8a8', paddingLeft: '20px', margin: '10px 0 10px 10px' }}>
-                            <ToggleControl
-                                label="FrontEnd Dark Theme"
-                                checked={syntaxHighlightTheme === "dark"}
-                                onChange={toggleSyntaxHighlightTheme}
-                                __nextHasNoMarginBottom={true}
+                        <div style={{ padding: '20px 0px 20px 20px'}}>
+                            <SelectControl
+                                label="Front End Theme"
+                                value={syntaxHighlightTheme}
+                                options={[
+                                    { label: 'Light', value: 'light' },
+                                    { label: 'Dark', value: 'dark' }
+                                ]}
+                                onChange={handleFrontEndThemeChange}
                             />
                             <SelectControl
                                 label="Language"
@@ -108,8 +115,10 @@ const InspectorControlsComponent = ({
                             />
                         </div>
                     )}
-                </PanelBody>                
-                <PanelBody title="Editor Global Settings" initialOpen={false}>
+
+                    <hr />
+
+                    <h2>Editor Global Settings</h2>
                     <ToggleControl
                         label="Dark Mode"
                         checked={theme === 'vs-dark'}
@@ -125,8 +134,7 @@ const InspectorControlsComponent = ({
                         max={30}
                         __next40pxDefaultSize={true}
                     />
-
-                </PanelBody>
+                </PanelBody>                                
             </Panel>
         </InspectorControls>
     );
