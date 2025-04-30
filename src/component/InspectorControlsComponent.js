@@ -44,6 +44,10 @@ const InspectorControlsComponent = ({
         toggleSyntaxHighlightTheme();
     };
 
+    const handleThemeChange = (newTheme) => {
+        toggleTheme();
+    };
+
     return (
         <InspectorControls>
             <Panel>
@@ -97,7 +101,7 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
                     {syntaxHighlight && (
-                        <div style={{ padding: '20px 0px 20px 20px'}}>
+                        <div style={{ padding: '20px 0px 10px 20px'}}>
                             <SelectControl
                                 label="Front End Theme"
                                 value={syntaxHighlightTheme}
@@ -119,11 +123,14 @@ const InspectorControlsComponent = ({
                     <hr />
 
                     <h2>Editor Global Settings</h2>
-                    <ToggleControl
-                        label="Dark Mode"
-                        checked={theme === 'vs-dark'}
-                        onChange={toggleTheme}
-                        __nextHasNoMarginBottom={true}
+                    <SelectControl
+                        label="Theme"
+                        value={theme === 'vs-dark' ? 'dark' : 'light'}
+                        options={[
+                            { label: 'Light', value: 'light' },
+                            { label: 'Dark', value: 'dark' }
+                        ]}
+                        onChange={handleThemeChange}
                     />
                     <UnitControl
                         label="Font Size"
