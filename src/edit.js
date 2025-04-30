@@ -46,7 +46,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [showEditor, setShowEditor] = useState(false);
     const [editorNeedsRefresh, setEditorNeedsRefresh] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [displayLanguage, setDisplayLanguage] = useState(attributes.displayLanguage || true);
+    const [displayLanguage, setDisplayLanguage] = useState(() => {
+        // Try to get from localStorage first
+        const savedDisplayLanguage = localStorage.getItem('dblocks_display_language');
+        if (savedDisplayLanguage !== null) {
+            return savedDisplayLanguage === 'true';
+        }
+        // Fall back to attributes or default
+        return attributes.displayLanguage ?? true;
+    });
 
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
@@ -180,6 +188,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             });
 
             if (!response.ok) throw new Error('Network response was not ok.');
+
+            // If this is the display language attribute, update localStorage and dispatch event
+            if (attribute === 'displayLanguage') {
+                localStorage.setItem('dblocks_display_language', value);
+                const event = new CustomEvent('dblocks_display_language_changed', {
+                    detail: { displayLanguage: value }
+                });
+                window.dispatchEvent(event);
+            }
         } catch (error) {
             console.error(`Failed to update ${attribute}:`, error);
         }
@@ -530,6 +547,34 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             toggleAttribute('viewMode', 'split');
         }
     }, [syntaxHighlight]);
+
+    // Listen for display language changes from other blocks
+    useEffect(() => {
+        const handleDisplayLanguageChange = (event) => {
+            const newValue = event.detail.displayLanguage;
+            if (newValue !== displayLanguage) {
+                setDisplayLanguage(newValue);
+                setAttributes({ displayLanguage: newValue });
+            }
+        };
+
+        window.addEventListener('dblocks_display_language_changed', handleDisplayLanguageChange);
+        return () => {
+            window.removeEventListener('dblocks_display_language_changed', handleDisplayLanguageChange);
+        };
+    }, [displayLanguage]);
+
+    // Check for display language changes on mount
+    useEffect(() => {
+        const savedDisplayLanguage = localStorage.getItem('dblocks_display_language');
+        if (savedDisplayLanguage !== null) {
+            const newValue = savedDisplayLanguage === 'true';
+            if (newValue !== displayLanguage) {
+                setDisplayLanguage(newValue);
+                setAttributes({ displayLanguage: newValue });
+            }
+        }
+    }, []);
 
     return (
         <>

@@ -20,7 +20,8 @@ const InspectorControlsComponent = ({
     setFontSize,
     editorHeight,
     setEditorHeight,
-    updateAttribute
+    updateAttribute,
+    displayLanguage
 }) => {
     const handleFontSizeChange = (newFontSize) => {
         setFontSize(newFontSize);
@@ -108,13 +109,13 @@ const InspectorControlsComponent = ({
                     <div className="togglecontrol--with-info">
                         <ToggleControl
                             label="Display Language"
-                            checked={attributes.displayLanguage}
+                            checked={displayLanguage}
                             onChange={handleDisplayLanguageChange}
                             __nextHasNoMarginBottom={true}
                         />
                         <div className="togglecontrol--with-info__icon-wrapper">
                             <Icon icon={help} size={20} />
-                            <p>Show or hide the language indicator in the editor and front end.</p>
+                            <p>Show or hide the language indicator in all code blocks across the website.</p>
                         </div>
                     </div>
 
