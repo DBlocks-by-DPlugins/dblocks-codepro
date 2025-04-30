@@ -147,8 +147,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         setSyntaxHighlight(newState);
         setAttributes({ 
             syntaxHighlight: newState,
-            // When highlighting is ON: enable scale height with content
-            // When highlighting is OFF: disable scale height with content
+            // When highlighting is ON: always enable scale height with content
             scaleHeightWithContent: newState
         });
         setEditorNeedsRefresh(true);
@@ -417,7 +416,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     // Update editor height when appropriate
     useEffect(() => {
         if (editorContainerRef.current && editorInstanceRef.current) {
-            if (attributes.scaleHeightWithContent) {
+            if (syntaxHighlight || attributes.scaleHeightWithContent) {
                 const newHeight = calculateEditorHeight(content);
                 editorContainerRef.current.style.height = newHeight;
             } else {
@@ -425,7 +424,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             }
             editorInstanceRef.current.layout();
         }
-    }, [attributes.scaleHeightWithContent, content, editorHeight]);
+    }, [syntaxHighlight, attributes.scaleHeightWithContent, content, editorHeight]);
 
     // Update editor options when theme, font size, or language changes
     useEffect(() => {
@@ -497,7 +496,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 />
                 {!syntaxHighlight && viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {!syntaxHighlight && viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {(showEditor || syntaxHighlight) && ((viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
+                {(showEditor || syntaxHighlight) && ((!syntaxHighlight && viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
                     <ResizableBox
                         className={"code-editor-box"}
                         size={{
