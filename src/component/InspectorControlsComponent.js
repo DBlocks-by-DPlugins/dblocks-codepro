@@ -66,8 +66,7 @@ const InspectorControlsComponent = ({
                             __next40pxDefaultSize={true}
                         />
                     )}
-                </PanelBody>
-                <PanelBody title="Syntax Highlighting">
+
                     <div className="togglecontrol--with-info">
                         <ToggleControl
                             label="Activate Syntax Highlighting"
@@ -91,7 +90,7 @@ const InspectorControlsComponent = ({
                         </div>
                     </div>
                     {syntaxHighlight && (
-                        <>
+                        <div style={{ borderLeft: '1px solid #a8a8a8', paddingLeft: '20px 20px 0 20px', marginLeft: '10px' }}>
                             <ToggleControl
                                 label="FrontEnd Dark Theme"
                                 checked={syntaxHighlightTheme === "dark"}
@@ -104,9 +103,9 @@ const InspectorControlsComponent = ({
                                 options={Languages}
                                 onChange={changeEditorLanguage}
                             />
-                        </>
+                        </div>
                     )}
-                </PanelBody>
+                </PanelBody>                
                 <PanelBody title="Editor Global Settings" initialOpen={false}>
                     <ToggleControl
                         label="Dark Mode"
