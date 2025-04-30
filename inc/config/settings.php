@@ -24,4 +24,16 @@ return array(
         'default_value' => '14px',
         'post_param_name' => 'editorFontSize',
     ),
+    array(
+        'route' => '/display-language/',
+        'option_name' => 'dblocks_codepro_display_language',
+        'default_value' => 'true',
+        'post_param_name' => 'displayLanguage',
+    ),
+    array(
+        'route' => '/copy-button/',
+        'option_name' => 'dblocks_codepro_copy_button',
+        'default_value' => 'true',
+        'post_param_name' => 'copyButton',
+    ),
 ); 
