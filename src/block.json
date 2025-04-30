@@ -53,6 +53,10 @@
 		"scaleHeightWithContent": {
 			"type": "boolean",
 			"default": false
+		},
+		"displayLanguage": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"textdomain": "dblocks-codepro",

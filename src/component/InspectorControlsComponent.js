@@ -48,6 +48,10 @@ const InspectorControlsComponent = ({
         toggleTheme();
     };
 
+    const handleDisplayLanguageChange = (value) => {
+        updateAttribute('displayLanguage', value, '/wp-json/dblocks_codepro/v1/display-language/');
+    };
+
     return (
         <InspectorControls>
             <Panel>
@@ -80,7 +84,7 @@ const InspectorControlsComponent = ({
 
                     <div className="togglecontrol--with-info">
                         <ToggleControl
-                            label="Activate Syntax Highlighting"
+                            label="Syntax Highlighting"
                             checked={syntaxHighlight}
                             onChange={() => {
                                 const newState = !syntaxHighlight;
@@ -100,6 +104,20 @@ const InspectorControlsComponent = ({
                             <p>If this is disabled code will be injected as HTML, otherwise the code will be displayed with syntax highlighting as code snippet preview.</p>
                         </div>
                     </div>
+
+                    <div className="togglecontrol--with-info">
+                        <ToggleControl
+                            label="Display Language"
+                            checked={attributes.displayLanguage}
+                            onChange={handleDisplayLanguageChange}
+                            __nextHasNoMarginBottom={true}
+                        />
+                        <div className="togglecontrol--with-info__icon-wrapper">
+                            <Icon icon={help} size={20} />
+                            <p>Show or hide the language indicator in the editor and front end.</p>
+                        </div>
+                    </div>
+
                     {syntaxHighlight && (
                         <div style={{ padding: '20px 0px 20px 20px'}}>
                             <SelectControl

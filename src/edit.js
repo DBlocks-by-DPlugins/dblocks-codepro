@@ -46,6 +46,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [showEditor, setShowEditor] = useState(false);
     const [editorNeedsRefresh, setEditorNeedsRefresh] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [displayLanguage, setDisplayLanguage] = useState(attributes.displayLanguage || true);
 
     const blockRef = useRef(null);
     const editorContainerRef = useRef(null);
@@ -548,6 +549,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 editorHeight={editorHeight}
                 setEditorHeight={updateEditorSize}
                 updateAttribute={updateAttribute}
+                displayLanguage={displayLanguage}
             />
 
             <div {...useBlockProps({ ref: blockRef })} style={{ position: 'relative', height: '100vh' }}>
