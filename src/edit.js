@@ -675,7 +675,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             bottom: syntaxHighlight ? 'auto' : 0,
                             left: 0,
                             right: 0,
-                            zIndex: 9999
+                            zIndex: 100,
+                            isolation: 'isolate'
                         }}
                         onResizeStop={(event, direction, ref, d) => {
                             const currentHeight = convertToPx(editorHeight);
@@ -709,7 +710,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                                 zIndex: 9999,
                                 backgroundColor: '#fff',
                                 visibility: shouldShowEditor ? 'visible' : 'hidden',
-                                display: shouldShowEditor ? 'block' : 'none'
+                                display: shouldShowEditor ? 'block' : 'none',
+                                isolation: 'isolate'
                             }}
                         />
                         {isLoading && (
@@ -730,7 +732,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         )}
                     </ResizableBox>
                 ) :
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', isolation: 'isolate', zIndex: 100 }}>
                         <div
                             ref={editorContainerRef}
                             id='editor-container-ref'
@@ -744,7 +746,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                                 zIndex: 9999,
                                 backgroundColor: '#fff',
                                 visibility: shouldShowEditor ? 'visible' : 'hidden',
-                                display: shouldShowEditor ? 'block' : 'none'
+                                display: shouldShowEditor ? 'block' : 'none',
+                                isolation: 'isolate'
                             }}
                         />
                         {isLoading && (
