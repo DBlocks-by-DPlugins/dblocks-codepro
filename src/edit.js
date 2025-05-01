@@ -469,8 +469,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             // Create editor instance
             await new Promise((resolve) => {
                 contextWindow.require(['vs/editor/editor.main'], () => {
-                    // Only dispose if we need a fresh instance
-                    if (needsRefresh && editorInstanceRef.current) {
+                    // Always dispose of existing instance before creating a new one
+                    if (editorInstanceRef.current) {
                         editorInstanceRef.current.dispose();
                         editorInstanceRef.current = null;
                         monacoEditorCache.instances.delete(clientId);
@@ -482,33 +482,40 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         editorContainerRef.current.style.visibility = 'visible';
                     }
 
-                    // Create a new editor instance if needed
-                    if (!editorInstanceRef.current) {
-                        editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
-                            minimap: { enabled: false },
-                            value: content || '<!-- some comment -->',
-                            language: editorLanguage,
-                            automaticLayout: true,
-                            theme: theme,
-                            fontSize: parseInt(fontSize),
-                            scrollBeyondLastLine: false,
-                        });
+                    // Create a new editor instance
+                    editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
+                        minimap: { enabled: false },
+                        value: content || '<!-- some comment -->',
+                        language: editorLanguage,
+                        automaticLayout: true,
+                        theme: theme,
+                        fontSize: parseInt(fontSize),
+                        scrollBeyondLastLine: false,
+                        suggestOnTriggerCharacters: true,
+                        quickSuggestions: true,
+                        wordBasedSuggestions: true,
+                        parameterHints: {
+                            enabled: true
+                        }
+                    });
 
-                        // Add Emmet support
+                    // Add Emmet support only if not already added
+                    if (!contextWindow.monaco._emmetInitialized) {
                         emmetHTML(contextWindow.monaco);
-
-                        // Add change handler
-                        editorInstanceRef.current.onDidChangeModelContent(() => {
-                            const newValue = editorInstanceRef.current.getValue();
-                            toggleAttribute('content', newValue);
-
-                            if (attributes.scaleHeightWithContent) {
-                                const newHeight = calculateEditorHeight(newValue);
-                                editorContainerRef.current.style.height = newHeight;
-                                editorInstanceRef.current.layout();
-                            }
-                        });
+                        contextWindow.monaco._emmetInitialized = true;
                     }
+
+                    // Add change handler
+                    editorInstanceRef.current.onDidChangeModelContent(() => {
+                        const newValue = editorInstanceRef.current.getValue();
+                        toggleAttribute('content', newValue);
+
+                        if (attributes.scaleHeightWithContent) {
+                            const newHeight = calculateEditorHeight(newValue);
+                            editorContainerRef.current.style.height = newHeight;
+                            editorInstanceRef.current.layout();
+                        }
+                    });
 
                     // Only update layout, don't focus
                     setTimeout(() => {
