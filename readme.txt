@@ -1,8 +1,8 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
-Tested up to:      6.7.1
-Stable tag:        1.2.9
+Tested up to:      6.8.1
+Stable tag:        1.3.0
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,16 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.3.0 =
+* Added option to edit code outside of the block. That is perfect for small block sizes if you place code for a logo. 
+* Added display language when using Syntax Highlighting. You can enable it from sidebar.
+* Added copy code button when using Syntax Highlighting. You can enable it from sidebar.
+* Topbar is simplified. If Highlighting is on you will see language switch if code is running and Highlighting is off you will see preview and split option. 
+* Improved Monaco Editor performance and added loader. 
+* Improved compatibility with WP 6.8.1
+
+
 
 = 1.2.9 =
 * Added option to enable/disable syntax highlighting inside toolbar
