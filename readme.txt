@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
 Tested up to:      6.8.1
-Stable tag:        1.3.1
+Stable tag:        1.3.2
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,10 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.3.2 =
+* Added transfrom from HTML Block to CodePro Block
+
 
 = 1.3.1 =
 * Version Bump
