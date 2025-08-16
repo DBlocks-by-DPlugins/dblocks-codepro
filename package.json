@@ -18,12 +18,12 @@
 		"*"
 	],
 	"devDependencies": {
-		"@wordpress/scripts": "^27.9.0",
+		"@wordpress/scripts": "^30.21.0",
 		"cpx": "^1.5.0",
 		"rimraf": "^6.0.1"
 	},
 	"dependencies": {
-		"@wordpress/icons": "^10.14.0",
+		"@wordpress/icons": "^10.28.0",
 		"emmet-monaco-es": "^5.5.0",
 		"monaco-editor": "^0.52.0"
 	}

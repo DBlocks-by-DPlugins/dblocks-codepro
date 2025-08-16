@@ -230,31 +230,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     };
 
-    // Handle syntax highlight toggle
-    const handleSyntaxHighlightToggle = (newState) => {
-        setSyntaxHighlight(newState);
-        setAttributes({ 
-            syntaxHighlight: newState,
-            // When highlighting is ON: always enable scale height with content
-            scaleHeightWithContent: newState
-        });
-        setEditorNeedsRefresh(true);
-        
-        // Force editor to refresh when syntax highlighting is toggled
-        if (showEditor && viewMode === 'split') {
-            // Add a small delay to ensure UI updates first
-            setTimeout(() => {
-                if (editorInstanceRef.current) {
-                    editorInstanceRef.current.layout();
-                    const iframe = document.querySelector('[name="editor-canvas"]');
-                    const contextWindow = iframe ? iframe.contentWindow : window;
-                    if (contextWindow && contextWindow.monaco) {
-                        editorInstanceRef.current.focus();
-                    }
-                }
-            }, 50);
-        }
-    };
+    // Syntax highlighting is now determined by block variation, not a toggle
+    // This function can be removed since we no longer toggle syntax highlighting
 
     // Initialize or reuse editor when needed
     useEffect(() => {
@@ -564,11 +541,37 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         previousViewModeRef.current = viewMode;
     }, [viewMode]);
 
-    // Set initial view mode to split when syntax highlighting is off
+    // Sync syntaxHighlight state with attributes when variation changes
     useEffect(() => {
-        if (!syntaxHighlight && viewMode === 'preview') {
-            setViewMode('split');
-            toggleAttribute('viewMode', 'split');
+        if (attributes.syntaxHighlight !== syntaxHighlight) {
+            setSyntaxHighlight(attributes.syntaxHighlight);
+        }
+    }, [attributes.syntaxHighlight]);
+
+    // Handle variation-specific attribute changes
+    useEffect(() => {
+        // When syntax highlighting is ON (Syntax Highlighter variation)
+        if (syntaxHighlight) {
+            // Enable scale height with content for syntax highlighter
+            if (!attributes.scaleHeightWithContent) {
+                setAttributes({ scaleHeightWithContent: true });
+            }
+            // Default to preview mode for syntax highlighter
+            if (viewMode === 'split') {
+                setViewMode('preview');
+                toggleAttribute('viewMode', 'preview');
+            }
+        } else {
+            // When syntax highlighting is OFF (Code Executor variation)
+            // Disable scale height with content for code executor (user can still manually enable it)
+            if (attributes.scaleHeightWithContent) {
+                setAttributes({ scaleHeightWithContent: false });
+            }
+            // Force split mode for code executor
+            if (viewMode === 'preview') {
+                setViewMode('split');
+                toggleAttribute('viewMode', 'split');
+            }
         }
     }, [syntaxHighlight]);
 
@@ -634,7 +637,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 attributes={attributes}
                 setAttributes={setAttributes}
                 syntaxHighlight={syntaxHighlight}
-                setSyntaxHighlight={handleSyntaxHighlightToggle}
                 syntaxHighlightTheme={syntaxHighlightTheme}
                 toggleSyntaxHighlightTheme={toggleSyntaxHighlightTheme}
                 editorLanguage={editorLanguage}
@@ -655,7 +657,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     viewMode={viewMode}
                     setViewMode={handleViewModeChange}
                     syntaxHighlight={syntaxHighlight}
-                    setSyntaxHighlight={handleSyntaxHighlightToggle}
                     setAttributes={setAttributes}
                     editorLanguage={editorLanguage}
                     changeEditorLanguage={changeEditorLanguage}

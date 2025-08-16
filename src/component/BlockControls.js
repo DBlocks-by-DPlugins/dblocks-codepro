@@ -6,7 +6,7 @@ import { ToolbarGroup, ToolbarButton, ToolbarItem, ToolbarDropdownMenu } from '@
 import Languages from './Languages';
 import { Icon, seen, pageBreak, code } from '@wordpress/icons';
 
-const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyntaxHighlight, setAttributes, editorLanguage, changeEditorLanguage }) => {
+const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setAttributes, editorLanguage, changeEditorLanguage }) => {
     const [selectedLanguage, setSelectedLanguage] = useState(Languages[0].value);
 
     // Find the label of the selected language
@@ -25,22 +25,7 @@ const BlockControlsComponent = ({ viewMode, setViewMode, syntaxHighlight, setSyn
                     </ToolbarButton>
                 </ToolbarGroup>
             )}
-            <ToolbarGroup>
-                <ToolbarItem>
-                    {() => (
-                        <ToolbarButton
-                            label="Highlighting"
-                            isPressed={syntaxHighlight}
-                            onClick={() => {
-                                setSyntaxHighlight(!syntaxHighlight);
-                                setAttributes({ syntaxHighlight: !syntaxHighlight });
-                            }}
-                        >
-                            {syntaxHighlight ? 'Highlighting On' : 'Highlighting Off'}
-                        </ToolbarButton>
-                    )}
-                </ToolbarItem>
-            </ToolbarGroup>
+
             {syntaxHighlight && (
                 <ToolbarGroup>
                     <ToolbarDropdownMenu

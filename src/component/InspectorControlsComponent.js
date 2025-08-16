@@ -16,7 +16,6 @@ const InspectorControlsComponent = ({
     attributes,
     setAttributes,
     syntaxHighlight,
-    setSyntaxHighlight,
     syntaxHighlightTheme,
     toggleSyntaxHighlightTheme,
     editorLanguage,
@@ -63,18 +62,12 @@ const InspectorControlsComponent = ({
         setAttributes({ useWrapper: value });
     };
 
-    const handleSyntaxHighlightChange = (value) => {
-        setSyntaxHighlight(value);
-        setAttributes({ 
-            syntaxHighlight: value,
-            scaleHeightWithContent: value
-        });
-    };
+
 
     return (
         <InspectorControls>
             <Panel>
-                <PanelBody title="Element Settings">
+                <PanelBody title="Element Settings" key={`inspector-${syntaxHighlight ? 'syntax' : 'executor'}`}>
                     <div className="togglecontrol--with-info">
                         <ToggleControl
                             label="Use Wrapper"
@@ -101,32 +94,36 @@ const InspectorControlsComponent = ({
                         />
                     )}
 
-                    <div className="togglecontrol--with-info">
-                        <ToggleControl
-                            label="Syntax Highlighting"
-                            checked={syntaxHighlight}
-                            onChange={handleSyntaxHighlightChange}
-                            __nextHasNoMarginBottom={true}
-                        />
-                        <div className="togglecontrol--with-info__icon-wrapper">
-                            <Icon icon={help} size={20} />
-                            <p>If this is disabled code will be injected as HTML, otherwise the code will be displayed with syntax highlighting as code snippet preview.</p>
-                        </div>
+                    <div className="variation-info">
+                        <p><strong>Block Type:</strong> {syntaxHighlight ? 'Syntax Highlighter' : 'Code Executor'}</p>
+                        <p><small>To change between code execution and syntax highlighting, use block variations from the inserter.</small></p>
                     </div>
 
-                  
+                    {/* Language selection - available for both variations */}
+                    <SelectControl
+                        label="Language"
+                        value={editorLanguage}
+                        options={Languages}
+                        onChange={changeEditorLanguage}
+                        __next40pxDefaultSize={true}
+                        __nextHasNoMarginBottom={true}
+                    />
 
-                   
-                    {syntaxHighlight && (
+                    {/* Code Executor specific options */}
+                    {!syntaxHighlight && (
                         <div style={PADDING_STYLE}>
-                             <SelectControl
-                                label="Language"
-                                value={editorLanguage}
-                                options={Languages}
-                                onChange={changeEditorLanguage}
-                                __next40pxDefaultSize={true}
+                            <ToggleControl
+                                label="Scale Height with Content"
+                                checked={attributes.scaleHeightWithContent}
+                                onChange={(value) => setAttributes({ scaleHeightWithContent: value })}
                                 __nextHasNoMarginBottom={true}
                             />
+                        </div>
+                    )}
+
+                    {/* Syntax Highlighter specific options */}
+                    {syntaxHighlight && (
+                        <div style={PADDING_STYLE}>
                             <SelectControl
                                 label="Front End Theme"
                                 value={syntaxHighlightTheme}
