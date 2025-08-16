@@ -5,9 +5,7 @@ const FEEDBACK_DURATION = 2000;
 
 // Monaco editor instances cache
 const monacoInstances = new Map();
-
-// Import shared Monaco loader to prevent duplicate loading
-import { loadMonaco } from '../utils/monaco-loader.js';
+let monacoLoaded = false;
 
 // Get global editor theme from WordPress settings
 const getGlobalEditorTheme = async () => {
@@ -302,18 +300,111 @@ const handleCopyClick = async (button, content, theme) => {
     }
 };
 
-// Monaco loading is now handled by the shared loader
+// Load Monaco editor
+const loadMonaco = async () => {
+    if (monacoLoaded) return window.monaco;
+    
+    try {
+        // Load Monaco loader
+        const script = document.createElement('script');
+        script.src = `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs/loader.js`;
+        
+        await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
 
-// Initialize Monaco editor for syntax highlighting - No loading states
+        // Wait for require to be available
+        await new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                if (window.require) {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 50);
+        });
+
+        // Configure Monaco loader
+        window.require.config({
+            paths: {
+                'vs': `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs`
+            }
+        });
+
+        // Load Monaco editor
+        return new Promise((resolve, reject) => {
+            window.require(['vs/editor/editor.main'], (monaco) => {
+                monacoLoaded = true;
+                resolve(monaco);
+            }, reject);
+        });
+    } catch (error) {
+        console.error('Failed to load Monaco:', error);
+        throw error;
+    }
+};
+
+// Initialize Monaco editor for syntax highlighting
 const initializeMonacoEditor = async (container, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap) => {
     try {
-        // Load Monaco directly
+        // Show loading state
+        const loadingElement = document.createElement('div');
+        loadingElement.className = 'monaco-loading';
+        loadingElement.innerHTML = `
+            <div style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+            ">
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 12px;
+                ">
+                    <div style="
+                        width: 20px;
+                        height: 20px;
+                        border: 2px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
+                        border-top: 2px solid ${theme === 'dark' ? '#007acc' : '#007cba'};
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                    "></div>
+                    <span>Loading ${language} syntax highlighting...</span>
+                </div>
+            </div>
+        `;
+        
+        // Add CSS animation for spinner
+        if (!document.querySelector('#monaco-loading-styles')) {
+            const style = document.createElement('style');
+            style.id = 'monaco-loading-styles';
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        container.appendChild(loadingElement);
+
+        // Load Monaco
         const monaco = await loadMonaco();
         
         // Load the specific language module
         await new Promise((resolve, reject) => {
             window.require([`vs/basic-languages/${language}/${language}`], resolve, reject);
         });
+
+        // Remove loading element
+        loadingElement.remove();
         
         // Create editor container
         const editorContainer = document.createElement('div');
@@ -415,56 +506,71 @@ const initializeMonacoEditor = async (container, content, language, theme, displ
     }
 };
 
-// Initialize syntax highlighting for DBlocks - No lazy loading
+// Initialize syntax highlighting for DBlocks with lazy loading
 const initializeSyntaxHighlighting = () => {
     const syntaxBlocks = document.querySelectorAll('.wp-block-dblocks-dblocks-codepro');
     
-        // Process all syntax highlighting blocks immediately
-    syntaxBlocks.forEach((block) => {
-        const syntaxHighlight = block.dataset.syntaxHighlight === 'true';
-        if (syntaxHighlight) {
-            // Process block immediately
-            processBlock(block);
-        }
+    // Create intersection observer for lazy loading
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                const block = entry.target;
+                
+                // Check if this is a syntax highlighter block
+                const syntaxHighlight = block.dataset.syntaxHighlight === 'true';
+                if (!syntaxHighlight) return; // Skip Advanced Custom HTML blocks
+
+                // Check if Monaco is already initialized for this block
+                if (block.dataset.monacoInitialized === 'true') return;
+
+                // Mark as initialized to prevent double initialization
+                block.dataset.monacoInitialized = 'true';
+
+                // Process block asynchronously
+                processBlockAsync(block);
+            }
+        });
+    }, {
+        rootMargin: '50px', // Start loading when block is 50px away from viewport
+        threshold: 0.1 // Trigger when 10% of the block is visible
     });
-};
 
-// Function to process a single block
-const processBlock = async (block) => {
-    try {
-        // Get block data
-        const language = block.dataset.editorLanguage || 'html';
-        let theme = block.dataset.syntaxTheme || 'light';
-        
-        // Always use global settings for consistency
-        theme = await getGlobalEditorTheme();
-        const displayLanguage = await getGlobalDisplayLanguage();
-        const copyButton = await getGlobalCopyButton();
-        const displayRowNumbers = await getGlobalDisplayRowNumbers();
-        const indentWidth = await getGlobalIndentWidth();
-        const fontSize = await getGlobalFontSize();
-        const lineHeight = await getGlobalLineHeight();
-        const letterSpacing = await getGlobalLetterSpacing();
-        const wordWrap = await getGlobalWordWrap();
-        
-        // Extract content from existing block HTML instead of data-content
-        const content = extractContentFromBlock(block);
-        
-        console.log('Frontend: Using global settings - Theme:', theme, 'Display Language:', displayLanguage, 'Copy Button:', copyButton);
-        console.log('Frontend: Using theme for Monaco:', theme);
-        console.log('Frontend: Extracted content length:', content.length);
+    // Async function to process blocks
+    const processBlockAsync = async (block) => {
+        try {
+            // Get block data
+            const language = block.dataset.editorLanguage || 'html';
+            let theme = block.dataset.syntaxTheme || 'light';
+            
+            // Always use global settings for consistency
+            theme = await getGlobalEditorTheme();
+            const displayLanguage = await getGlobalDisplayLanguage();
+            const copyButton = await getGlobalCopyButton();
+            const displayRowNumbers = await getGlobalDisplayRowNumbers();
+            const indentWidth = await getGlobalIndentWidth();
+            const fontSize = await getGlobalFontSize();
+            const lineHeight = await getGlobalLineHeight();
+            const letterSpacing = await getGlobalLetterSpacing();
+            const wordWrap = await getGlobalWordWrap();
+            
+            // Extract content from existing block HTML instead of data-content
+            const content = extractContentFromBlock(block);
+            
+            console.log('Frontend: Using global settings - Theme:', theme, 'Display Language:', displayLanguage, 'Copy Button:', copyButton);
+            console.log('Frontend: Using theme for Monaco:', theme);
+            console.log('Frontend: Extracted content length:', content.length);
 
-        // Create Monaco container
-        const monacoContainer = document.createElement('div');
-        monacoContainer.className = 'monaco-editor-container';
-        monacoContainer.style.cssText = `
-            position: relative;
-            overflow: hidden;
-            background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'};
-            border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
-        `;
+            // Create Monaco container
+            const monacoContainer = document.createElement('div');
+            monacoContainer.className = 'monaco-editor-container';
+            monacoContainer.style.cssText = `
+                position: relative;
+                overflow: hidden;
+                background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'};
+                border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
+            `;
 
-        // Add language label and copy button if enabled
+                                    // Add language label and copy button if enabled
         if (displayLanguage || copyButton) {
             const rightSideContainer = document.createElement('div');
             rightSideContainer.style.cssText = `
@@ -506,35 +612,46 @@ const processBlock = async (block) => {
                 rightSideContainer.appendChild(copyBtn);
             }
 
-            // Add language label second (right side of right container)
-            if (displayLanguage) {
-                const languageLabel = document.createElement('div');
-                languageLabel.className = 'language-label';
-                languageLabel.textContent = language.toUpperCase();
-                languageLabel.style.cssText = `
-                    background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
-                    color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 11px;
-                    font-weight: 500;
-                    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-                `;
-                rightSideContainer.appendChild(languageLabel);
-            }
+                    // Add language label second (right side of right container)
+                    if (displayLanguage) {
+                        const languageLabel = document.createElement('div');
+                        languageLabel.className = 'language-label';
+                        languageLabel.textContent = language.toUpperCase();
+                        languageLabel.style.cssText = `
+                            background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
+                            color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
+                            padding: 2px 8px;
+                            border-radius: 4px;
+                            font-size: 11px;
+                            font-weight: 500;
+                            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+                        `;
+                        rightSideContainer.appendChild(languageLabel);
+                    }
 
-            monacoContainer.appendChild(rightSideContainer);
+                    monacoContainer.appendChild(rightSideContainer);
+                }
+
+            // Replace block content with Monaco container
+            block.innerHTML = '';
+            block.appendChild(monacoContainer);
+
+            // Initialize Monaco editor
+            initializeMonacoEditor(monacoContainer, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap);
+        } catch (error) {
+            console.error('Failed to process block:', error);
+            // Reset initialization flag on error
+            block.dataset.monacoInitialized = 'false';
         }
+    };
 
-        // Replace block content with Monaco container
-        block.innerHTML = '';
-        block.appendChild(monacoContainer);
-
-        // Initialize Monaco editor
-        initializeMonacoEditor(monacoContainer, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap);
-    } catch (error) {
-        console.error('Failed to process block:', error);
-    }
+    // Observe all syntax highlighting blocks
+    syntaxBlocks.forEach((block) => {
+        const syntaxHighlight = block.dataset.syntaxHighlight === 'true';
+        if (syntaxHighlight) {
+            observer.observe(block);
+        }
+    });
 };
 
 // Initialize everything when DOM is ready
