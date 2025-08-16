@@ -357,7 +357,6 @@ const initializeSyntaxHighlighting = () => {
             monacoContainer.className = 'monaco-editor-container';
             monacoContainer.style.cssText = `
                 position: relative;
-                border-radius: 6px;
                 overflow: hidden;
                 background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'};
                 border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
