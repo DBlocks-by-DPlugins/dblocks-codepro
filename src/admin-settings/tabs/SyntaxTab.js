@@ -15,11 +15,11 @@ const SyntaxTab = ({ settings, updateSetting, SYNTAX_THEME_OPTIONS }) => {
                 initialOpen={true}
             >
                 <SelectControl
-                    label={__('Default Front-end Theme', 'dblocks-codepro')}
+                    label={__('Syntax Highlighter Editor Theme', 'dblocks-codepro')}
                     value={settings.syntaxTheme}
                     options={SYNTAX_THEME_OPTIONS}
                     onChange={(value) => updateSetting('syntaxTheme', value)}
-                    help={__('The color scheme for displaying highlighted code on your website. Light theme works well with bright designs, dark theme is great for technical content.', 'dblocks-codepro')}
+                    help={__('The color scheme for the Monaco editor in both the block editor and frontend syntax highlighting. Light theme works well with bright designs, dark theme is great for technical content.', 'dblocks-codepro')}
                     __next40pxDefaultSize={true}
                 />
 

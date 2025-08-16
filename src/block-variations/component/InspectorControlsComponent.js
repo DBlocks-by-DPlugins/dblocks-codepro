@@ -7,21 +7,16 @@ import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitContr
 
 
 
-const PADDING_STYLE = { padding: '10px 0px 10px 15px' };
+
 
 const InspectorControlsComponent = ({
     attributes,
     setAttributes,
     syntaxHighlight,
-    syntaxHighlightTheme,
-    toggleSyntaxHighlightTheme,
     editorLanguage,
     changeEditorLanguage,
     editorHeight,
-    setEditorHeight,
-    updateAttribute,
-    displayLanguage,
-    copyButton
+    setEditorHeight
 }) => {
     const handleHeightChange = (newHeight) => {
         const heightInPx = newHeight.toString().endsWith('px') ? newHeight : `${newHeight}px`;
@@ -30,36 +25,12 @@ const InspectorControlsComponent = ({
         setAttributes({ editorHeight: heightInPx });
     };
 
-    const handleFrontEndThemeChange = () => {
-        toggleSyntaxHighlightTheme();
-    };
-
-    const handleDisplayLanguageChange = (value) => {
-        updateAttribute('displayLanguage', value, '/wp-json/dblocks_codepro/v1/display-language/');
-    };
-
-    const handleCopyButtonChange = (value) => {
-        updateAttribute('copyButton', value, '/wp-json/dblocks_codepro/v1/copy-button/');
-    };
-
-    const handleWrapperChange = (value) => {
-        setAttributes({ useWrapper: value });
-    };
-
 
 
     return (
         <InspectorControls>
             <Panel>
                 <PanelBody title="Settings" key={`inspector-${syntaxHighlight ? 'syntax' : 'executor'}`}>                
-                    <ToggleControl
-                        label="Add Block's Wrapper"
-                        help="Wrap the code in a <div> block with attributes (class, id, etc.)"
-                        checked={attributes.useWrapper}
-                        onChange={handleWrapperChange}
-                        __nextHasNoMarginBottom={true}
-
-                    />            
                     {/* Show Editor Height only when syntax highlighting is OFF */}
                     {!syntaxHighlight && (
                         <UnitControl
@@ -88,37 +59,6 @@ const InspectorControlsComponent = ({
                             __next40pxDefaultSize={true}
                             __nextHasNoMarginBottom={true}
                         />
-                    )}
-
-
-
-                    {/* Syntax Highlighter specific options */}
-                    {syntaxHighlight && (
-                        <div style={PADDING_STYLE}>
-                            <SelectControl
-                                label="Front End Theme"
-                                value={syntaxHighlightTheme}
-                                options={[
-                                    { label: 'Light', value: 'light' },
-                                    { label: 'Dark', value: 'dark' }
-                                ]}
-                                onChange={handleFrontEndThemeChange}
-                                __next40pxDefaultSize={true}
-                                __nextHasNoMarginBottom={true}
-                            />
-                            <ToggleControl
-                                label="Display Language"
-                                checked={displayLanguage}
-                                onChange={handleDisplayLanguageChange}
-                                __nextHasNoMarginBottom={true}
-                            />
-                            <ToggleControl
-                                label="Copy Button"
-                                checked={copyButton}
-                                onChange={handleCopyButtonChange}
-                                __nextHasNoMarginBottom={true}
-                            />
-                        </div>
                     )}
                 </PanelBody>
             </Panel>

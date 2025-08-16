@@ -39,6 +39,37 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         // Fall back to attributes or default
         return attributes.syntaxHighlightTheme || "light";
     });
+    
+    // Get global editor theme from WordPress data store
+    const globalEditorTheme = useSelect(select => {
+        // Try to get from WordPress options
+        const theme = select('core').getEntityRecord('root', 'site')?.theme_supports?.editor_color_palette;
+        return theme ? 'vs-dark' : 'vs-light';
+    }, 'vs-light');
+    
+    // Get global syntax theme setting
+    const [globalSyntaxTheme, setGlobalSyntaxTheme] = useState('light');
+    
+    // Fetch global syntax theme on mount
+    useEffect(() => {
+        const fetchGlobalTheme = async () => {
+            try {
+                console.log('Editor: Fetching global theme from:', `${baseUrl}syntax-theme/`);
+                const response = await fetch(`${baseUrl}syntax-theme/`);
+                if (response.ok) {
+                    const theme = await response.text();
+                    console.log('Editor: Fetched global theme:', theme);
+                    setGlobalSyntaxTheme(theme);
+                } else {
+                    console.log('Editor: Failed to fetch theme, status:', response.status);
+                }
+            } catch (error) {
+                console.log('Editor: Could not fetch global theme, using default:', error);
+            }
+        };
+        
+        fetchGlobalTheme();
+    }, []);
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
     const [pluginInfo, setPluginInfo] = useState(null);
     const [editorInitialized, setEditorInitialized] = useState(false);
@@ -86,7 +117,16 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         setAttributes({ [attribute]: value });
     };
 
-    const baseUrl = DBlocksData.restUrl
+    // Get REST API base URL
+    const baseUrl = (typeof DBlocksData !== 'undefined' && DBlocksData.restUrl) 
+        ? DBlocksData.restUrl 
+        : (typeof wpApiSettings !== 'undefined' && wpApiSettings.root) 
+            ? wpApiSettings.root + 'dblocks_codepro/v1/'
+            : '/wp-json/dblocks_codepro/v1/';
+    
+    console.log('Editor: baseUrl:', baseUrl);
+    console.log('Editor: DBlocksData available:', typeof DBlocksData !== 'undefined');
+    console.log('Editor: wpApiSettings available:', typeof wpApiSettings !== 'undefined');
 
     const toggleSyntaxHighlightTheme = async (newTheme) => {
         // If no theme is provided, toggle between light and dark
@@ -136,6 +176,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             window.removeEventListener('dblocks_syntax_theme_changed', handleThemeChange);
         };
     }, [syntaxHighlightTheme]);
+    
+    // Listen for global theme changes and refresh editor
+    useEffect(() => {
+        if (editorInstanceRef.current && syntaxHighlight) {
+            // Update editor theme when global theme changes
+            const newTheme = globalSyntaxTheme === 'dark' ? 'vs-dark' : 'vs-light';
+            contextWindow.monaco?.editor.setTheme(newTheme);
+        }
+    }, [globalSyntaxTheme, syntaxHighlight]);
 
     // Check for theme changes on mount
     useEffect(() => {
@@ -434,11 +483,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     }
 
                     // Create a new editor instance
+                    const editorTheme = globalSyntaxTheme === 'dark' ? 'vs-dark' : 'vs-light';
+                    console.log('Editor: Creating Monaco editor with theme:', editorTheme, '(globalSyntaxTheme:', globalSyntaxTheme, ')');
+                    
                     editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
                         minimap: { enabled: false },
                         value: content || '<!-- some comment -->',
                         language: editorLanguage,
-                        theme: syntaxHighlightTheme === 'dark' ? 'vs-dark' : 'vs',
+                        theme: editorTheme,
                         automaticLayout: true,
                         scrollBeyondLastLine: false,
                         suggestOnTriggerCharacters: true,

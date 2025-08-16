@@ -7,6 +7,76 @@ const FEEDBACK_DURATION = 2000;
 const monacoInstances = new Map();
 let monacoLoaded = false;
 
+// Get global editor theme from WordPress settings
+const getGlobalEditorTheme = async () => {
+    try {
+        // Try to get from WordPress REST API
+        const response = await fetch('/wp-json/dblocks_codepro/v1/syntax-theme/');
+        if (response.ok) {
+            const theme = await response.text();
+            console.log('Frontend: Fetched global theme:', theme, 'Type:', typeof theme, 'Length:', theme.length);
+            
+            // Clean the theme value and check for dark
+            const cleanTheme = theme.trim().replace(/"/g, '').replace(/'/g, '');
+            console.log('Frontend: Cleaned theme:', cleanTheme);
+            
+            if (cleanTheme === 'dark') {
+                console.log('Frontend: Returning dark theme');
+                return 'dark';
+            } else {
+                console.log('Frontend: Returning light theme (not dark)');
+                return 'light';
+            }
+        }
+    } catch (error) {
+        console.log('Could not fetch global theme, using default');
+    }
+    
+    // Default to light theme
+    console.log('Frontend: Using default light theme');
+    return 'light';
+};
+
+// Get global display language setting
+const getGlobalDisplayLanguage = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/display-language/');
+        if (response.ok) {
+            const displayLanguage = await response.text();
+            console.log('Frontend: Fetched global display language:', displayLanguage);
+            
+            // Handle both "true"/"false" strings and "1"/"0" strings
+            const cleanValue = displayLanguage.trim().replace(/"/g, '').replace(/'/g, '');
+            const isEnabled = cleanValue === 'true' || cleanValue === '1';
+            console.log('Frontend: Display language enabled:', isEnabled);
+            return isEnabled;
+        }
+    } catch (error) {
+        console.log('Could not fetch global display language, using default');
+    }
+    return true; // Default to showing language label
+};
+
+// Get global copy button setting
+const getGlobalCopyButton = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/copy-button/');
+        if (response.ok) {
+            const copyButton = await response.text();
+            console.log('Frontend: Fetched global copy button:', copyButton);
+            
+            // Handle both "true"/"false" strings and "1"/"0" strings
+            const cleanValue = copyButton.trim().replace(/"/g, '').replace(/'/g, '');
+            const isEnabled = cleanValue === 'true' || cleanValue === '1';
+            console.log('Frontend: Copy button enabled:', isEnabled);
+            return isEnabled;
+        }
+    } catch (error) {
+        console.log('Could not fetch global copy button, using default');
+    }
+    return true; // Default to showing copy button
+};
+
 const copyToClipboard = async (text) => {
     try {
         if (navigator.clipboard) {
@@ -170,11 +240,14 @@ const initializeMonacoEditor = async (container, content, language, theme) => {
         editorContainer.style.width = '100%';
         container.appendChild(editorContainer);
 
-        // Create Monaco editor with stripped UI
+        // Create Monaco editor with stripped UI - use same theme logic as editor
+        const monacoTheme = theme === 'dark' ? 'vs-dark' : 'vs-light';
+        console.log('Frontend: Creating Monaco editor with theme:', monacoTheme, '(fetched theme:', theme, ')');
+        
         const editor = monaco.editor.create(editorContainer, {
             value: content,
             language: language,
-            theme: theme === 'dark' ? 'vs-dark' : 'vs',
+            theme: monacoTheme,
             readOnly: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
@@ -251,93 +324,111 @@ const initializeSyntaxHighlighting = () => {
                 // Check if Monaco is already initialized for this block
                 if (block.dataset.monacoInitialized === 'true') return;
 
-                // Get block data
-                const content = block.dataset.content || '';
-                const language = block.dataset.editorLanguage || 'html';
-                const theme = block.dataset.syntaxTheme || 'light';
-                const displayLanguage = block.dataset.displayLanguage === 'true';
-                const copyButton = block.dataset.copyButton === 'true';
-
-                // Create Monaco container
-                const monacoContainer = document.createElement('div');
-                monacoContainer.className = 'monaco-editor-container';
-                monacoContainer.style.cssText = `
-                    position: relative;
-                    border-radius: 6px;
-                    overflow: hidden;
-                    background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'};
-                    border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
-                `;
-
-                // Add language label if enabled
-                if (displayLanguage) {
-                    const languageLabel = document.createElement('div');
-                    languageLabel.className = 'language-label';
-                    languageLabel.textContent = language.toUpperCase();
-                    languageLabel.style.cssText = `
-                        position: absolute;
-                        top: 8px;
-                        right: 8px;
-                        background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
-                        color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
-                        padding: 2px 8px;
-                        border-radius: 4px;
-                        font-size: 11px;
-                        font-weight: 500;
-                        z-index: 10;
-                        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-                    `;
-                    monacoContainer.appendChild(languageLabel);
-                }
-
-                // Add copy button if enabled
-                if (copyButton) {
-                    const copyBtn = document.createElement('button');
-                    copyBtn.className = 'copy-button';
-                    copyBtn.textContent = COPY_BUTTON_LABEL;
-                    copyBtn.style.cssText = `
-                        position: absolute;
-                        top: 8px;
-                        left: 8px;
-                        background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
-                        color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
-                        border: none;
-                        padding: 4px 8px;
-                        border-radius: 4px;
-                        font-size: 12px;
-                        cursor: pointer;
-                        z-index: 10;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        transition: all 0.2s ease;
-                    `;
-                    
-                    // Hover effects
-                    copyBtn.addEventListener('mouseenter', () => {
-                        copyBtn.style.background = theme === 'dark' ? '#4c4c4c' : '#e8eaed';
-                    });
-                    copyBtn.addEventListener('mouseleave', () => {
-                        copyBtn.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
-                    });
-
-                    copyBtn.addEventListener('click', () => handleCopyClick(copyBtn));
-                    monacoContainer.appendChild(copyBtn);
-                }
-
-                // Replace block content with Monaco container
-                block.innerHTML = '';
-                block.appendChild(monacoContainer);
-
                 // Mark as initialized to prevent double initialization
                 block.dataset.monacoInitialized = 'true';
 
-                // Initialize Monaco editor
-                initializeMonacoEditor(monacoContainer, content, language, theme);
+                // Process block asynchronously
+                processBlockAsync(block);
             }
         });
     }, {
         rootMargin: '50px', // Start loading when block is 50px away from viewport
         threshold: 0.1 // Trigger when 10% of the block is visible
     });
+
+    // Async function to process blocks
+    const processBlockAsync = async (block) => {
+        try {
+            // Get block data
+            const content = block.dataset.content || '';
+            const language = block.dataset.editorLanguage || 'html';
+            let theme = block.dataset.syntaxTheme || 'light';
+            
+            // Always use global settings for consistency
+            theme = await getGlobalEditorTheme();
+            const displayLanguage = await getGlobalDisplayLanguage();
+            const copyButton = await getGlobalCopyButton();
+            
+            console.log('Frontend: Using global settings - Theme:', theme, 'Display Language:', displayLanguage, 'Copy Button:', copyButton);
+            console.log('Frontend: Using theme for Monaco:', theme);
+
+            // Create Monaco container
+            const monacoContainer = document.createElement('div');
+            monacoContainer.className = 'monaco-editor-container';
+            monacoContainer.style.cssText = `
+                position: relative;
+                border-radius: 6px;
+                overflow: hidden;
+                background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'};
+                border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
+            `;
+
+            // Add language label if enabled
+            if (displayLanguage) {
+                const languageLabel = document.createElement('div');
+                languageLabel.className = 'language-label';
+                languageLabel.textContent = language.toUpperCase();
+                languageLabel.style.cssText = `
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
+                    color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    font-weight: 500;
+                    z-index: 10;
+                    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+                `;
+                monacoContainer.appendChild(languageLabel);
+            }
+
+            // Add copy button if enabled
+            if (copyButton) {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-button';
+                copyBtn.textContent = COPY_BUTTON_LABEL;
+                copyBtn.style.cssText = `
+                    position: absolute;
+                    top: 8px;
+                    left: 8px;
+                    background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
+                    color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
+                    border: none;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    z-index: 10;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    transition: all 0.2s ease;
+                `;
+                
+                // Hover effects
+                copyBtn.addEventListener('mouseenter', () => {
+                    copyBtn.style.background = theme === 'dark' ? '#4c4c4c' : '#e8eaed';
+                });
+                copyBtn.addEventListener('mouseleave', () => {
+                    copyBtn.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
+                });
+
+                copyBtn.addEventListener('click', () => handleCopyClick(copyBtn));
+                monacoContainer.appendChild(copyBtn);
+            }
+
+            // Replace block content with Monaco container
+            block.innerHTML = '';
+            block.appendChild(monacoContainer);
+
+            // Initialize Monaco editor
+            initializeMonacoEditor(monacoContainer, content, language, theme);
+        } catch (error) {
+            console.error('Failed to process block:', error);
+            // Reset initialization flag on error
+            block.dataset.monacoInitialized = 'false';
+        }
+    };
 
     // Observe all syntax highlighting blocks
     syntaxBlocks.forEach((block) => {
