@@ -7,7 +7,6 @@ import InspectorControlsComponent from './component/InspectorControlsComponent.j
 import { ResizableBox, Spinner } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
 import { parseHeightValue, formatHeightWithPx, convertToPx } from './utils/editor-utils';
-import { loadMonaco } from '../utils/monaco-loader.js';
 
 import './editor.scss';
 
@@ -188,9 +187,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             const iframe = document.querySelector('[name="editor-canvas"]');
             const contextWindow = iframe ? iframe.contentWindow : window;
             
-                    if (window.monaco?.editor) {
-            window.monaco.editor.setTheme(newTheme);
-        }
+            if (contextWindow.monaco?.editor) {
+                contextWindow.monaco.editor.setTheme(newTheme);
+            }
         }
     }, [globalSyntaxTheme, syntaxHighlight]);
 
@@ -445,30 +444,56 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
 
         monacoEditorCache.isInitializing = true;
+        const MONACO_PATH = `${pluginInfo.plugin_url}vendor/monaco/min/vs`;
 
         try {
-            // Use shared Monaco loader
-            const monaco = await loadMonaco();
+            // Load Monaco script if not already loaded
+            if (!contextWindow.monaco && !Array.from(contextDoc.scripts).some(script => script.src.includes(`${MONACO_PATH}/loader.js`))) {
+                const script = contextDoc.createElement('script');
+                script.src = `${MONACO_PATH}/loader.js`;
+                
+                await new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    contextDoc.body.appendChild(script);
+                });
+            }
+
+            // Wait for require to be available
+            if (!contextWindow.require) {
+                await new Promise((resolve) => {
+                    const checkInterval = setInterval(() => {
+                        if (contextWindow.require) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 50);
+                });
+            }
+
+            contextWindow.require.config({ paths: { 'vs': MONACO_PATH } });
 
             // Create editor instance
-            // Always dispose of existing instance before creating a new one
-            if (editorInstanceRef.current) {
-                editorInstanceRef.current.dispose();
-                editorInstanceRef.current = null;
-                monacoEditorCache.instances.delete(clientId);
-            }
+            await new Promise((resolve) => {
+                contextWindow.require(['vs/editor/editor.main'], () => {
+                    // Always dispose of existing instance before creating a new one
+                    if (editorInstanceRef.current) {
+                        editorInstanceRef.current.dispose();
+                        editorInstanceRef.current = null;
+                        monacoEditorCache.instances.delete(clientId);
+                    }
 
-            // Ensure the container is visible and has dimensions
-            if (editorContainerRef.current) {
-                editorContainerRef.current.style.display = 'block';
-                editorContainerRef.current.style.visibility = 'visible';
-            }
+                    // Ensure the container is visible and has dimensions
+                    if (editorContainerRef.current) {
+                        editorContainerRef.current.style.display = 'block';
+                        editorContainerRef.current.style.visibility = 'visible';
+                    }
 
-            // Create a new editor instance
-            const editorTheme = globalSyntaxTheme === 'dark' ? 'vs-dark' : 'vs-light';
-            console.log('Editor: Creating Monaco editor with theme:', editorTheme, '(globalSyntaxTheme:', globalSyntaxTheme, ')');
-            
-            editorInstanceRef.current = monaco.editor.create(editorContainerRef.current, {
+                    // Create a new editor instance
+                    const editorTheme = globalSyntaxTheme === 'dark' ? 'vs-dark' : 'vs-light';
+                    console.log('Editor: Creating Monaco editor with theme:', editorTheme, '(globalSyntaxTheme:', globalSyntaxTheme, ')');
+                    
+                    editorInstanceRef.current = contextWindow.monaco.editor.create(editorContainerRef.current, {
                         minimap: { enabled: false },
                         value: content || '<!-- some comment -->',
                         language: editorLanguage,
@@ -483,35 +508,38 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         }
                     });
 
-            // Add Emmet support only if not already added
-            if (!monaco._emmetInitialized) {
-                emmetHTML(monaco);
-                monaco._emmetInitialized = true;
-            }
+                    // Add Emmet support only if not already added
+                    if (!contextWindow.monaco._emmetInitialized) {
+                        emmetHTML(contextWindow.monaco);
+                        contextWindow.monaco._emmetInitialized = true;
+                    }
 
-            // Add change handler
-            editorInstanceRef.current.onDidChangeModelContent(() => {
-                const newValue = editorInstanceRef.current.getValue();
-                toggleAttribute('content', newValue);
+                    // Add change handler
+                    editorInstanceRef.current.onDidChangeModelContent(() => {
+                        const newValue = editorInstanceRef.current.getValue();
+                        toggleAttribute('content', newValue);
 
-                // For syntax highlighter, update height based on content changes
-                if (syntaxHighlight) {
-                    const newHeight = calculateEditorHeight(newValue);
-                    editorContainerRef.current.style.height = newHeight;
-                    editorInstanceRef.current.layout();
-                }
+                        // For syntax highlighter, update height based on content changes
+                        if (syntaxHighlight) {
+                            const newHeight = calculateEditorHeight(newValue);
+                            editorContainerRef.current.style.height = newHeight;
+                            editorInstanceRef.current.layout();
+                        }
+                    });
+
+                    // Only update layout, don't focus
+                    setTimeout(() => {
+                        if (editorInstanceRef.current) {
+                            editorInstanceRef.current.layout();
+                        }
+                    }, 10);
+
+                    // Cache the editor instance
+                    monacoEditorCache.instances.set(clientId, editorInstanceRef.current);
+                    setEditorInitialized(true);
+                    resolve();
+                });
             });
-
-            // Only update layout, don't focus
-            setTimeout(() => {
-                if (editorInstanceRef.current) {
-                    editorInstanceRef.current.layout();
-                }
-            }, 10);
-
-            // Cache the editor instance
-            monacoEditorCache.instances.set(clientId, editorInstanceRef.current);
-            setEditorInitialized(true);
         } catch (error) {
             console.error("Failed to initialize Monaco editor:", error);
         } finally {

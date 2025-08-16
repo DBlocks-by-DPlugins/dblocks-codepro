@@ -18,13 +18,17 @@ function dblocks_codepro_enqueue_editor_assets() {
         return;
     }
     
-    // WordPress automatically loads editorScript from block.json
-    // No need to manually enqueue it again
+    wp_enqueue_script(
+        'dblocks-codepro-editor-script',
+        plugin_dir_url(__FILE__) . '../build/index.js',
+        array('wp-blocks', 'wp-element', 'wp-editor'),
+        null,
+        true
+    );
     
     // Only localize script in editor context
     if (wp_script_is('wp-editor') || wp_script_is('wp-block-editor')) {
-        // Localize the script that's already loaded by block.json
-        wp_localize_script('dblocks-dblocks-codepro-editor-script', 'DBlocksData', array(
+        wp_localize_script('dblocks-codepro-editor-script', 'DBlocksData', array(
             'restUrl' => rest_url('dblocks_codepro/v1/'),
         ));
     }
