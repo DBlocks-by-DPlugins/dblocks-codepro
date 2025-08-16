@@ -77,6 +77,112 @@ const getGlobalCopyButton = async () => {
     return true; // Default to showing copy button
 };
 
+// Get global display row numbers setting
+const getGlobalDisplayRowNumbers = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/display-row-numbers/');
+        if (response.ok) {
+            const displayRowNumbers = await response.text();
+            console.log('Frontend: Fetched global display row numbers:', displayRowNumbers);
+            
+            const cleanValue = displayRowNumbers.trim().replace(/"/g, '').replace(/'/g, '');
+            const isEnabled = cleanValue === 'true' || cleanValue === '1';
+            console.log('Frontend: Display row numbers enabled:', isEnabled);
+            return isEnabled;
+        }
+    } catch (error) {
+        console.log('Could not fetch global display row numbers, using default');
+    }
+    return false; // Default to hiding row numbers
+};
+
+// Get global indent width setting
+const getGlobalIndentWidth = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/indent-width/');
+        if (response.ok) {
+            const indentWidth = await response.text();
+            console.log('Frontend: Fetched global indent width:', indentWidth);
+            
+            const cleanValue = indentWidth.trim().replace(/"/g, '').replace(/'/g, '');
+            return cleanValue || '4px';
+        }
+    } catch (error) {
+        console.log('Could not fetch global indent width, using default');
+    }
+    return '4px'; // Default indent width
+};
+
+// Get global font size setting
+const getGlobalFontSize = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/font-size/');
+        if (response.ok) {
+            const fontSize = await response.text();
+            console.log('Frontend: Fetched global font size:', fontSize);
+            
+            const cleanValue = fontSize.trim().replace(/"/g, '').replace(/'/g, '');
+            return cleanValue || '14px';
+        }
+    } catch (error) {
+        console.log('Could not fetch global font size, using default');
+    }
+    return '14px'; // Default font size
+};
+
+// Get global line height setting
+const getGlobalLineHeight = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/line-height/');
+        if (response.ok) {
+            const lineHeight = await response.text();
+            console.log('Frontend: Fetched global line height:', lineHeight);
+            
+            const cleanValue = lineHeight.trim().replace(/"/g, '').replace(/'/g, '');
+            return cleanValue || '20px';
+        }
+    } catch (error) {
+        console.log('Could not fetch global line height, using default');
+    }
+    return '20px'; // Default line height
+};
+
+// Get global letter spacing setting
+const getGlobalLetterSpacing = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/letter-spacing/');
+        if (response.ok) {
+            const letterSpacing = await response.text();
+            console.log('Frontend: Fetched global letter spacing:', letterSpacing);
+            
+            const cleanValue = letterSpacing.trim().replace(/"/g, '').replace(/'/g, '');
+            return cleanValue || '0px';
+        }
+    } catch (error) {
+        console.log('Could not fetch global letter spacing, using default');
+    }
+    return '0px'; // Default letter spacing
+};
+
+// Get global word wrap setting
+const getGlobalWordWrap = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/word-wrap/');
+        if (response.ok) {
+            const wordWrap = await response.text();
+            console.log('Frontend: Fetched global word wrap:', wordWrap);
+            
+            const cleanValue = wordWrap.trim().replace(/"/g, '').replace(/'/g, '');
+            const isEnabled = cleanValue === 'true' || cleanValue === '1';
+            console.log('Frontend: Word wrap enabled:', isEnabled);
+            return isEnabled;
+        }
+    } catch (error) {
+        console.log('Could not fetch global word wrap, using default');
+    }
+    return false; // Default to no word wrap
+};
+
 // Extract content from block's existing HTML instead of data-content
 const extractContentFromBlock = (block) => {
     // Look for existing content in the block
@@ -240,7 +346,7 @@ const loadMonaco = async () => {
 };
 
 // Initialize Monaco editor for syntax highlighting
-const initializeMonacoEditor = async (container, content, language, theme) => {
+const initializeMonacoEditor = async (container, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap) => {
     try {
         // Show loading state
         const loadingElement = document.createElement('div');
@@ -310,6 +416,18 @@ const initializeMonacoEditor = async (container, content, language, theme) => {
         const monacoTheme = theme === 'dark' ? 'vs-dark' : 'vs-light';
         console.log('Frontend: Creating Monaco editor with theme:', monacoTheme, '(fetched theme:', theme, ')');
         
+        // Apply custom CSS for font size, line height, and letter spacing
+        const customStyles = document.createElement('style');
+        customStyles.textContent = `
+            .monaco-editor .monaco-editor-background,
+            .monaco-editor .inputarea {
+                font-size: ${fontSize} !important;
+                line-height: ${lineHeight} !important;
+                letter-spacing: ${letterSpacing} !important;
+            }
+        `;
+        container.appendChild(customStyles);
+        
         const editor = monaco.editor.create(editorContainer, {
             value: content,
             language: language,
@@ -317,11 +435,11 @@ const initializeMonacoEditor = async (container, content, language, theme) => {
             readOnly: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
-            lineNumbers: 'off',
+            lineNumbers: displayRowNumbers ? "on" : "off",
             glyphMargin: false,
             folding: false,
             lineDecorationsWidth: 0,
-            lineNumbersMinChars: 0,
+            lineNumbersMinChars: 3,
             renderLineHighlight: 'none',
             overviewRulerBorder: false,
             hideCursorInOverviewRuler: true,
@@ -337,7 +455,22 @@ const initializeMonacoEditor = async (container, content, language, theme) => {
             parameterHints: { enabled: false },
             suggestOnTriggerCharacters: false,
             wordBasedSuggestions: false,
-            automaticLayout: true
+            automaticLayout: true,
+            fontSize: parseInt(fontSize),
+            lineHeight: parseInt(lineHeight),
+            letterSpacing: parseInt(letterSpacing),
+            tabSize: parseInt(indentWidth),
+            wordWrap: wordWrap ? 'on' : 'off',
+            // Line number and margin control
+            lineNumbersMinChars: 3,
+            lineDecorationsWidth: displayRowNumbers ? 40 : 0,
+            minimap: { enabled: false },
+            // Content width control
+            fixedOverflowWidgets: true,
+            // Margin and padding control
+            renderWhitespace: 'none',
+            // Ensure proper spacing
+            padding: { top: 0, bottom: 0 }
         });
 
         // Store instance for copy functionality
@@ -413,6 +546,12 @@ const initializeSyntaxHighlighting = () => {
             theme = await getGlobalEditorTheme();
             const displayLanguage = await getGlobalDisplayLanguage();
             const copyButton = await getGlobalCopyButton();
+            const displayRowNumbers = await getGlobalDisplayRowNumbers();
+            const indentWidth = await getGlobalIndentWidth();
+            const fontSize = await getGlobalFontSize();
+            const lineHeight = await getGlobalLineHeight();
+            const letterSpacing = await getGlobalLetterSpacing();
+            const wordWrap = await getGlobalWordWrap();
             
             // Extract content from existing block HTML instead of data-content
             const content = extractContentFromBlock(block);
@@ -498,7 +637,7 @@ const initializeSyntaxHighlighting = () => {
             block.appendChild(monacoContainer);
 
             // Initialize Monaco editor
-            initializeMonacoEditor(monacoContainer, content, language, theme);
+            initializeMonacoEditor(monacoContainer, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap);
         } catch (error) {
             console.error('Failed to process block:', error);
             // Reset initialization flag on error
