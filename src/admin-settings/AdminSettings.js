@@ -27,7 +27,13 @@ const AdminSettings = () => {
         syntaxTheme: 'light',
         editorFontSize: '14px',
         displayLanguage: true,
-        copyButton: true
+        copyButton: true,
+        displayRowNumbers: false,
+        indentWidth: '4px',
+        fontSize: '14px',
+        lineHeight: '20px',
+        letterSpacing: '0px',
+        wordWrap: false
     });
 
     const [loading, setLoading] = useState(true);
@@ -60,12 +66,18 @@ const AdminSettings = () => {
     const loadSettings = async () => {
         setLoading(true);
         try {
-            const [theme, syntaxTheme, fontSize, displayLang, copyBtn] = await Promise.all([
+            const [theme, syntaxTheme, fontSize, displayLang, copyBtn, displayRowNumbers, indentWidth, syntaxFontSize, lineHeight, letterSpacing, wordWrap] = await Promise.all([
                 apiFetch({ path: '/dblocks_codepro/v1/theme/' }),
                 apiFetch({ path: '/dblocks_codepro/v1/syntax-theme/' }),
                 apiFetch({ path: '/dblocks_codepro/v1/editor-font-size/' }),
                 apiFetch({ path: '/dblocks_codepro/v1/display-language/' }),
-                apiFetch({ path: '/dblocks_codepro/v1/copy-button/' })
+                apiFetch({ path: '/dblocks_codepro/v1/copy-button/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/display-row-numbers/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/indent-width/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/font-size/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/line-height/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/letter-spacing/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/word-wrap/' })
             ]);
 
             setSettings({
@@ -73,7 +85,13 @@ const AdminSettings = () => {
                 syntaxTheme: syntaxTheme,
                 editorFontSize: fontSize,
                 displayLanguage: displayLang === 'true',
-                copyButton: copyBtn === 'true'
+                copyButton: copyBtn === 'true',
+                displayRowNumbers: displayRowNumbers === 'true',
+                indentWidth: indentWidth || '4px',
+                fontSize: syntaxFontSize || '14px',
+                lineHeight: lineHeight || '20px',
+                letterSpacing: letterSpacing || '0px',
+                wordWrap: wordWrap === 'true'
             });
         } catch (error) {
             console.error('Failed to load settings:', error);
@@ -111,6 +129,36 @@ const AdminSettings = () => {
                     path: '/dblocks_codepro/v1/copy-button/',
                     method: 'POST',
                     data: { copyButton: settings.copyButton }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/display-row-numbers/',
+                    method: 'POST',
+                    data: { displayRowNumbers: settings.displayRowNumbers }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/indent-width/',
+                    method: 'POST',
+                    data: { indentWidth: settings.indentWidth }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/font-size/',
+                    method: 'POST',
+                    data: { fontSize: settings.fontSize }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/line-height/',
+                    method: 'POST',
+                    data: { lineHeight: settings.lineHeight }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/letter-spacing/',
+                    method: 'POST',
+                    data: { letterSpacing: settings.letterSpacing }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/word-wrap/',
+                    method: 'POST',
+                    data: { wordWrap: settings.wordWrap }
                 })
             ]);
 
@@ -147,7 +195,13 @@ const AdminSettings = () => {
             syntaxTheme: 'light',
             editorFontSize: '14px',
             displayLanguage: true,
-            copyButton: true
+            copyButton: true,
+            displayRowNumbers: false,
+            indentWidth: '4px',
+            fontSize: '14px',
+            lineHeight: '20px',
+            letterSpacing: '0px',
+            wordWrap: false
         };
 
         setSaving(true);
@@ -178,6 +232,36 @@ const AdminSettings = () => {
                     path: '/dblocks_codepro/v1/copy-button/',
                     method: 'POST',
                     data: { copyButton: defaultSettings.copyButton }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/display-row-numbers/',
+                    method: 'POST',
+                    data: { displayRowNumbers: defaultSettings.displayRowNumbers }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/indent-width/',
+                    method: 'POST',
+                    data: { indentWidth: defaultSettings.indentWidth }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/font-size/',
+                    method: 'POST',
+                    data: { fontSize: defaultSettings.fontSize }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/line-height/',
+                    method: 'POST',
+                    data: { lineHeight: defaultSettings.lineHeight }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/letter-spacing/',
+                    method: 'POST',
+                    data: { letterSpacing: defaultSettings.letterSpacing }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/word-wrap/',
+                    method: 'POST',
+                    data: { wordWrap: defaultSettings.wordWrap }
                 })
             ]);
 
