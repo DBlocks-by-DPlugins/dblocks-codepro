@@ -45,8 +45,8 @@ const InspectorControlsComponent = ({
                     )}
 
                     <div className="variation-info">
-                        <p><strong>Block Type:</strong> {syntaxHighlight ? 'Syntax Highlighter' : 'Code Executor'}</p>
-                        <p><small>To change between code execution and syntax highlighting, use block variations from the inserter.</small></p>
+                        <p><strong>Current Variation:</strong> {syntaxHighlight ? 'Syntax Highlighter' : 'Code Executor'}</p>
+                        <p><small>Use the variation buttons in the toolbar above to switch between Code Executor and Syntax Highlighter modes.</small></p>
                     </div>
 
                     {/* Language selection - only show when syntax highlighting is ON (not for code execution) */}

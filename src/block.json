@@ -17,7 +17,8 @@
 				"viewMode": "split",
 				"scaleHeightWithContent": false
 			},
-			"scope": ["block", "inserter", "transform"]
+			"scope": ["block", "inserter", "transform"],
+			"isActive": ["syntaxHighlight", "viewMode", "scaleHeightWithContent"]
 		},
 		{
 			"name": "syntax-highlighter",
@@ -29,7 +30,8 @@
 				"viewMode": "preview",
 				"scaleHeightWithContent": true
 			},
-			"scope": ["block", "inserter", "transform"]
+			"scope": ["block", "inserter", "transform"],
+			"isActive": ["syntaxHighlight", "viewMode", "scaleHeightWithContent"]
 		}
 	],
 	"supports": {
