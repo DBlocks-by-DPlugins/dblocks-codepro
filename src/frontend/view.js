@@ -303,19 +303,23 @@ const handleCopyClick = async (button, content, theme) => {
 // Load Monaco editor
 const loadMonaco = async () => {
     if (monacoLoaded) return window.monaco;
-    
-    try {
-        // Load Monaco loader
-        const script = document.createElement('script');
-        script.src = `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs/loader.js`;
-        
-        await new Promise((resolve, reject) => {
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
 
-        // Wait for require to be available
+    // If require already exists, skip loader injection
+    if (!window.require) {
+        // Check if loader.js is already in the DOM
+        if (!document.querySelector('script[data-monaco-loader]')) {
+            const script = document.createElement('script');
+            script.src = `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs/loader.js`;
+            script.setAttribute('data-monaco-loader', 'true');
+            
+            await new Promise((resolve, reject) => {
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Wait until require is available
         await new Promise((resolve) => {
             const checkInterval = setInterval(() => {
                 if (window.require) {
@@ -324,99 +328,59 @@ const loadMonaco = async () => {
                 }
             }, 50);
         });
+    }
 
-        // Configure Monaco loader
+    // Configure and load monaco only once
+    if (!monacoLoaded) {
         window.require.config({
             paths: {
-                'vs': `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs`
+                vs: `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs`
             }
         });
 
-        // Load Monaco editor
         return new Promise((resolve, reject) => {
             window.require(['vs/editor/editor.main'], (monaco) => {
                 monacoLoaded = true;
                 resolve(monaco);
             }, reject);
         });
-    } catch (error) {
-        console.error('Failed to load Monaco:', error);
-        throw error;
     }
+
+    return window.monaco;
 };
 
-// Initialize Monaco editor for syntax highlighting
-const initializeMonacoEditor = async (container, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap) => {
+// Initialize Monaco editor for syntax highlighting (no loader)
+const initializeMonacoEditor = async (
+    container,
+    content,
+    language,
+    theme,
+    displayRowNumbers,
+    indentWidth,
+    fontSize,
+    lineHeight,
+    letterSpacing,
+    wordWrap
+) => {
     try {
-        // Show loading state
-        const loadingElement = document.createElement('div');
-        loadingElement.className = 'monaco-loading';
-        loadingElement.innerHTML = `
-            <div style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 100%;
-                color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                font-size: 14px;
-            ">
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 12px;
-                ">
-                    <div style="
-                        width: 20px;
-                        height: 20px;
-                        border: 2px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
-                        border-top: 2px solid ${theme === 'dark' ? '#007acc' : '#007cba'};
-                        border-radius: 50%;
-                        animation: spin 1s linear infinite;
-                    "></div>
-                    <span>Loading ${language} syntax highlighting...</span>
-                </div>
-            </div>
-        `;
-        
-        // Add CSS animation for spinner
-        if (!document.querySelector('#monaco-loading-styles')) {
-            const style = document.createElement('style');
-            style.id = 'monaco-loading-styles';
-            style.textContent = `
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        container.appendChild(loadingElement);
-
         // Load Monaco
         const monaco = await loadMonaco();
-        
+
         // Load the specific language module
         await new Promise((resolve, reject) => {
             window.require([`vs/basic-languages/${language}/${language}`], resolve, reject);
         });
 
-        // Remove loading element
-        loadingElement.remove();
-        
         // Create editor container
         const editorContainer = document.createElement('div');
         editorContainer.style.height = '100%';
         editorContainer.style.width = '100%';
         container.appendChild(editorContainer);
 
-        // Create Monaco editor with stripped UI - use same theme logic as editor
+        // Choose theme
         const monacoTheme = theme === 'dark' ? 'vs-dark' : 'vs-light';
-        console.log('Frontend: Creating Monaco editor with theme:', monacoTheme, '(fetched theme:', theme, ')');
-        
-        // Apply custom CSS for font size, line height, and letter spacing
+
+        // Custom font styles
         const customStyles = document.createElement('style');
         customStyles.textContent = `
             .monaco-editor .monaco-editor-background,
@@ -427,10 +391,10 @@ const initializeMonacoEditor = async (container, content, language, theme, displ
             }
         `;
         container.appendChild(customStyles);
-        
+
         const editor = monaco.editor.create(editorContainer, {
             value: content,
-            language: language,
+            language,
             theme: monacoTheme,
             readOnly: true,
             minimap: { enabled: false },
@@ -438,7 +402,7 @@ const initializeMonacoEditor = async (container, content, language, theme, displ
             lineNumbers: displayRowNumbers ? "on" : "off",
             glyphMargin: false,
             folding: false,
-            lineDecorationsWidth: 0,
+            lineDecorationsWidth: displayRowNumbers ? 40 : 0,
             lineNumbersMinChars: 3,
             renderLineHighlight: 'none',
             overviewRulerBorder: false,
@@ -461,48 +425,32 @@ const initializeMonacoEditor = async (container, content, language, theme, displ
             letterSpacing: parseInt(letterSpacing),
             tabSize: parseInt(indentWidth),
             wordWrap: wordWrap ? 'on' : 'off',
-            // Line number and margin control
-            lineNumbersMinChars: 3,
-            lineDecorationsWidth: displayRowNumbers ? 40 : 0,
-            minimap: { enabled: false },
-            // Content width control
-            fixedOverflowWidgets: true,
-            // Margin and padding control
             renderWhitespace: 'none',
-            // Ensure proper spacing
+            fixedOverflowWidgets: true,
             padding: { top: 0, bottom: 0 }
         });
 
-        // Store instance for copy functionality
+        // Store instance
         const instanceId = `monaco-${Date.now()}-${Math.random()}`;
         container.dataset.instanceId = instanceId;
         monacoInstances.set(instanceId, editor);
 
-        // Auto-resize based on content
+        // Auto-resize
         const updateHeight = () => {
             const lineCount = editor.getModel().getLineCount();
-            const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
-            const padding = 20; // Small padding
-            const newHeight = Math.max(lineCount * lineHeight + padding, 100);
+            const lh = editor.getOption(monaco.editor.EditorOption.lineHeight);
+            const padding = 20;
+            const newHeight = Math.max(lineCount * lh + padding, 100);
             container.style.height = `${newHeight}px`;
             editor.layout();
         };
 
-        // Update height after content is set
         setTimeout(updateHeight, 100);
-
-        // Listen for content changes
         editor.onDidChangeModelContent(updateHeight);
-        
+
     } catch (error) {
         console.error('Failed to initialize Monaco editor:', error);
-        // Remove loading element and show fallback
-        const loadingElement = container.querySelector('.monaco-loading');
-        if (loadingElement) {
-            loadingElement.remove();
-        }
-        // Fallback to plain text if Monaco fails
-        container.textContent = content;
+        container.textContent = content; // Fallback to plain text
     }
 };
 
