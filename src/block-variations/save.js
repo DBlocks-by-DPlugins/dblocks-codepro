@@ -22,7 +22,6 @@ const SyntaxHighlightedCode = ({ blockProps, content, editorLanguage, syntaxThem
         ...blockProps,
         className: 'wp-block-dblocks-dblocks-codepro',
         'data-syntax-highlight': 'true',
-        'data-content': content,
         'data-editor-language': editorLanguage,
         'data-syntax-theme': syntaxThemeClass === 'syntax-light' ? 'light' : 'dark',
         'data-display-language': displayLanguage ? 'true' : 'false',
@@ -31,6 +30,8 @@ const SyntaxHighlightedCode = ({ blockProps, content, editorLanguage, syntaxThem
 
     return (
         <div {...newBlockProps}>
+            {/* Render content in HTML so frontend can extract it */}
+            <pre style={{ display: 'none' }}>{content}</pre>
             {/* Monaco editor will be initialized here by frontend JavaScript */}
         </div>
     );

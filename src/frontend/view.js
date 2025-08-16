@@ -77,6 +77,32 @@ const getGlobalCopyButton = async () => {
     return true; // Default to showing copy button
 };
 
+// Extract content from block's existing HTML instead of data-content
+const extractContentFromBlock = (block) => {
+    // Look for existing content in the block
+    // This could be in various forms depending on how the block was saved
+    
+    // First, try to find any existing text content
+    const textContent = block.textContent || block.innerText || '';
+    
+    // Clean up the text content (remove extra whitespace, etc.)
+    const cleanContent = textContent.trim();
+    
+    // If we have meaningful content, return it
+    if (cleanContent && cleanContent.length > 0) {
+        return cleanContent;
+    }
+    
+    // Fallback: try to find content in any child elements
+    const codeElements = block.querySelectorAll('code, pre, .wp-block-code');
+    if (codeElements.length > 0) {
+        return codeElements[0].textContent || '';
+    }
+    
+    // Last resort: return empty string
+    return '';
+};
+
 const copyToClipboard = async (text) => {
     try {
         if (navigator.clipboard) {
@@ -111,20 +137,60 @@ const updateButtonText = (button, text, duration) => {
     }, duration);
 };
 
-const handleCopyClick = async (button) => {
-    const codeBlock = button.closest('.monaco-editor-container')?.querySelector('.monaco-editor');
-    if (!codeBlock) return;
 
-    // Get text from Monaco editor
-    const editorInstance = monacoInstances.get(codeBlock.dataset.instanceId);
-    if (editorInstance) {
-        const text = editorInstance.getValue();
-        const success = await copyToClipboard(text);
-        updateButtonText(
-            button,
-            success ? COPY_SUCCESS_LABEL : COPY_ERROR_LABEL,
-            FEEDBACK_DURATION
-        );
+
+// Handle copy button click
+const handleCopyClick = async (button, content, theme) => {
+    try {
+        // Try to use the modern Clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(content);
+        } else {
+            // Fallback for non-HTTPS or older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = content;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        // Change button text to "Copied!"
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = theme === 'dark' ? '#2d5a2d' : '#d4edda';
+        button.style.color = theme === 'dark' ? '#a8e6a8' : '#155724';
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
+            button.style.color = theme === 'dark' ? '#cccccc' : '#5f6368';
+        }, 2000);
+        
+    } catch (err) {
+        console.error('Copy failed:', err);
+        // Show error feedback
+        const originalText = button.textContent;
+        button.textContent = 'Error!';
+        button.style.background = '#f8d7da';
+        button.style.color = '#721c24';
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
+            button.style.color = theme === 'dark' ? '#cccccc' : '#5f6368';
+        }, 2000);
     }
 };
 
@@ -340,7 +406,6 @@ const initializeSyntaxHighlighting = () => {
     const processBlockAsync = async (block) => {
         try {
             // Get block data
-            const content = block.dataset.content || '';
             const language = block.dataset.editorLanguage || 'html';
             let theme = block.dataset.syntaxTheme || 'light';
             
@@ -349,8 +414,12 @@ const initializeSyntaxHighlighting = () => {
             const displayLanguage = await getGlobalDisplayLanguage();
             const copyButton = await getGlobalCopyButton();
             
+            // Extract content from existing block HTML instead of data-content
+            const content = extractContentFromBlock(block);
+            
             console.log('Frontend: Using global settings - Theme:', theme, 'Display Language:', displayLanguage, 'Copy Button:', copyButton);
             console.log('Frontend: Using theme for Monaco:', theme);
+            console.log('Frontend: Extracted content length:', content.length);
 
             // Create Monaco container
             const monacoContainer = document.createElement('div');
@@ -362,36 +431,25 @@ const initializeSyntaxHighlighting = () => {
                 border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
             `;
 
-            // Add language label if enabled
-            if (displayLanguage) {
-                const languageLabel = document.createElement('div');
-                languageLabel.className = 'language-label';
-                languageLabel.textContent = language.toUpperCase();
-                languageLabel.style.cssText = `
-                    position: absolute;
-                    top: 8px;
-                    right: 8px;
-                    background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
-                    color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 11px;
-                    font-weight: 500;
-                    z-index: 10;
-                    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-                `;
-                monacoContainer.appendChild(languageLabel);
-            }
+                                    // Add language label and copy button if enabled
+        if (displayLanguage || copyButton) {
+            const rightSideContainer = document.createElement('div');
+            rightSideContainer.style.cssText = `
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                z-index: 10;
+            `;
 
-            // Add copy button if enabled
+            // Add copy button first (left side of right container)
             if (copyButton) {
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'copy-button';
                 copyBtn.textContent = COPY_BUTTON_LABEL;
                 copyBtn.style.cssText = `
-                    position: absolute;
-                    top: 8px;
-                    left: 8px;
                     background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
                     color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
                     border: none;
@@ -399,7 +457,6 @@ const initializeSyntaxHighlighting = () => {
                     border-radius: 4px;
                     font-size: 12px;
                     cursor: pointer;
-                    z-index: 10;
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                     transition: all 0.2s ease;
                 `;
@@ -412,9 +469,29 @@ const initializeSyntaxHighlighting = () => {
                     copyBtn.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
                 });
 
-                copyBtn.addEventListener('click', () => handleCopyClick(copyBtn));
-                monacoContainer.appendChild(copyBtn);
+                copyBtn.addEventListener('click', () => handleCopyClick(copyBtn, content, theme));
+                rightSideContainer.appendChild(copyBtn);
             }
+
+                    // Add language label second (right side of right container)
+                    if (displayLanguage) {
+                        const languageLabel = document.createElement('div');
+                        languageLabel.className = 'language-label';
+                        languageLabel.textContent = language.toUpperCase();
+                        languageLabel.style.cssText = `
+                            background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
+                            color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
+                            padding: 2px 8px;
+                            border-radius: 4px;
+                            font-size: 11px;
+                            font-weight: 500;
+                            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+                        `;
+                        rightSideContainer.appendChild(languageLabel);
+                    }
+
+                    monacoContainer.appendChild(rightSideContainer);
+                }
 
             // Replace block content with Monaco container
             block.innerHTML = '';
