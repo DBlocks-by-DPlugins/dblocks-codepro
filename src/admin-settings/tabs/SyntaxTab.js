@@ -1,21 +1,16 @@
 import {
-    Panel,
-    PanelBody,
     SelectControl,
     ToggleControl,
     __experimentalUnitControl as UnitControl,
     __experimentalSpacer as Spacer
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import CustomPanel from '../components/CustomPanel';
 
 const SyntaxTab = ({ settings, updateSetting, SYNTAX_THEME_OPTIONS }) => {
     return (
-        <Panel>
-
-            <PanelBody
-                title={__('Syntax Highlighter Settings', 'dblocks-codepro')}
-                initialOpen={true}
-            >
+        <>
+            <CustomPanel title={__('Syntax Highlighter Settings', 'dblocks-codepro')}>
                 <SelectControl
                     label={__('Editor Theme', 'dblocks-codepro')}
                     value={settings.syntaxTheme}
@@ -101,14 +96,9 @@ const SyntaxTab = ({ settings, updateSetting, SYNTAX_THEME_OPTIONS }) => {
                     onChange={(value) => updateSetting('displayRowNumbers', value)}
                     help={__('Show line numbers on the left side of code blocks for easier reference and debugging.', 'dblocks-codepro')}
                 />
+            </CustomPanel>
 
-            </PanelBody>
-
-            <PanelBody
-                title={__('Front End Highlighter Settings', 'dblocks-codepro')}
-                initialOpen={true}
-            >
-
+            <CustomPanel title={__('Front End Highlighter Settings', 'dblocks-codepro')}>
                 <ToggleControl
                     label={__('Display Language Label', 'dblocks-codepro')}
                     checked={settings.displayLanguage}
@@ -124,9 +114,8 @@ const SyntaxTab = ({ settings, updateSetting, SYNTAX_THEME_OPTIONS }) => {
                     onChange={(value) => updateSetting('copyButton', value)}
                     help={__('Display a convenient copy button on code blocks, allowing visitors to easily copy code snippets to their clipboard with one click.', 'dblocks-codepro')}
                 />
-            </PanelBody>
-
-        </Panel>
+            </CustomPanel>
+        </>
     );
 };
 

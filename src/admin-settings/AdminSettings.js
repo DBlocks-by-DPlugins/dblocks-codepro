@@ -323,31 +323,11 @@ const AdminSettings = () => {
                         <button
                             key={tab.name}
                             onClick={() => setActiveTab(tab.name)}
+                            className={`dblocks-codepro-settings-tab ${activeTab === tab.name ? 'active' : ''}`}
                             style={{
-                                width: '100%',
-                                padding: '16px 20px',
-                                border: 'none',
-                                borderBottom: '1px solid #e0e0e0',
-                                backgroundColor: activeTab === tab.name ? '#fff' : 'transparent',
-                                color: activeTab === tab.name ? '#1e1e1e' : '#50575e',
-                                cursor: 'pointer',
-                                textAlign: 'left',
-                                fontSize: '14px',
-                                fontWeight: activeTab === tab.name ? '600' : '500',
-                                position: 'relative',
                                 transition: 'all 0.15s ease-in-out'
                             }}
                         >
-                            {activeTab === tab.name && (
-                                <div style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    bottom: 0,
-                                    width: '4px',
-                                    backgroundColor: '#007cba'
-                                }} />
-                            )}
                             {tab.title}
                         </button>
                     ))}
