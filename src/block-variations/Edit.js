@@ -182,7 +182,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         if (editorInstanceRef.current && syntaxHighlight) {
             // Update editor theme when global theme changes
             const newTheme = globalSyntaxTheme === 'dark' ? 'vs-dark' : 'vs-light';
-            contextWindow.monaco?.editor.setTheme(newTheme);
+            
+            // Get the correct context window for Monaco
+            const iframe = document.querySelector('[name="editor-canvas"]');
+            const contextWindow = iframe ? iframe.contentWindow : window;
+            
+            if (contextWindow.monaco?.editor) {
+                contextWindow.monaco.editor.setTheme(newTheme);
+            }
         }
     }, [globalSyntaxTheme, syntaxHighlight]);
 
