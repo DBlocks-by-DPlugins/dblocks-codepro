@@ -1,4 +1,5 @@
-import { registerBlockType, getBlockType, addFilter } from '@wordpress/blocks';
+import { registerBlockType, getBlockType } from '@wordpress/blocks';
+import { addFilter } from '@wordpress/hooks';
 import './style.scss';
 import Edit from './Edit';
 import save from './save';
