@@ -316,14 +316,9 @@ const AdminSettings = () => {
             )}
 
             {/* Main Layout */}
-            <div style={{ display: 'flex', minHeight: '600px' }}>
+            <div id="dblocks-codepro-settings-main">
                 {/* Tab Navigation Sidebar */}
-                <div style={{ 
-                    width: '250px', 
-                    backgroundColor: '#f6f7f7', 
-                    borderRight: '1px solid #ddd',
-                    padding: '0'
-                }}>
+                <div id="dblocks-codepro-settings-sidebar">
                     {tabs.map((tab) => (
                         <button
                             key={tab.name}
@@ -359,11 +354,7 @@ const AdminSettings = () => {
                 </div>
 
                 {/* Tab Content Area */}
-                <div style={{ 
-                    flex: 1, 
-                    padding: '24px',
-                    overflow: 'auto'
-                }}>
+                <div id="dblocks-codepro-settings-content">
                     {/* Render Active Tab Content */}
                     {activeTab === 'editor' ? (
                         <EditorTab 
@@ -380,11 +371,7 @@ const AdminSettings = () => {
                     )}
 
                     {/* Action Buttons */}
-                    <div style={{ 
-                        marginTop: '30px', 
-                        paddingTop: '20px', 
-                        borderTop: '1px solid #ddd'
-                    }}>
+                    <div>
                         <Button
                             isPrimary
                             isBusy={saving}

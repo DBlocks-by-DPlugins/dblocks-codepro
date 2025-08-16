@@ -15,18 +15,17 @@ const EditorTab = ({ settings, updateSetting, THEME_OPTIONS }) => {
                 initialOpen={true}
             >
                 <SelectControl
-                    label={__('Default Editor Theme', 'dblocks-codepro')}
+                    label={__('Editor Theme', 'dblocks-codepro')}
                     value={settings.theme}
                     options={THEME_OPTIONS}
-                    onChange={(value) => updateSetting('theme', value)}
-                    help={__('The Monaco editor theme for coding. This affects the editor appearance while writing HTML, CSS, and JavaScript.', 'dblocks-codepro')}
+                    onChange={(value) => updateSetting('theme', value)}                    
                     __next40pxDefaultSize={true}
                 />
 
                 <Spacer marginBottom={4} />
 
                 <UnitControl
-                    label={__('Default Editor Font Size', 'dblocks-codepro')}
+                    label={__('Editor Font Size', 'dblocks-codepro')}
                     value={settings.editorFontSize}
                     onChange={(value) => updateSetting('editorFontSize', value)}
                     units={[{ value: 'px', label: 'px', default: 14 }]}
