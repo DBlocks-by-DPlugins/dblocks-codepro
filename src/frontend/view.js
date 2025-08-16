@@ -14,17 +14,13 @@ const getGlobalEditorTheme = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/syntax-theme/');
         if (response.ok) {
             const theme = await response.text();
-            console.log('Frontend: Fetched global theme:', theme, 'Type:', typeof theme, 'Length:', theme.length);
             
             // Clean the theme value and check for dark
             const cleanTheme = theme.trim().replace(/"/g, '').replace(/'/g, '');
-            console.log('Frontend: Cleaned theme:', cleanTheme);
             
             if (cleanTheme === 'dark') {
-                console.log('Frontend: Returning dark theme');
                 return 'dark';
             } else {
-                console.log('Frontend: Returning light theme (not dark)');
                 return 'light';
             }
         }
@@ -33,7 +29,6 @@ const getGlobalEditorTheme = async () => {
     }
     
     // Default to light theme
-    console.log('Frontend: Using default light theme');
     return 'light';
 };
 
@@ -43,12 +38,10 @@ const getGlobalDisplayLanguage = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/display-language/');
         if (response.ok) {
             const displayLanguage = await response.text();
-            console.log('Frontend: Fetched global display language:', displayLanguage);
             
             // Handle both "true"/"false" strings and "1"/"0" strings
             const cleanValue = displayLanguage.trim().replace(/"/g, '').replace(/'/g, '');
             const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            console.log('Frontend: Display language enabled:', isEnabled);
             return isEnabled;
         }
     } catch (error) {
@@ -63,12 +56,10 @@ const getGlobalCopyButton = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/copy-button/');
         if (response.ok) {
             const copyButton = await response.text();
-            console.log('Frontend: Fetched global copy button:', copyButton);
             
             // Handle both "true"/"false" strings and "1"/"0" strings
             const cleanValue = copyButton.trim().replace(/"/g, '').replace(/'/g, '');
             const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            console.log('Frontend: Copy button enabled:', isEnabled);
             return isEnabled;
         }
     } catch (error) {
@@ -83,11 +74,9 @@ const getGlobalDisplayRowNumbers = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/display-row-numbers/');
         if (response.ok) {
             const displayRowNumbers = await response.text();
-            console.log('Frontend: Fetched global display row numbers:', displayRowNumbers);
             
             const cleanValue = displayRowNumbers.trim().replace(/"/g, '').replace(/'/g, '');
             const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            console.log('Frontend: Display row numbers enabled:', isEnabled);
             return isEnabled;
         }
     } catch (error) {
@@ -102,7 +91,6 @@ const getGlobalIndentWidth = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/indent-width/');
         if (response.ok) {
             const indentWidth = await response.text();
-            console.log('Frontend: Fetched global indent width:', indentWidth);
             
             const cleanValue = indentWidth.trim().replace(/"/g, '').replace(/'/g, '');
             return cleanValue || '4px';
@@ -119,7 +107,6 @@ const getGlobalFontSize = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/font-size/');
         if (response.ok) {
             const fontSize = await response.text();
-            console.log('Frontend: Fetched global font size:', fontSize);
             
             const cleanValue = fontSize.trim().replace(/"/g, '').replace(/'/g, '');
             return cleanValue || '14px';
@@ -136,7 +123,6 @@ const getGlobalLineHeight = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/line-height/');
         if (response.ok) {
             const lineHeight = await response.text();
-            console.log('Frontend: Fetched global line height:', lineHeight);
             
             const cleanValue = lineHeight.trim().replace(/"/g, '').replace(/'/g, '');
             return cleanValue || '20px';
@@ -153,7 +139,6 @@ const getGlobalLetterSpacing = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/letter-spacing/');
         if (response.ok) {
             const letterSpacing = await response.text();
-            console.log('Frontend: Fetched global letter spacing:', letterSpacing);
             
             const cleanValue = letterSpacing.trim().replace(/"/g, '').replace(/'/g, '');
             return cleanValue || '0px';
@@ -170,11 +155,9 @@ const getGlobalWordWrap = async () => {
         const response = await fetch('/wp-json/dblocks_codepro/v1/word-wrap/');
         if (response.ok) {
             const wordWrap = await response.text();
-            console.log('Frontend: Fetched global word wrap:', wordWrap);
             
             const cleanValue = wordWrap.trim().replace(/"/g, '').replace(/'/g, '');
             const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            console.log('Frontend: Word wrap enabled:', isEnabled);
             return isEnabled;
         }
     } catch (error) {
@@ -504,9 +487,6 @@ const initializeSyntaxHighlighting = () => {
             // Extract content from existing block HTML instead of data-content
             const content = extractContentFromBlock(block);
             
-            console.log('Frontend: Using global settings - Theme:', theme, 'Display Language:', displayLanguage, 'Copy Button:', copyButton);
-            console.log('Frontend: Using theme for Monaco:', theme);
-            console.log('Frontend: Extracted content length:', content.length);
 
             // Create Monaco container
             const monacoContainer = document.createElement('div');
