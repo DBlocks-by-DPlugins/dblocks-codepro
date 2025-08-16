@@ -1,0 +1,331 @@
+import { render, useState, useEffect } from '@wordpress/element';
+import { 
+    Panel, 
+    PanelBody, 
+    SelectControl, 
+    ToggleControl,
+    Button,
+    Notice,
+    __experimentalUnitControl as UnitControl,
+    __experimentalSpacer as Spacer,
+    Icon
+} from '@wordpress/components';
+import { edit, code } from '@wordpress/icons';
+import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
+
+// Import tab components
+import EditorTab from './tabs/EditorTab';
+import SyntaxTab from './tabs/SyntaxTab';
+
+const AdminSettings = () => {
+    // ========================================
+    // STATE MANAGEMENT
+    // ========================================
+    const [settings, setSettings] = useState({
+        theme: 'vs-light',
+        syntaxTheme: 'light',
+        editorFontSize: '14px',
+        displayLanguage: true,
+        copyButton: true
+    });
+
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [notice, setNotice] = useState(null);
+
+    // ========================================
+    // CONSTANTS & OPTIONS
+    // ========================================
+    const THEME_OPTIONS = [
+        { label: __('Light', 'dblocks-codepro'), value: 'vs-light' },
+        { label: __('Dark', 'dblocks-codepro'), value: 'vs-dark' }
+    ];
+
+    const SYNTAX_THEME_OPTIONS = [
+        { label: __('Light', 'dblocks-codepro'), value: 'light' },
+        { label: __('Dark', 'dblocks-codepro'), value: 'dark' }
+    ];
+
+    // ========================================
+    // EFFECTS
+    // ========================================
+    useEffect(() => {
+        loadSettings();
+    }, []);
+
+    // ========================================
+    // API FUNCTIONS
+    // ========================================
+    const loadSettings = async () => {
+        setLoading(true);
+        try {
+            const [theme, syntaxTheme, fontSize, displayLang, copyBtn] = await Promise.all([
+                apiFetch({ path: '/dblocks_codepro/v1/theme/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/syntax-theme/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/editor-font-size/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/display-language/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/copy-button/' })
+            ]);
+
+            setSettings({
+                theme: theme,
+                syntaxTheme: syntaxTheme,
+                editorFontSize: fontSize,
+                displayLanguage: displayLang === 'true',
+                copyButton: copyBtn === 'true'
+            });
+        } catch (error) {
+            console.error('Failed to load settings:', error);
+            showNotice(__('Failed to load settings', 'dblocks-codepro'), 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const saveSettings = async () => {
+        setSaving(true);
+        try {
+            await Promise.all([
+                apiFetch({
+                    path: '/dblocks_codepro/v1/theme/',
+                    method: 'POST',
+                    data: { theme: settings.theme }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/syntax-theme/',
+                    method: 'POST',
+                    data: { syntaxTheme: settings.syntaxTheme }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/editor-font-size/',
+                    method: 'POST',
+                    data: { editorFontSize: settings.editorFontSize }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/display-language/',
+                    method: 'POST',
+                    data: { displayLanguage: settings.displayLanguage }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/copy-button/',
+                    method: 'POST',
+                    data: { copyButton: settings.copyButton }
+                })
+            ]);
+
+            showNotice(__('Settings saved successfully!', 'dblocks-codepro'), 'success');
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+            showNotice(__('Failed to save settings', 'dblocks-codepro'), 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // ========================================
+    // UTILITY FUNCTIONS
+    // ========================================
+    const showNotice = (message, type) => {
+        setNotice({ message, type });
+        setTimeout(() => setNotice(null), 4000);
+    };
+
+    const updateSetting = (key, value) => {
+        setSettings(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    // ========================================
+    // RESET FUNCTION
+    // ========================================
+    const resetToDefaults = async () => {
+        const defaultSettings = {
+            theme: 'vs-light',
+            syntaxTheme: 'light',
+            editorFontSize: '14px',
+            displayLanguage: true,
+            copyButton: true
+        };
+
+        setSaving(true);
+        try {
+            // Save default values to the database
+            await Promise.all([
+                apiFetch({
+                    path: '/dblocks_codepro/v1/theme/',
+                    method: 'POST',
+                    data: { theme: defaultSettings.theme }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/syntax-theme/',
+                    method: 'POST',
+                    data: { syntaxTheme: defaultSettings.syntaxTheme }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/editor-font-size/',
+                    method: 'POST',
+                    data: { editorFontSize: defaultSettings.editorFontSize }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/display-language/',
+                    method: 'POST',
+                    data: { displayLanguage: defaultSettings.displayLanguage }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/copy-button/',
+                    method: 'POST',
+                    data: { copyButton: defaultSettings.copyButton }
+                })
+            ]);
+
+            // Update local state
+            setSettings(defaultSettings);
+            showNotice(__('Settings reset to defaults successfully!', 'dblocks-codepro'), 'success');
+        } catch (error) {
+            console.error('Failed to reset settings to defaults:', error);
+            showNotice(__('Failed to reset settings to defaults', 'dblocks-codepro'), 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // ========================================
+    // TAB CONFIGURATION
+    // ========================================
+    const [activeTab, setActiveTab] = useState('editor');
+
+    const tabs = [
+        {
+            name: 'editor',
+            title: __('HTML Code Editor', 'dblocks-codepro'),
+            className: 'tab-editor'
+        },
+        {
+            name: 'syntax',
+            title: __('Syntax Highlighter', 'dblocks-codepro'),
+            className: 'tab-syntax'
+        }
+    ];
+
+    // ========================================
+    // MAIN RENDER
+    // ========================================
+    if (loading) {
+        return <div>{__('Loading settings...', 'dblocks-codepro')}</div>;
+    }
+
+    return (
+        <div>
+            {/* Notice Display */}
+            {notice && (
+                <Notice
+                    status={notice.type}
+                    isDismissible={true}
+                    onDismiss={() => setNotice(null)}
+                    style={{ marginBottom: '20px' }}
+                >
+                    {notice.message}
+                </Notice>
+            )}
+
+            {/* Main Layout */}
+            <div style={{ display: 'flex', minHeight: '600px' }}>
+                {/* Tab Navigation Sidebar */}
+                <div style={{ 
+                    width: '250px', 
+                    backgroundColor: '#f6f7f7', 
+                    borderRight: '1px solid #ddd',
+                    padding: '0'
+                }}>
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.name}
+                            onClick={() => setActiveTab(tab.name)}
+                            style={{
+                                width: '100%',
+                                padding: '16px 20px',
+                                border: 'none',
+                                borderBottom: '1px solid #e0e0e0',
+                                backgroundColor: activeTab === tab.name ? '#fff' : 'transparent',
+                                color: activeTab === tab.name ? '#1e1e1e' : '#50575e',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                fontSize: '14px',
+                                fontWeight: activeTab === tab.name ? '600' : '500',
+                                position: 'relative',
+                                transition: 'all 0.15s ease-in-out'
+                            }}
+                        >
+                            {activeTab === tab.name && (
+                                <div style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: '4px',
+                                    backgroundColor: '#007cba'
+                                }} />
+                            )}
+                            {tab.title}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Tab Content Area */}
+                <div style={{ 
+                    flex: 1, 
+                    padding: '24px',
+                    overflow: 'auto'
+                }}>
+                    {/* Render Active Tab Content */}
+                    {activeTab === 'editor' ? (
+                        <EditorTab 
+                            settings={settings}
+                            updateSetting={updateSetting}
+                            THEME_OPTIONS={THEME_OPTIONS}
+                        />
+                    ) : (
+                        <SyntaxTab 
+                            settings={settings}
+                            updateSetting={updateSetting}
+                            SYNTAX_THEME_OPTIONS={SYNTAX_THEME_OPTIONS}
+                        />
+                    )}
+
+                    {/* Action Buttons */}
+                    <div style={{ 
+                        marginTop: '30px', 
+                        paddingTop: '20px', 
+                        borderTop: '1px solid #ddd'
+                    }}>
+                        <Button
+                            isPrimary
+                            isBusy={saving}
+                            disabled={saving}
+                            onClick={saveSettings}
+                            style={{ marginRight: '10px' }}
+                        >
+                            {saving ? __('Saving...', 'dblocks-codepro') : __('Save All Settings', 'dblocks-codepro')}
+                        </Button>
+                        <Button
+                            isDestructive
+                            disabled={saving}
+                            onClick={() => {
+                                if (window.confirm(__('Are you sure you want to reset all settings to their default values? This action cannot be undone.', 'dblocks-codepro'))) {
+                                    resetToDefaults();
+                                }
+                            }}
+                        >
+                            {__('Reset to Defaults', 'dblocks-codepro')}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default AdminSettings;
