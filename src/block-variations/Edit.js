@@ -374,7 +374,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 const newHeight = calculateEditorHeight(content);
                 editorContainerRef.current.style.height = newHeight;
             } else {
-                // For code executor, always use the fixed editorHeight from localStorage
+                // For Advanced Custom HTML, always use the fixed editorHeight from localStorage
                 editorContainerRef.current.style.height = editorHeight;
             }
             editorInstanceRef.current.layout();
@@ -591,8 +591,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 toggleAttribute('viewMode', 'preview');
             }
         } else {
-            // When syntax highlighting is OFF (Code Executor variation)
-            // Force split mode for code executor
+            // When syntax highlighting is OFF (Advanced Custom HTML variation)
+            // Force split mode for Advanced Custom HTML
             if (viewMode === 'preview') {
                 setViewMode('split');
                 toggleAttribute('viewMode', 'split');

@@ -11,7 +11,7 @@ const EditorTab = ({ settings, updateSetting, THEME_OPTIONS }) => {
     return (
         <Panel>
             <PanelBody 
-                title={__('HTML Code Editor Settings', 'dblocks-codepro')}
+                title={__('Advanced Custom HTML Settings', 'dblocks-codepro')}
                 initialOpen={true}
             >
                 <SelectControl

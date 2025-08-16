@@ -9,7 +9,7 @@
 	"variations": [
 		{
 			"name": "code-executor",
-			"title": "Code Executor",
+			"title": "Advanced Custom HTML",
 			"description": "Execute and preview HTML code",
 			"icon": "media-code",
 			"attributes": {

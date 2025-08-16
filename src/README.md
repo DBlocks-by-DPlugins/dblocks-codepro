@@ -24,7 +24,7 @@ src/
 │
 ├── admin-settings/             # Admin settings page
 │   ├── tabs/                   # Settings tab components
-│   │   ├── EditorTab.js        # HTML Code Editor settings
+│   │   ├── EditorTab.js        # Advanced Custom HTML settings
 │   │   └── SyntaxTab.js        # Syntax Highlighter settings
 │   └── AdminSettings.js        # Main settings component
 │

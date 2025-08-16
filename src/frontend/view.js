@@ -518,7 +518,7 @@ const initializeSyntaxHighlighting = () => {
                 
                 // Check if this is a syntax highlighter block
                 const syntaxHighlight = block.dataset.syntaxHighlight === 'true';
-                if (!syntaxHighlight) return; // Skip code executor blocks
+                if (!syntaxHighlight) return; // Skip Advanced Custom HTML blocks
 
                 // Check if Monaco is already initialized for this block
                 if (block.dataset.monacoInitialized === 'true') return;

@@ -284,7 +284,7 @@ const AdminSettings = () => {
     const tabs = [
         {
             name: 'editor',
-            title: __('HTML Code Editor', 'dblocks-codepro'),
+            title: __('Advanced Custom HTML', 'dblocks-codepro'),
             className: 'tab-editor'
         },
         {
