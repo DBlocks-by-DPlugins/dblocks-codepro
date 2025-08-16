@@ -1,14 +1,11 @@
 import React from 'react';
-import { Icon, help } from '@wordpress/icons';
+import { Icon, help, external } from '@wordpress/icons';
 import Languages from './Languages';
 
 import { InspectorControls } from '@wordpress/block-editor';
-import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl } from '@wordpress/components';
+import { Panel, PanelBody, ToggleControl, SelectControl, __experimentalUnitControl as UnitControl, Button } from '@wordpress/components';
 
-const THEME_OPTIONS = [
-    { label: 'Light', value: 'light' },
-    { label: 'Dark', value: 'dark' }
-];
+
 
 const PADDING_STYLE = { padding: '10px 0px 10px 15px' };
 
@@ -20,21 +17,12 @@ const InspectorControlsComponent = ({
     toggleSyntaxHighlightTheme,
     editorLanguage,
     changeEditorLanguage,
-    theme,
-    toggleTheme,
-    fontSize,
-    setFontSize,
     editorHeight,
     setEditorHeight,
     updateAttribute,
     displayLanguage,
     copyButton
 }) => {
-    const handleFontSizeChange = (newFontSize) => {
-        setFontSize(newFontSize);
-        updateAttribute('editorFontSize', newFontSize, '/wp-json/dblocks_codepro/v1/editor-font-size/');
-    };
-
     const handleHeightChange = (newHeight) => {
         const heightInPx = newHeight.toString().endsWith('px') ? newHeight : `${newHeight}px`;
         setEditorHeight(heightInPx);
@@ -44,10 +32,6 @@ const InspectorControlsComponent = ({
 
     const handleFrontEndThemeChange = () => {
         toggleSyntaxHighlightTheme();
-    };
-
-    const handleThemeChange = () => {
-        toggleTheme();
     };
 
     const handleDisplayLanguageChange = (value) => {
@@ -67,20 +51,15 @@ const InspectorControlsComponent = ({
     return (
         <InspectorControls>
             <Panel>
-                <PanelBody title="Element Settings" key={`inspector-${syntaxHighlight ? 'syntax' : 'executor'}`}>
-                    <div className="togglecontrol--with-info">
-                        <ToggleControl
-                            label="Use Wrapper"
-                            checked={attributes.useWrapper}
-                            onChange={handleWrapperChange}
-                            __nextHasNoMarginBottom={true}
-                        />
-                        <div className="togglecontrol--with-info__icon-wrapper">
-                            <Icon icon={help} size={20} />
-                            <p>Wrap the editor content in a div to use WordPress attributes such as class name, width class, etc.</p>
-                        </div>
-                    </div>
+                <PanelBody title="Settings" key={`inspector-${syntaxHighlight ? 'syntax' : 'executor'}`}>                
+                    <ToggleControl
+                        label="Add Block's Wrapper"
+                        help="Wrap the code in a <div> block with attributes (class, id, etc.)"
+                        checked={attributes.useWrapper}
+                        onChange={handleWrapperChange}
+                        __nextHasNoMarginBottom={true}
 
+                    />            
                     {/* Show Editor Height only when syntax highlighting is OFF */}
                     {!syntaxHighlight && (
                         <UnitControl
@@ -99,27 +78,19 @@ const InspectorControlsComponent = ({
                         <p><small>To change between code execution and syntax highlighting, use block variations from the inserter.</small></p>
                     </div>
 
-                    {/* Language selection - available for both variations */}
-                    <SelectControl
-                        label="Language"
-                        value={editorLanguage}
-                        options={Languages}
-                        onChange={changeEditorLanguage}
-                        __next40pxDefaultSize={true}
-                        __nextHasNoMarginBottom={true}
-                    />
-
-                    {/* Code Executor specific options */}
-                    {!syntaxHighlight && (
-                        <div style={PADDING_STYLE}>
-                            <ToggleControl
-                                label="Scale Height with Content"
-                                checked={attributes.scaleHeightWithContent}
-                                onChange={(value) => setAttributes({ scaleHeightWithContent: value })}
-                                __nextHasNoMarginBottom={true}
-                            />
-                        </div>
+                    {/* Language selection - only show when syntax highlighting is ON (not for code execution) */}
+                    {syntaxHighlight && (
+                        <SelectControl
+                            label="Language"
+                            value={editorLanguage}
+                            options={Languages}
+                            onChange={changeEditorLanguage}
+                            __next40pxDefaultSize={true}
+                            __nextHasNoMarginBottom={true}
+                        />
                     )}
+
+
 
                     {/* Syntax Highlighter specific options */}
                     {syntaxHighlight && (
@@ -132,7 +103,7 @@ const InspectorControlsComponent = ({
                                 __next40pxDefaultSize={true}
                                 __nextHasNoMarginBottom={true}
                             />
-                             <ToggleControl
+                            <ToggleControl
                                 label="Display Language"
                                 checked={displayLanguage}
                                 onChange={handleDisplayLanguageChange}
@@ -143,32 +114,42 @@ const InspectorControlsComponent = ({
                                 checked={copyButton}
                                 onChange={handleCopyButtonChange}
                                 __nextHasNoMarginBottom={true}
-                            />                           
+                            />
                         </div>
                     )}
-
-                    <hr />
-
-                    <h2>Editor Global Settings</h2>
-                    <SelectControl
-                        label="Editor Theme"
-                        value={theme === 'vs-dark' ? 'dark' : 'light'}
-                        options={THEME_OPTIONS}
-                        onChange={handleThemeChange}
-                        __next40pxDefaultSize={true}
-                        __nextHasNoMarginBottom={true}
-                    />
-                    <UnitControl
-                        label="Editor Font Size"
-                        value={fontSize}
-                        onChange={(newSize) => handleFontSizeChange(newSize)}
-                        units={[{ value: 'px', label: 'Pixels', default: 14 }]}
-                        min={10}
-                        max={30}
-                        __next40pxDefaultSize={true}
-                    />
-                </PanelBody>                                
+                </PanelBody>
             </Panel>
+            <Panel>
+                <PanelBody
+                    title="Editor Global Settings"
+                    initialOpen={false}
+                >
+                    <div style={{ padding: '16px 0' }}>
+                        <p style={{ marginBottom: '12px', fontSize: '13px', color: '#50575e' }}>
+                            Configure editor theme, font size, and other global settings for all DBlocks instances.
+                        </p>
+                        <Button
+                            variant="secondary"
+                            icon={external}
+                            iconPosition="right"
+                            onClick={() => {
+                                const settingsUrl = window.location.origin + '/wp-admin/themes.php?page=dblocks-codepro-settings';
+                                window.open(settingsUrl, '_blank');
+                            }}
+                            
+                        >
+                            Open Global Settings
+                        </Button>
+                    </div>
+                </PanelBody>
+            </Panel>
+            <Panel>
+                <PanelBody
+                    initialOpen={false}
+                >
+                </PanelBody>
+            </Panel>
+            
         </InspectorControls>
     );
 };

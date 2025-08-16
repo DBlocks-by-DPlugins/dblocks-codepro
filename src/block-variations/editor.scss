@@ -41,6 +41,8 @@
 
 	// Custom styles for resize handle
 	.code-editor-box {
+		background-color: white !important;
+		
 		.resize-handle {
 			height: 10px !important;
 			background-color: red !important;

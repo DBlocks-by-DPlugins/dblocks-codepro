@@ -19,8 +19,7 @@ const monacoEditorCache = {
 export default function Edit({ attributes, setAttributes, clientId }) {
     const { content, viewMode: initialViewMode } = attributes;
     const [viewMode, setViewMode] = useState(initialViewMode);
-    const [theme, setTheme] = useState(attributes.theme || 'vs-light');
-    const [fontSize, setFontSize] = useState(attributes.editorFontSize || '14px');
+
     const [editorHeight, setEditorHeight] = useState(() => {
         // Always use localStorage if available
         const savedHeight = localStorage.getItem('dblocks_editor_height');
@@ -76,10 +75,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     const calculateEditorHeight = (content) => {
         const lineCount = (content.match(/\n/g) || []).length + 1;
-        const currentFontSize = parseInt(fontSize);
-        const lineHeight = currentFontSize * 1.5;
-        const padding = currentFontSize * 2;
-        const minHeight = currentFontSize * 1.5;
+        const defaultFontSize = 14; // Default font size since we removed global settings
+        const lineHeight = defaultFontSize * 1.5;
+        const padding = defaultFontSize * 2;
+        const minHeight = defaultFontSize * 1.5;
         return `${Math.max(lineCount * lineHeight + padding, minHeight)}px`;
     };
 
@@ -163,25 +162,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }
     };
 
-    const toggleTheme = async () => {
-        const newTheme = theme === 'vs-light' ? 'vs-dark' : 'vs-light';
-        try {
-            const response = await fetch(`${baseUrl}theme`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': wpApiSettings.nonce,
-                },
-                body: JSON.stringify({ theme: newTheme }),
-            });
 
-            if (!response.ok) throw new Error('Network response was not ok.');
-            setTheme(newTheme);
-            toggleAttribute('theme', newTheme);
-        } catch (error) {
-            console.error('Failed to update theme:', error);
-        }
-    };
 
     const updateAttribute = async (attribute, value, endpoint) => {
         setAttributes({ [attribute]: value });
@@ -332,26 +313,19 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     // Update editor height when appropriate
     useEffect(() => {
         if (editorContainerRef.current && editorInstanceRef.current) {
-            if (syntaxHighlight || attributes.scaleHeightWithContent) {
+            if (syntaxHighlight) {
+                // For syntax highlighter, use calculated height based on content
                 const newHeight = calculateEditorHeight(content);
                 editorContainerRef.current.style.height = newHeight;
             } else {
-                // Always use the current editorHeight state which is synced with localStorage
+                // For code executor, always use the fixed editorHeight from localStorage
                 editorContainerRef.current.style.height = editorHeight;
             }
             editorInstanceRef.current.layout();
         }
-    }, [syntaxHighlight, attributes.scaleHeightWithContent, content, editorHeight]);
+    }, [syntaxHighlight, content, editorHeight]);
 
-    // Update editor options when theme, font size, or language changes
-    useEffect(() => {
-        if (editorInstanceRef.current) {
-            editorInstanceRef.current.updateOptions({
-                theme: theme,
-                fontSize: parseInt(fontSize),
-            });
-        }
-    }, [theme, fontSize]);
+
 
     // Fetch plugin info on component mount
     useEffect(() => {
@@ -465,8 +439,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         value: content || '<!-- some comment -->',
                         language: editorLanguage,
                         automaticLayout: true,
-                        theme: theme,
-                        fontSize: parseInt(fontSize),
                         scrollBeyondLastLine: false,
                         suggestOnTriggerCharacters: true,
                         quickSuggestions: true,
@@ -487,7 +459,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         const newValue = editorInstanceRef.current.getValue();
                         toggleAttribute('content', newValue);
 
-                        if (attributes.scaleHeightWithContent) {
+                        // For syntax highlighter, update height based on content changes
+                        if (syntaxHighlight) {
                             const newHeight = calculateEditorHeight(newValue);
                             editorContainerRef.current.style.height = newHeight;
                             editorInstanceRef.current.layout();
@@ -552,10 +525,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     useEffect(() => {
         // When syntax highlighting is ON (Syntax Highlighter variation)
         if (syntaxHighlight) {
-            // Enable scale height with content for syntax highlighter
-            if (!attributes.scaleHeightWithContent) {
-                setAttributes({ scaleHeightWithContent: true });
-            }
             // Default to preview mode for syntax highlighter
             if (viewMode === 'split') {
                 setViewMode('preview');
@@ -563,10 +532,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             }
         } else {
             // When syntax highlighting is OFF (Code Executor variation)
-            // Disable scale height with content for code executor (user can still manually enable it)
-            if (attributes.scaleHeightWithContent) {
-                setAttributes({ scaleHeightWithContent: false });
-            }
             // Force split mode for code executor
             if (viewMode === 'preview') {
                 setViewMode('split');
@@ -641,10 +606,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 toggleSyntaxHighlightTheme={toggleSyntaxHighlightTheme}
                 editorLanguage={editorLanguage}
                 changeEditorLanguage={changeEditorLanguage}
-                theme={theme}
-                toggleTheme={toggleTheme}
-                fontSize={fontSize}
-                setFontSize={setFontSize}
                 editorHeight={editorHeight}
                 setEditorHeight={updateEditorSize}
                 updateAttribute={updateAttribute}
@@ -663,7 +624,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 />
                 {!syntaxHighlight && viewMode === 'preview' && <RawHTML className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {!syntaxHighlight && viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
-                {shouldShowEditor && ((!syntaxHighlight && viewMode === 'split' && !attributes.scaleHeightWithContent) ? (
+                {shouldShowEditor && (!syntaxHighlight && viewMode === 'split') ? (
                     <ResizableBox
                         className={"code-editor-box"}
                         size={{
@@ -732,7 +693,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             </div>
                         )}
                     </ResizableBox>
-                ) :
+                ) : (
                     <div style={{ position: 'relative', isolation: 'isolate', zIndex: 100 }}>
                         <div
                             ref={editorContainerRef}
@@ -767,7 +728,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                                 <Spinner />
                             </div>
                         )}
-                    </div>)}
+                    </div>
+                )}
             </div>
         </>
     );
