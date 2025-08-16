@@ -98,7 +98,10 @@ const InspectorControlsComponent = ({
                             <SelectControl
                                 label="Front End Theme"
                                 value={syntaxHighlightTheme}
-                                options={THEME_OPTIONS}
+                                options={[
+                                    { label: 'Light', value: 'light' },
+                                    { label: 'Dark', value: 'dark' }
+                                ]}
                                 onChange={handleFrontEndThemeChange}
                                 __next40pxDefaultSize={true}
                                 __nextHasNoMarginBottom={true}
@@ -143,6 +146,7 @@ const InspectorControlsComponent = ({
                     </div>
                 </PanelBody>
             </Panel>
+            {/* Keep this as this gives extra line to separate from editor settings */}
             <Panel>
                 <PanelBody
                     initialOpen={false}

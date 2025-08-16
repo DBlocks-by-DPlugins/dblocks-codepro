@@ -438,6 +438,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         minimap: { enabled: false },
                         value: content || '<!-- some comment -->',
                         language: editorLanguage,
+                        theme: syntaxHighlightTheme === 'dark' ? 'vs-dark' : 'vs',
                         automaticLayout: true,
                         scrollBeyondLastLine: false,
                         suggestOnTriggerCharacters: true,

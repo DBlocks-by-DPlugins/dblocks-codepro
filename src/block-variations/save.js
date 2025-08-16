@@ -17,25 +17,22 @@ const CodeDisplay = ({ content, editorLanguage, syntaxThemeClass, displayLanguag
 );
 
 const SyntaxHighlightedCode = ({ blockProps, content, editorLanguage, syntaxThemeClass, displayLanguage, copyButton }) => {
-    // Create new blockProps with the theme class
+    // Create new blockProps with data attributes for Monaco editor
     const newBlockProps = {
         ...blockProps,
-        className: `wp-block-dblocks-dblocks-codepro ${syntaxThemeClass} syntax-highlighted-container`
+        className: 'wp-block-dblocks-dblocks-codepro',
+        'data-syntax-highlight': 'true',
+        'data-content': content,
+        'data-editor-language': editorLanguage,
+        'data-syntax-theme': syntaxThemeClass === 'syntax-light' ? 'light' : 'dark',
+        'data-display-language': displayLanguage ? 'true' : 'false',
+        'data-copy-button': copyButton ? 'true' : 'false'
     };
 
     return (
-        <pre {...newBlockProps}>
-            <CodeDisplay 
-                content={content}
-                editorLanguage={editorLanguage}
-                syntaxThemeClass={syntaxThemeClass}
-                displayLanguage={displayLanguage}
-                copyButton={copyButton}
-            />
-            <code className={`language-${editorLanguage}`}>
-                {content}
-            </code>
-        </pre>
+        <div {...newBlockProps}>
+            {/* Monaco editor will be initialized here by frontend JavaScript */}
+        </div>
     );
 };
 
