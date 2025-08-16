@@ -5,7 +5,9 @@ const FEEDBACK_DURATION = 2000;
 
 // Monaco editor instances cache
 const monacoInstances = new Map();
-let monacoLoaded = false;
+
+// Import shared Monaco loader
+import { loadMonaco } from '../utils/monaco-loader.js';
 
 // Get global editor theme from WordPress settings
 const getGlobalEditorTheme = async () => {
@@ -297,51 +299,6 @@ const handleCopyClick = async (button, content, theme) => {
             button.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
             button.style.color = theme === 'dark' ? '#cccccc' : '#5f6368';
         }, 2000);
-    }
-};
-
-// Load Monaco editor
-const loadMonaco = async () => {
-    if (monacoLoaded) return window.monaco;
-    
-    try {
-        // Load Monaco loader
-        const script = document.createElement('script');
-        script.src = `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs/loader.js`;
-        
-        await new Promise((resolve, reject) => {
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-
-        // Wait for require to be available
-        await new Promise((resolve) => {
-            const checkInterval = setInterval(() => {
-                if (window.require) {
-                    clearInterval(checkInterval);
-                    resolve();
-                }
-            }, 50);
-        });
-
-        // Configure Monaco loader
-        window.require.config({
-            paths: {
-                'vs': `${window.location.origin}/wp-content/plugins/dblocks-codepro/vendor/monaco/min/vs`
-            }
-        });
-
-        // Load Monaco editor
-        return new Promise((resolve, reject) => {
-            window.require(['vs/editor/editor.main'], (monaco) => {
-                monacoLoaded = true;
-                resolve(monaco);
-            }, reject);
-        });
-    } catch (error) {
-        console.error('Failed to load Monaco:', error);
-        throw error;
     }
 };
 
