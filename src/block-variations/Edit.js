@@ -50,26 +50,163 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     // Get global syntax theme setting
     const [globalSyntaxTheme, setGlobalSyntaxTheme] = useState('light');
     
-    // Fetch global syntax theme on mount
+    // Get REST API base URL
+    const baseUrl = (typeof DBlocksData !== 'undefined' && DBlocksData.restUrl) 
+        ? DBlocksData.restUrl 
+        : (typeof wpApiSettings !== 'undefined' && wpApiSettings.root) 
+            ? wpApiSettings.root + 'dblocks_codepro/v1/'
+            : '/wp-json/dblocks_codepro/v1/';
+
+    // Global settings state
+    const [globalDisplayRowNumbers, setGlobalDisplayRowNumbers] = useState(false);
+    const [globalIndentWidth, setGlobalIndentWidth] = useState('4px');
+    const [globalFontSize, setGlobalFontSize] = useState('14px');
+    const [globalLineHeight, setGlobalLineHeight] = useState('20px');
+    const [globalLetterSpacing, setGlobalLetterSpacing] = useState('0px');
+    const [globalWordWrap, setGlobalWordWrap] = useState(false);
+
+    // Global settings fetch functions
+    const getGlobalDisplayRowNumbers = async () => {
+        try {
+            const response = await fetch(`${baseUrl}display-row-numbers/`);
+            if (response.ok) {
+                const displayRowNumbers = await response.text();
+                const cleanValue = displayRowNumbers.trim().replace(/"/g, '').replace(/'/g, '');
+                const isEnabled = cleanValue === 'true' || cleanValue === '1';
+                return isEnabled;
+            }
+        } catch (error) {
+            console.log('Editor: Could not fetch global display row numbers, using default');
+        }
+        return false;
+    };
+
+    const getGlobalIndentWidth = async () => {
+        try {
+            const response = await fetch(`${baseUrl}indent-width/`);
+            if (response.ok) {
+                const indentWidth = await response.text();
+                const cleanValue = indentWidth.trim().replace(/"/g, '').replace(/'/g, '');
+                return cleanValue || '4px';
+            }
+        } catch (error) {
+            console.log('Editor: Could not fetch global indent width, using default');
+        }
+        return '4px';
+    };
+
+    const getGlobalFontSize = async () => {
+        try {
+            const response = await fetch(`${baseUrl}font-size/`);
+            if (response.ok) {
+                const fontSize = await response.text();
+                const cleanValue = fontSize.trim().replace(/"/g, '').replace(/'/g, '');
+                return cleanValue || '14px';
+            }
+        } catch (error) {
+            console.log('Editor: Could not fetch global font size, using default');
+        }
+        return '14px';
+    };
+
+    const getGlobalLineHeight = async () => {
+        try {
+            const response = await fetch(`${baseUrl}line-height/`);
+            if (response.ok) {
+                const lineHeight = await response.text();
+                const cleanValue = lineHeight.trim().replace(/"/g, '').replace(/'/g, '');
+                return cleanValue || '20px';
+            }
+        } catch (error) {
+            console.log('Editor: Could not fetch global line height, using default');
+        }
+        return '20px';
+    };
+
+    const getGlobalLetterSpacing = async () => {
+        try {
+            const response = await fetch(`${baseUrl}letter-spacing/`);
+            if (response.ok) {
+                const letterSpacing = await response.text();
+                const cleanValue = letterSpacing.trim().replace(/"/g, '').replace(/'/g, '');
+                return cleanValue || '0px';
+            }
+        } catch (error) {
+            console.log('Editor: Could not fetch global letter spacing, using default');
+        }
+        return '0px';
+    };
+
+    const getGlobalWordWrap = async () => {
+        try {
+            const response = await fetch(`${baseUrl}word-wrap/`);
+            if (response.ok) {
+                const wordWrap = await response.text();
+                const cleanValue = wordWrap.trim().replace(/"/g, '').replace(/'/g, '');
+                const isEnabled = cleanValue === 'true' || cleanValue === '1';
+                return isEnabled;
+            }
+        } catch (error) {
+            console.log('Editor: Could not fetch global word wrap, using default');
+        }
+        return false;
+    };
+
+    // Fetch all global settings on mount
     useEffect(() => {
-        const fetchGlobalTheme = async () => {
+        const fetchGlobalSettings = async () => {
             try {
-                console.log('Editor: Fetching global theme from:', `${baseUrl}syntax-theme/`);
-                const response = await fetch(`${baseUrl}syntax-theme/`);
-                if (response.ok) {
-                    const theme = await response.text();
+                console.log('Editor: Fetching global settings from:', baseUrl);
+                
+                // Fetch syntax theme
+                const themeResponse = await fetch(`${baseUrl}syntax-theme/`);
+                let theme = 'light'; // default
+                if (themeResponse.ok) {
+                    theme = await themeResponse.text();
+                    // Clean the theme value
+                    theme = theme.trim().replace(/"/g, '').replace(/'/g, '');
                     console.log('Editor: Fetched global theme:', theme);
                     setGlobalSyntaxTheme(theme);
-                } else {
-                    console.log('Editor: Failed to fetch theme, status:', response.status);
                 }
+
+                // Fetch all other global settings
+                const [displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap] = await Promise.all([
+                    getGlobalDisplayRowNumbers(),
+                    getGlobalIndentWidth(),
+                    getGlobalFontSize(),
+                    getGlobalLineHeight(),
+                    getGlobalLetterSpacing(),
+                    getGlobalWordWrap()
+                ]);
+
+                setGlobalDisplayRowNumbers(displayRowNumbers);
+                setGlobalIndentWidth(indentWidth);
+                setGlobalFontSize(fontSize);
+                setGlobalLineHeight(lineHeight);
+                setGlobalLetterSpacing(letterSpacing);
+                setGlobalWordWrap(wordWrap);
+
+                console.log('Editor: baseUrl:', baseUrl);
+                console.log('Editor: DBlocksData available:', typeof DBlocksData !== 'undefined');
+                console.log('Editor: wpApiSettings available:', typeof wpApiSettings !== 'undefined');
+                console.log('Editor: Global settings loaded:', {
+                    theme,
+                    displayRowNumbers,
+                    indentWidth,
+                    fontSize,
+                    lineHeight,
+                    letterSpacing,
+                    wordWrap
+                });
+
             } catch (error) {
-                console.log('Editor: Could not fetch global theme, using default:', error);
+                console.log('Editor: Could not fetch global settings, using defaults:', error);
             }
         };
         
-        fetchGlobalTheme();
-    }, []);
+        fetchGlobalSettings();
+    }, [baseUrl]);
+
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
     const [pluginInfo, setPluginInfo] = useState(null);
     const [editorInitialized, setEditorInitialized] = useState(false);
@@ -106,10 +243,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     const calculateEditorHeight = (content) => {
         const lineCount = (content.match(/\n/g) || []).length + 1;
-        const defaultFontSize = 14; // Default font size since we removed global settings
-        const lineHeight = defaultFontSize * 1.5;
-        const padding = defaultFontSize * 2;
-        const minHeight = defaultFontSize * 1.5;
+        const fontSize = parseInt(globalFontSize) || 14;
+        const lineHeight = parseInt(globalLineHeight) || (fontSize * 1.5);
+        const padding = fontSize * 2;
+        const minHeight = fontSize * 1.5;
         return `${Math.max(lineCount * lineHeight + padding, minHeight)}px`;
     };
 
@@ -117,16 +254,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         setAttributes({ [attribute]: value });
     };
 
-    // Get REST API base URL
-    const baseUrl = (typeof DBlocksData !== 'undefined' && DBlocksData.restUrl) 
-        ? DBlocksData.restUrl 
-        : (typeof wpApiSettings !== 'undefined' && wpApiSettings.root) 
-            ? wpApiSettings.root + 'dblocks_codepro/v1/'
-            : '/wp-json/dblocks_codepro/v1/';
-    
-    console.log('Editor: baseUrl:', baseUrl);
-    console.log('Editor: DBlocksData available:', typeof DBlocksData !== 'undefined');
-    console.log('Editor: wpApiSettings available:', typeof wpApiSettings !== 'undefined');
+
 
     const toggleSyntaxHighlightTheme = async (newTheme) => {
         // If no theme is provided, toggle between light and dark
@@ -192,6 +320,38 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             }
         }
     }, [globalSyntaxTheme, syntaxHighlight]);
+
+    // Listen for global settings changes and refresh editor
+    useEffect(() => {
+        if (editorInstanceRef.current) {
+            // Update editor configuration when global settings change
+            try {
+                editorInstanceRef.current.updateOptions({
+                    lineNumbers: globalDisplayRowNumbers ? "on" : "off",
+                    fontSize: parseInt(globalFontSize) || 14,
+                    lineHeight: parseInt(globalLineHeight) || 20,
+                    letterSpacing: parseInt(globalLetterSpacing) || 0,
+                    tabSize: parseInt(globalIndentWidth) || 4,
+                    wordWrap: globalWordWrap ? 'on' : 'off',
+                    lineDecorationsWidth: globalDisplayRowNumbers ? 40 : 0,
+                });
+                
+                // Re-layout editor to apply changes
+                editorInstanceRef.current.layout();
+                
+                console.log('Editor: Updated Monaco settings:', {
+                    lineNumbers: globalDisplayRowNumbers,
+                    fontSize: globalFontSize,
+                    lineHeight: globalLineHeight,
+                    letterSpacing: globalLetterSpacing,
+                    tabSize: globalIndentWidth,
+                    wordWrap: globalWordWrap
+                });
+            } catch (error) {
+                console.log('Editor: Failed to update Monaco settings:', error);
+            }
+        }
+    }, [globalDisplayRowNumbers, globalFontSize, globalLineHeight, globalLetterSpacing, globalIndentWidth, globalWordWrap]);
 
     // Check for theme changes on mount
     useEffect(() => {
@@ -297,7 +457,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 monacoEditorCache.instances.delete(clientId);
             }
         };
-    }, [syntaxHighlight, selectedBlockClientId, clientId, viewMode, pluginInfo]);
+    }, [syntaxHighlight, selectedBlockClientId, clientId, viewMode, pluginInfo, globalDisplayRowNumbers, globalFontSize, globalLineHeight, globalLetterSpacing, globalIndentWidth, globalWordWrap]);
 
     // Monitor block selection changes
     useEffect(() => {
@@ -379,7 +539,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             }
             editorInstanceRef.current.layout();
         }
-    }, [syntaxHighlight, content, editorHeight]);
+    }, [syntaxHighlight, content, editorHeight, globalFontSize, globalLineHeight]);
 
 
 
@@ -505,7 +665,19 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         wordBasedSuggestions: true,
                         parameterHints: {
                             enabled: true
-                        }
+                        },
+                        // Global settings integration
+                        lineNumbers: globalDisplayRowNumbers ? "on" : "off",
+                        fontSize: parseInt(globalFontSize) || 14,
+                        lineHeight: parseInt(globalLineHeight) || 20,
+                        letterSpacing: parseInt(globalLetterSpacing) || 0,
+                        tabSize: parseInt(globalIndentWidth) || 4,
+                        wordWrap: globalWordWrap ? 'on' : 'off',
+                        glyphMargin: false,
+                        folding: true,
+                        lineDecorationsWidth: globalDisplayRowNumbers ? 40 : 0,
+                        lineNumbersMinChars: 3,
+                        renderWhitespace: 'none'
                     });
 
                     // Add Emmet support only if not already added
