@@ -13,6 +13,7 @@ import {
 import { edit, code } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
+import { clearGlobalSettingsCache } from '../utils/global-settings';
 
 // Import tab components
 import EditorTab from './tabs/EditorTab';
@@ -170,6 +171,9 @@ const AdminSettings = () => {
                 })
             ]);
 
+            // Clear the global settings cache so new settings take effect immediately
+            clearGlobalSettingsCache();
+            
             showNotice(__('Settings saved successfully!', 'dblocks-codepro'), 'success');
         } catch (error) {
             console.error('Failed to save settings:', error);

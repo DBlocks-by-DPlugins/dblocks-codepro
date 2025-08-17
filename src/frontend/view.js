@@ -1,3 +1,5 @@
+import { frontendGlobalSettings } from '../utils/global-settings';
+
 const COPY_BUTTON_LABEL = "Copy";
 const COPY_SUCCESS_LABEL = "Copied!";
 const COPY_ERROR_LABEL = "Failed to copy";
@@ -7,181 +9,7 @@ const FEEDBACK_DURATION = 2000;
 const monacoInstances = new Map();
 let monacoLoaded = false;
 
-// Get global editor theme from WordPress settings
-const getGlobalEditorTheme = async () => {
-    try {
-        // Try to get from WordPress REST API
-        const response = await fetch('/wp-json/dblocks_codepro/v1/syntax-theme/');
-        if (response.ok) {
-            const theme = await response.text();
-            
-            // Clean the theme value and check for dark
-            const cleanTheme = theme.trim().replace(/"/g, '').replace(/'/g, '');
-            
-            if (cleanTheme === 'dark') {
-                return 'dark';
-            } else {
-                return 'light';
-            }
-        }
-    } catch (error) {
-        console.log('Could not fetch global theme, using default');
-    }
-    
-    // Default to light theme
-    return 'light';
-};
-
-// Get global display language setting
-const getGlobalDisplayLanguage = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/display-language/');
-        if (response.ok) {
-            const displayLanguage = await response.text();
-            
-            // Handle both "true"/"false" strings and "1"/"0" strings
-            const cleanValue = displayLanguage.trim().replace(/"/g, '').replace(/'/g, '');
-            const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            return isEnabled;
-        }
-    } catch (error) {
-        console.log('Could not fetch global display language, using default');
-    }
-    return true; // Default to showing language label
-};
-
-// Get global copy button setting
-const getGlobalCopyButton = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/copy-button/');
-        if (response.ok) {
-            const copyButton = await response.text();
-            
-            // Handle both "true"/"false" strings and "1"/"0" strings
-            const cleanValue = copyButton.trim().replace(/"/g, '').replace(/'/g, '');
-            const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            return isEnabled;
-        }
-    } catch (error) {
-        console.log('Could not fetch global copy button, using default');
-    }
-    return true; // Default to showing copy button
-};
-
-// Get global display row numbers setting
-const getGlobalDisplayRowNumbers = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/display-row-numbers/');
-        if (response.ok) {
-            const displayRowNumbers = await response.text();
-            
-            const cleanValue = displayRowNumbers.trim().replace(/"/g, '').replace(/'/g, '');
-            const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            return isEnabled;
-        }
-    } catch (error) {
-        console.log('Could not fetch global display row numbers, using default');
-    }
-    return false; // Default to hiding row numbers
-};
-
-// Get global indent width setting
-const getGlobalIndentWidth = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/indent-width/');
-        if (response.ok) {
-            const indentWidth = await response.text();
-            
-            const cleanValue = indentWidth.trim().replace(/"/g, '').replace(/'/g, '');
-            return cleanValue || '4px';
-        }
-    } catch (error) {
-        console.log('Could not fetch global indent width, using default');
-    }
-    return '4px'; // Default indent width
-};
-
-// Get global font size setting
-const getGlobalFontSize = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/font-size/');
-        if (response.ok) {
-            const fontSize = await response.text();
-            
-            const cleanValue = fontSize.trim().replace(/"/g, '').replace(/'/g, '');
-            return cleanValue || '14px';
-        }
-    } catch (error) {
-        console.log('Could not fetch global font size, using default');
-    }
-    return '14px'; // Default font size
-};
-
-// Get global line height setting
-const getGlobalLineHeight = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/line-height/');
-        if (response.ok) {
-            const lineHeight = await response.text();
-            
-            const cleanValue = lineHeight.trim().replace(/"/g, '').replace(/'/g, '');
-            return cleanValue || '20px';
-        }
-    } catch (error) {
-        console.log('Could not fetch global line height, using default');
-    }
-    return '20px'; // Default line height
-};
-
-// Get global letter spacing setting
-const getGlobalLetterSpacing = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/letter-spacing/');
-        if (response.ok) {
-            const letterSpacing = await response.text();
-            
-            const cleanValue = letterSpacing.trim().replace(/"/g, '').replace(/'/g, '');
-            return cleanValue || '0px';
-        }
-    } catch (error) {
-        console.log('Could not fetch global letter spacing, using default');
-    }
-    return '0px'; // Default letter spacing
-};
-
-// Get global word wrap setting
-const getGlobalWordWrap = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/word-wrap/');
-        if (response.ok) {
-            const wordWrap = await response.text();
-            
-            const cleanValue = wordWrap.trim().replace(/"/g, '').replace(/'/g, '');
-            const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            return isEnabled;
-        }
-    } catch (error) {
-        console.log('Could not fetch global word wrap, using default');
-    }
-    return false; // Default to no word wrap
-};
-
-// Get global auto-resize height setting
-const getGlobalAutoResizeHeight = async () => {
-    try {
-        const response = await fetch('/wp-json/dblocks_codepro/v1/auto-resize-height/');
-        if (response.ok) {
-            const autoResizeHeight = await response.text();
-            
-            const cleanValue = autoResizeHeight.trim().replace(/"/g, '').replace(/'/g, '');
-            const isEnabled = cleanValue === 'true' || cleanValue === '1';
-            return isEnabled;
-        }
-    } catch (error) {
-        console.log('Could not fetch global auto-resize height, using default');
-    }
-    return false; // Default to no auto-resize
-};
+// All global settings functions are now provided by the shared utility
 
 // Extract content from block's existing HTML instead of data-content
 const extractContentFromBlock = (block) => {
@@ -489,19 +317,26 @@ const initializeSyntaxHighlighting = () => {
         try {
             // Get block data
             const language = block.dataset.editorLanguage || 'html';
-            let theme = block.dataset.syntaxTheme || 'light';
             
-            // Always use global settings for consistency
-            theme = await getGlobalEditorTheme();
-            const displayLanguage = await getGlobalDisplayLanguage();
-            const copyButton = await getGlobalCopyButton();
-            const displayRowNumbers = await getGlobalDisplayRowNumbers();
-            const indentWidth = await getGlobalIndentWidth();
-            const fontSize = await getGlobalFontSize();
-            const lineHeight = await getGlobalLineHeight();
-            const letterSpacing = await getGlobalLetterSpacing();
-            const wordWrap = await getGlobalWordWrap();
-            const autoResizeHeight = await getGlobalAutoResizeHeight();
+            // Check if cache is stale and force refresh if needed
+            const forceRefresh = frontendGlobalSettings.isCacheStale();
+            
+            // Fetch all global settings using the shared utility
+            const settings = await frontendGlobalSettings.fetchAllGlobalSettings(forceRefresh);
+            
+            // Extract individual settings (theme from global settings overrides block data)
+            const { 
+                theme, 
+                displayLanguage, 
+                copyButton, 
+                displayRowNumbers, 
+                indentWidth, 
+                fontSize, 
+                lineHeight, 
+                letterSpacing, 
+                wordWrap, 
+                autoResizeHeight 
+            } = settings;
             
             // Extract content from existing block HTML instead of data-content
             const content = extractContentFromBlock(block);
@@ -626,6 +461,8 @@ const initializeSyntaxHighlighting = () => {
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Clear cache on page load to ensure fresh settings
+    frontendGlobalSettings.clearCache();
     initializeSyntaxHighlighting();
 });
 

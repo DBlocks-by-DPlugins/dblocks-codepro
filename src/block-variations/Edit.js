@@ -7,6 +7,7 @@ import InspectorControlsComponent from './component/InspectorControlsComponent.j
 import { ResizableBox, Spinner } from "@wordpress/components";
 import { useSelect } from '@wordpress/data';
 import { parseHeightValue, formatHeightWithPx, convertToPx } from './utils/editor-utils';
+import { createEditorGlobalSettings } from '../utils/global-settings';
 
 import './editor.scss';
 
@@ -66,153 +67,62 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [globalWordWrap, setGlobalWordWrap] = useState(false);
     const [globalAutoResizeHeight, setGlobalAutoResizeHeight] = useState(false);
 
-    // Global settings fetch functions
-    const getGlobalDisplayRowNumbers = async () => {
-        try {
-            const response = await fetch(`${baseUrl}display-row-numbers/`);
-            if (response.ok) {
-                const displayRowNumbers = await response.text();
-                const cleanValue = displayRowNumbers.trim().replace(/"/g, '').replace(/'/g, '');
-                const isEnabled = cleanValue === 'true' || cleanValue === '1';
-                return isEnabled;
-            }
-        } catch (error) {
-            console.log('Editor: Could not fetch global display row numbers, using default');
-        }
-        return false;
-    };
+    // Create global settings client with dynamic baseUrl
+    const globalSettings = createEditorGlobalSettings(baseUrl);
 
-    const getGlobalIndentWidth = async () => {
-        try {
-            const response = await fetch(`${baseUrl}indent-width/`);
-            if (response.ok) {
-                const indentWidth = await response.text();
-                const cleanValue = indentWidth.trim().replace(/"/g, '').replace(/'/g, '');
-                return cleanValue || '4px';
-            }
-        } catch (error) {
-            console.log('Editor: Could not fetch global indent width, using default');
-        }
-        return '4px';
-    };
-
-    const getGlobalFontSize = async () => {
-        try {
-            const response = await fetch(`${baseUrl}font-size/`);
-            if (response.ok) {
-                const fontSize = await response.text();
-                const cleanValue = fontSize.trim().replace(/"/g, '').replace(/'/g, '');
-                return cleanValue || '14px';
-            }
-        } catch (error) {
-            console.log('Editor: Could not fetch global font size, using default');
-        }
-        return '14px';
-    };
-
-    const getGlobalLineHeight = async () => {
-        try {
-            const response = await fetch(`${baseUrl}line-height/`);
-            if (response.ok) {
-                const lineHeight = await response.text();
-                const cleanValue = lineHeight.trim().replace(/"/g, '').replace(/'/g, '');
-                return cleanValue || '20px';
-            }
-        } catch (error) {
-            console.log('Editor: Could not fetch global line height, using default');
-        }
-        return '20px';
-    };
-
-    const getGlobalLetterSpacing = async () => {
-        try {
-            const response = await fetch(`${baseUrl}letter-spacing/`);
-            if (response.ok) {
-                const letterSpacing = await response.text();
-                const cleanValue = letterSpacing.trim().replace(/"/g, '').replace(/'/g, '');
-                return cleanValue || '0px';
-            }
-        } catch (error) {
-            console.log('Editor: Could not fetch global letter spacing, using default');
-        }
-        return '0px';
-    };
-
-    const getGlobalWordWrap = async () => {
-        try {
-            const response = await fetch(`${baseUrl}word-wrap/`);
-            if (response.ok) {
-                const wordWrap = await response.text();
-                const cleanValue = wordWrap.trim().replace(/"/g, '').replace(/'/g, '');
-                const isEnabled = cleanValue === 'true' || cleanValue === '1';
-                return isEnabled;
-            }
-        } catch (error) {
-            console.log('Editor: Could not fetch global word wrap, using default');
-        }
-        return false;
-    };
-
-    const getGlobalAutoResizeHeight = async () => {
-        try {
-            const response = await fetch(`${baseUrl}auto-resize-height/`);
-            if (response.ok) {
-                const autoResizeHeight = await response.text();
-                const cleanValue = autoResizeHeight.trim().replace(/"/g, '').replace(/'/g, '');
-                const isEnabled = cleanValue === 'true' || cleanValue === '1';
-                return isEnabled;
-            }
-        } catch (error) {
-            console.log('Editor: Could not fetch global auto-resize height, using default');
-        }
-        return false;
-    };
-
-    // Fetch all global settings on mount
+    // Fetch critical global settings first (needed for Monaco initialization)
     useEffect(() => {
-        const fetchGlobalSettings = async () => {
+        const fetchCriticalSettings = async () => {
             try {
-                console.log('Editor: Fetching global settings from:', baseUrl);
+                console.log('Editor: Fetching critical global settings from:', baseUrl);
                 
-                // Fetch syntax theme
-                const themeResponse = await fetch(`${baseUrl}syntax-theme/`);
-                let theme = 'light'; // default
-                if (themeResponse.ok) {
-                    theme = await themeResponse.text();
-                    // Clean the theme value
-                    theme = theme.trim().replace(/"/g, '').replace(/'/g, '');
-                    console.log('Editor: Fetched global theme:', theme);
-                    setGlobalSyntaxTheme(theme);
-                }
-
-                // Fetch all other global settings
-                const [displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap, autoResizeHeight] = await Promise.all([
-                    getGlobalDisplayRowNumbers(),
-                    getGlobalIndentWidth(),
-                    getGlobalFontSize(),
-                    getGlobalLineHeight(),
-                    getGlobalLetterSpacing(),
-                    getGlobalWordWrap(),
-                    getGlobalAutoResizeHeight()
+                // Only fetch settings needed for Monaco to start
+                const [theme, fontSize, lineHeight] = await Promise.all([
+                    globalSettings.getGlobalEditorTheme(),
+                    globalSettings.getGlobalFontSize(),
+                    globalSettings.getGlobalLineHeight()
                 ]);
-
-                setGlobalDisplayRowNumbers(displayRowNumbers);
-                setGlobalIndentWidth(indentWidth);
+                
+                // Update critical state variables
+                setGlobalSyntaxTheme(theme);
                 setGlobalFontSize(fontSize);
                 setGlobalLineHeight(lineHeight);
+
+                console.log('Editor: Critical settings loaded:', { theme, fontSize, lineHeight });
+
+            } catch (error) {
+                console.log('Editor: Could not fetch critical settings, using defaults:', error);
+            }
+        };
+        
+        fetchCriticalSettings();
+    }, [baseUrl, globalSettings]);
+
+    // Fetch remaining global settings after Monaco is ready
+    useEffect(() => {
+        const fetchRemainingSettings = async () => {
+            try {
+                console.log('Editor: Fetching remaining global settings from:', baseUrl);
+                
+                // Fetch remaining settings
+                const [displayRowNumbers, indentWidth, letterSpacing, wordWrap, autoResizeHeight] = await Promise.all([
+                    globalSettings.getGlobalDisplayRowNumbers(),
+                    globalSettings.getGlobalIndentWidth(),
+                    globalSettings.getGlobalLetterSpacing(),
+                    globalSettings.getGlobalWordWrap(),
+                    globalSettings.getGlobalAutoResizeHeight()
+                ]);
+                
+                // Update remaining state variables
+                setGlobalDisplayRowNumbers(displayRowNumbers);
+                setGlobalIndentWidth(indentWidth);
                 setGlobalLetterSpacing(letterSpacing);
                 setGlobalWordWrap(wordWrap);
                 setGlobalAutoResizeHeight(autoResizeHeight);
 
-                console.log('Editor: baseUrl:', baseUrl);
-                console.log('Editor: DBlocksData available:', typeof DBlocksData !== 'undefined');
-                console.log('Editor: wpApiSettings available:', typeof wpApiSettings !== 'undefined');
-                console.log('Editor: Global settings loaded:', {
-                    theme,
+                console.log('Editor: Remaining settings loaded:', {
                     displayRowNumbers,
                     indentWidth,
-                    fontSize,
-                    lineHeight,
                     letterSpacing,
                     wordWrap,
                     autoResizeHeight
@@ -229,12 +139,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 }
 
             } catch (error) {
-                console.log('Editor: Could not fetch global settings, using defaults:', error);
+                console.log('Editor: Could not fetch remaining settings, using defaults:', error);
             }
         };
         
-        fetchGlobalSettings();
-    }, [baseUrl]);
+        // Fetch remaining settings after a short delay to prioritize Monaco loading
+        const timer = setTimeout(fetchRemainingSettings, 100);
+        return () => clearTimeout(timer);
+    }, [baseUrl, globalSettings]);
 
     const [editorLanguage, setEditorLanguage] = useState(attributes.editorLanguage || "html");
     const [pluginInfo, setPluginInfo] = useState(null);
