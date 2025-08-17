@@ -507,6 +507,90 @@ const initializeSyntaxHighlighting = () => {
             const content = extractContentFromBlock(block);
             
 
+            // Create main container for code block
+            const codeBlockContainer = document.createElement('div');
+            codeBlockContainer.className = 'dblocks-code-container';
+            codeBlockContainer.style.cssText = `
+                position: relative;
+                background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'};
+                border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
+                border-radius: 6px;
+                overflow: hidden;
+            `;
+
+            // Add header with language label and copy button above the code
+            if (displayLanguage || copyButton) {
+                const headerContainer = document.createElement('div');
+                headerContainer.className = 'dblocks-code-header';
+                headerContainer.style.cssText = `
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px 12px;
+                    background: ${theme === 'dark' ? '#2d2d2d' : '#f8f9fa'};
+                    border-bottom: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
+                    font-size: 12px;
+                `;
+
+                // Left side - language label
+                const leftSide = document.createElement('div');
+                leftSide.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                `;
+
+                if (displayLanguage) {
+                    const languageLabel = document.createElement('div');
+                    languageLabel.className = 'language-label';
+                    languageLabel.textContent = language.toUpperCase();
+                    languageLabel.style.cssText = `
+                        color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
+                        font-weight: 500;
+                        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+                    `;
+                    leftSide.appendChild(languageLabel);
+                }
+
+                // Right side - copy button
+                const rightSide = document.createElement('div');
+                rightSide.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                `;
+
+                if (copyButton) {
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-button';
+                    copyBtn.textContent = COPY_BUTTON_LABEL;
+                    copyBtn.style.cssText = `
+                        background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
+                        color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
+                        border: none;
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        cursor: pointer;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        transition: all 0.2s ease;
+                    `;
+                    
+                    // Hover effects
+                    copyBtn.addEventListener('mouseenter', () => {
+                        copyBtn.style.background = theme === 'dark' ? '#4c4c4c' : '#e8eaed';
+                    });
+                    copyBtn.addEventListener('mouseleave', () => {
+                        copyBtn.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
+                    });
+
+                    copyBtn.addEventListener('click', () => handleCopyClick(copyBtn, content, theme));
+                    rightSide.appendChild(copyBtn);
+                }
+
+                headerContainer.appendChild(leftSide);
+                headerContainer.appendChild(rightSide);
+                codeBlockContainer.appendChild(headerContainer);
+            }
+
             // Create Monaco container
             const monacoContainer = document.createElement('div');
             monacoContainer.className = 'monaco-editor-container';
@@ -514,74 +598,13 @@ const initializeSyntaxHighlighting = () => {
                 position: relative;
                 overflow: hidden;
                 background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'};
-                border: 1px solid ${theme === 'dark' ? '#3c3c3c' : '#e1e5e9'};
             `;
 
-                                    // Add language label and copy button if enabled
-        if (displayLanguage || copyButton) {
-            const rightSideContainer = document.createElement('div');
-            rightSideContainer.style.cssText = `
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                display: flex;
-                gap: 8px;
-                align-items: center;
-                z-index: 10;
-            `;
+            codeBlockContainer.appendChild(monacoContainer);
 
-            // Add copy button first (left side of right container)
-            if (copyButton) {
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'copy-button';
-                copyBtn.textContent = COPY_BUTTON_LABEL;
-                copyBtn.style.cssText = `
-                    background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
-                    color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
-                    border: none;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    cursor: pointer;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    transition: all 0.2s ease;
-                `;
-                
-                // Hover effects
-                copyBtn.addEventListener('mouseenter', () => {
-                    copyBtn.style.background = theme === 'dark' ? '#4c4c4c' : '#e8eaed';
-                });
-                copyBtn.addEventListener('mouseleave', () => {
-                    copyBtn.style.background = theme === 'dark' ? '#3c3c3c' : '#f1f3f4';
-                });
-
-                copyBtn.addEventListener('click', () => handleCopyClick(copyBtn, content, theme));
-                rightSideContainer.appendChild(copyBtn);
-            }
-
-                    // Add language label second (right side of right container)
-                    if (displayLanguage) {
-                        const languageLabel = document.createElement('div');
-                        languageLabel.className = 'language-label';
-                        languageLabel.textContent = language.toUpperCase();
-                        languageLabel.style.cssText = `
-                            background: ${theme === 'dark' ? '#3c3c3c' : '#f1f3f4'};
-                            color: ${theme === 'dark' ? '#cccccc' : '#5f6368'};
-                            padding: 2px 8px;
-                            border-radius: 4px;
-                            font-size: 11px;
-                            font-weight: 500;
-                            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-                        `;
-                        rightSideContainer.appendChild(languageLabel);
-                    }
-
-                    monacoContainer.appendChild(rightSideContainer);
-                }
-
-            // Replace block content with Monaco container
+            // Replace block content with code block container
             block.innerHTML = '';
-            block.appendChild(monacoContainer);
+            block.appendChild(codeBlockContainer);
 
             // Initialize Monaco editor
             initializeMonacoEditor(monacoContainer, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap, autoResizeHeight);
