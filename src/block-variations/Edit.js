@@ -64,6 +64,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     const [globalLineHeight, setGlobalLineHeight] = useState('20px');
     const [globalLetterSpacing, setGlobalLetterSpacing] = useState('0px');
     const [globalWordWrap, setGlobalWordWrap] = useState(false);
+    const [globalAutoResizeHeight, setGlobalAutoResizeHeight] = useState(false);
 
     // Global settings fetch functions
     const getGlobalDisplayRowNumbers = async () => {
@@ -152,6 +153,21 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         return false;
     };
 
+    const getGlobalAutoResizeHeight = async () => {
+        try {
+            const response = await fetch(`${baseUrl}auto-resize-height/`);
+            if (response.ok) {
+                const autoResizeHeight = await response.text();
+                const cleanValue = autoResizeHeight.trim().replace(/"/g, '').replace(/'/g, '');
+                const isEnabled = cleanValue === 'true' || cleanValue === '1';
+                return isEnabled;
+            }
+        } catch (error) {
+            console.log('Editor: Could not fetch global auto-resize height, using default');
+        }
+        return false;
+    };
+
     // Fetch all global settings on mount
     useEffect(() => {
         const fetchGlobalSettings = async () => {
@@ -170,13 +186,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 }
 
                 // Fetch all other global settings
-                const [displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap] = await Promise.all([
+                const [displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap, autoResizeHeight] = await Promise.all([
                     getGlobalDisplayRowNumbers(),
                     getGlobalIndentWidth(),
                     getGlobalFontSize(),
                     getGlobalLineHeight(),
                     getGlobalLetterSpacing(),
-                    getGlobalWordWrap()
+                    getGlobalWordWrap(),
+                    getGlobalAutoResizeHeight()
                 ]);
 
                 setGlobalDisplayRowNumbers(displayRowNumbers);
@@ -185,6 +202,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 setGlobalLineHeight(lineHeight);
                 setGlobalLetterSpacing(letterSpacing);
                 setGlobalWordWrap(wordWrap);
+                setGlobalAutoResizeHeight(autoResizeHeight);
 
                 console.log('Editor: baseUrl:', baseUrl);
                 console.log('Editor: DBlocksData available:', typeof DBlocksData !== 'undefined');
@@ -196,8 +214,19 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     fontSize,
                     lineHeight,
                     letterSpacing,
-                    wordWrap
+                    wordWrap,
+                    autoResizeHeight
                 });
+
+                // Force editor refresh if it's already initialized to apply new settings
+                if (editorInstanceRef.current && autoResizeHeight) {
+                    console.log('Editor: Auto-resize enabled, forcing height recalculation');
+                    const newHeight = calculateEditorHeight(content);
+                    if (editorContainerRef.current) {
+                        editorContainerRef.current.style.height = newHeight;
+                        editorInstanceRef.current.layout();
+                    }
+                }
 
             } catch (error) {
                 console.log('Editor: Could not fetch global settings, using defaults:', error);
@@ -242,12 +271,38 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     );
 
     const calculateEditorHeight = (content) => {
+        console.log('Editor: calculateEditorHeight called with:', {
+            syntaxHighlight,
+            globalAutoResizeHeight,
+            contentLength: content?.length || 0
+        });
+        
+        // If auto-resize is disabled for Advanced Custom HTML, use fixed height
+        if (!syntaxHighlight && !globalAutoResizeHeight) {
+            console.log('Editor: Using fixed height:', editorHeight);
+            return editorHeight;
+        }
+        
+        // Auto-resize based on content (for syntax highlighter or when auto-resize is enabled)
         const lineCount = (content.match(/\n/g) || []).length + 1;
         const fontSize = parseInt(globalFontSize) || 14;
         const lineHeight = parseInt(globalLineHeight) || (fontSize * 1.5);
         const padding = fontSize * 2;
         const minHeight = fontSize * 1.5;
-        return `${Math.max(lineCount * lineHeight + padding, minHeight)}px`;
+        const maxHeight = 800; // Maximum height to prevent excessive expansion
+        
+        const calculatedHeight = Math.max(lineCount * lineHeight + padding, minHeight);
+        const finalHeight = `${Math.min(calculatedHeight, maxHeight)}px`;
+        
+        console.log('Editor: Auto-resize calculated height:', {
+            lineCount,
+            fontSize,
+            lineHeight,
+            calculatedHeight,
+            finalHeight
+        });
+        
+        return finalHeight;
     };
 
     const toggleAttribute = (attribute, value) => {
@@ -351,7 +406,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 console.log('Editor: Failed to update Monaco settings:', error);
             }
         }
-    }, [globalDisplayRowNumbers, globalFontSize, globalLineHeight, globalLetterSpacing, globalIndentWidth, globalWordWrap]);
+    }, [globalDisplayRowNumbers, globalFontSize, globalLineHeight, globalLetterSpacing, globalIndentWidth, globalWordWrap, globalAutoResizeHeight]);
 
     // Check for theme changes on mount
     useEffect(() => {
@@ -457,7 +512,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 monacoEditorCache.instances.delete(clientId);
             }
         };
-    }, [syntaxHighlight, selectedBlockClientId, clientId, viewMode, pluginInfo, globalDisplayRowNumbers, globalFontSize, globalLineHeight, globalLetterSpacing, globalIndentWidth, globalWordWrap]);
+    }, [syntaxHighlight, selectedBlockClientId, clientId, viewMode, pluginInfo, globalDisplayRowNumbers, globalFontSize, globalLineHeight, globalLetterSpacing, globalIndentWidth, globalWordWrap, globalAutoResizeHeight]);
 
     // Monitor block selection changes
     useEffect(() => {
@@ -528,18 +583,28 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     // Update editor height when appropriate
     useEffect(() => {
+        console.log('Editor: Height update effect triggered:', {
+            hasContainer: !!editorContainerRef.current,
+            hasEditor: !!editorInstanceRef.current,
+            syntaxHighlight,
+            globalAutoResizeHeight,
+            contentLength: content?.length || 0
+        });
+        
         if (editorContainerRef.current && editorInstanceRef.current) {
-            if (syntaxHighlight) {
-                // For syntax highlighter, use calculated height based on content
+            if (syntaxHighlight || globalAutoResizeHeight) {
+                // For syntax highlighter or when auto-resize is enabled, use calculated height based on content
                 const newHeight = calculateEditorHeight(content);
+                console.log('Editor: Setting auto-resize height to:', newHeight);
                 editorContainerRef.current.style.height = newHeight;
             } else {
-                // For Advanced Custom HTML, always use the fixed editorHeight from localStorage
+                // For Advanced Custom HTML with auto-resize disabled, use fixed editorHeight
+                console.log('Editor: Setting fixed height to:', editorHeight);
                 editorContainerRef.current.style.height = editorHeight;
             }
             editorInstanceRef.current.layout();
         }
-    }, [syntaxHighlight, content, editorHeight, globalFontSize, globalLineHeight]);
+    }, [syntaxHighlight, content, editorHeight, globalFontSize, globalLineHeight, globalAutoResizeHeight]);
 
 
 
@@ -691,9 +756,16 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                         const newValue = editorInstanceRef.current.getValue();
                         toggleAttribute('content', newValue);
 
-                        // For syntax highlighter, update height based on content changes
-                        if (syntaxHighlight) {
+                        // Update height based on content changes when auto-resize is enabled
+                        console.log('Editor: Content changed, checking auto-resize:', {
+                            syntaxHighlight,
+                            globalAutoResizeHeight,
+                            newValueLength: newValue.length
+                        });
+                        
+                        if (syntaxHighlight || globalAutoResizeHeight) {
                             const newHeight = calculateEditorHeight(newValue);
+                            console.log('Editor: Applying new height on content change:', newHeight);
                             editorContainerRef.current.style.height = newHeight;
                             editorInstanceRef.current.layout();
                         }
@@ -858,12 +930,21 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 {!syntaxHighlight && viewMode === 'split' && <RawHTML onClick={() => { setShowEditor(true) }} className={`syntax-${syntaxHighlightTheme}`}>{content}</RawHTML>}
                 {shouldShowEditor && (!syntaxHighlight && viewMode === 'split') ? (
                     <ResizableBox
+                        key={globalAutoResizeHeight ? `auto-${content.length}` : 'manual'}
                         className={"code-editor-box"}
                         size={{
-                            height: convertToPx(editorHeight)
+                            height: (() => {
+                                const calculatedSize = globalAutoResizeHeight ? convertToPx(calculateEditorHeight(content)) : convertToPx(editorHeight);
+                                console.log('Editor: ResizableBox size calculated:', {
+                                    globalAutoResizeHeight,
+                                    contentLength: content.length,
+                                    calculatedSize
+                                });
+                                return calculatedSize;
+                            })()
                         }}
                         minHeight={10}
-                        enable={{ top: true }}
+                        enable={{ top: !globalAutoResizeHeight }}
                         style={{ 
                             position: syntaxHighlight ? 'relative' : 'fixed',
                             bottom: syntaxHighlight ? 'auto' : 0,
@@ -873,6 +954,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                             isolation: 'isolate'
                         }}
                         onResizeStop={(event, direction, ref, d) => {
+                            // Don't allow manual resize when auto-resize is enabled
+                            if (globalAutoResizeHeight) return;
+                            
                             const currentHeight = convertToPx(editorHeight);
                             const newHeight = currentHeight + d.height;
                             const heightWithPx = formatHeightWithPx(newHeight);

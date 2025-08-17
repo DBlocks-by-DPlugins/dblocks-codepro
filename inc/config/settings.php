@@ -72,4 +72,10 @@ return array(
         'default_value' => 'false',
         'post_param_name' => 'wordWrap',
     ),
+    array(
+        'route' => '/auto-resize-height/',
+        'option_name' => 'dblocks_codepro_auto_resize_height',
+        'default_value' => 'false',
+        'post_param_name' => 'autoResizeHeight',
+    ),
 ); 

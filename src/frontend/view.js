@@ -166,6 +166,23 @@ const getGlobalWordWrap = async () => {
     return false; // Default to no word wrap
 };
 
+// Get global auto-resize height setting
+const getGlobalAutoResizeHeight = async () => {
+    try {
+        const response = await fetch('/wp-json/dblocks_codepro/v1/auto-resize-height/');
+        if (response.ok) {
+            const autoResizeHeight = await response.text();
+            
+            const cleanValue = autoResizeHeight.trim().replace(/"/g, '').replace(/'/g, '');
+            const isEnabled = cleanValue === 'true' || cleanValue === '1';
+            return isEnabled;
+        }
+    } catch (error) {
+        console.log('Could not fetch global auto-resize height, using default');
+    }
+    return false; // Default to no auto-resize
+};
+
 // Extract content from block's existing HTML instead of data-content
 const extractContentFromBlock = (block) => {
     // Look for existing content in the block
@@ -343,7 +360,8 @@ const initializeMonacoEditor = async (
     fontSize,
     lineHeight,
     letterSpacing,
-    wordWrap
+    wordWrap,
+    autoResizeHeight
 ) => {
     try {
         // Load Monaco
@@ -483,6 +501,7 @@ const initializeSyntaxHighlighting = () => {
             const lineHeight = await getGlobalLineHeight();
             const letterSpacing = await getGlobalLetterSpacing();
             const wordWrap = await getGlobalWordWrap();
+            const autoResizeHeight = await getGlobalAutoResizeHeight();
             
             // Extract content from existing block HTML instead of data-content
             const content = extractContentFromBlock(block);
@@ -565,7 +584,7 @@ const initializeSyntaxHighlighting = () => {
             block.appendChild(monacoContainer);
 
             // Initialize Monaco editor
-            initializeMonacoEditor(monacoContainer, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap);
+            initializeMonacoEditor(monacoContainer, content, language, theme, displayRowNumbers, indentWidth, fontSize, lineHeight, letterSpacing, wordWrap, autoResizeHeight);
         } catch (error) {
             console.error('Failed to process block:', error);
             // Reset initialization flag on error

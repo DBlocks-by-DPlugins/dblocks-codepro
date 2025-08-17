@@ -33,7 +33,8 @@ const AdminSettings = () => {
         fontSize: '14px',
         lineHeight: '20px',
         letterSpacing: '0px',
-        wordWrap: false
+        wordWrap: false,
+        autoResizeHeight: false
     });
 
     const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ const AdminSettings = () => {
     const loadSettings = async () => {
         setLoading(true);
         try {
-            const [theme, syntaxTheme, fontSize, displayLang, copyBtn, displayRowNumbers, indentWidth, syntaxFontSize, lineHeight, letterSpacing, wordWrap] = await Promise.all([
+            const [theme, syntaxTheme, fontSize, displayLang, copyBtn, displayRowNumbers, indentWidth, syntaxFontSize, lineHeight, letterSpacing, wordWrap, autoResizeHeight] = await Promise.all([
                 apiFetch({ path: '/dblocks_codepro/v1/theme/' }),
                 apiFetch({ path: '/dblocks_codepro/v1/syntax-theme/' }),
                 apiFetch({ path: '/dblocks_codepro/v1/editor-font-size/' }),
@@ -77,7 +78,8 @@ const AdminSettings = () => {
                 apiFetch({ path: '/dblocks_codepro/v1/font-size/' }),
                 apiFetch({ path: '/dblocks_codepro/v1/line-height/' }),
                 apiFetch({ path: '/dblocks_codepro/v1/letter-spacing/' }),
-                apiFetch({ path: '/dblocks_codepro/v1/word-wrap/' })
+                apiFetch({ path: '/dblocks_codepro/v1/word-wrap/' }),
+                apiFetch({ path: '/dblocks_codepro/v1/auto-resize-height/' })
             ]);
 
             setSettings({
@@ -91,7 +93,8 @@ const AdminSettings = () => {
                 fontSize: syntaxFontSize || '14px',
                 lineHeight: lineHeight || '20px',
                 letterSpacing: letterSpacing || '0px',
-                wordWrap: wordWrap === 'true'
+                wordWrap: wordWrap === 'true',
+                autoResizeHeight: autoResizeHeight === 'true'
             });
         } catch (error) {
             console.error('Failed to load settings:', error);
@@ -159,6 +162,11 @@ const AdminSettings = () => {
                     path: '/dblocks_codepro/v1/word-wrap/',
                     method: 'POST',
                     data: { wordWrap: settings.wordWrap }
+                }),
+                apiFetch({
+                    path: '/dblocks_codepro/v1/auto-resize-height/',
+                    method: 'POST',
+                    data: { autoResizeHeight: settings.autoResizeHeight }
                 })
             ]);
 

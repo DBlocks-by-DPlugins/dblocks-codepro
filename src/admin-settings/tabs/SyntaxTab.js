@@ -96,6 +96,15 @@ const SyntaxTab = ({ settings, updateSetting, SYNTAX_THEME_OPTIONS }) => {
                     onChange={(value) => updateSetting('displayRowNumbers', value)}
                     help={__('Show line numbers on the left side of code blocks for easier reference and debugging.', 'dblocks-codepro')}
                 />
+
+                <Spacer marginBottom={4} />
+
+                <ToggleControl
+                    label={__('Resize Height with Content', 'dblocks-codepro')}
+                    checked={settings.autoResizeHeight}
+                    onChange={(value) => updateSetting('autoResizeHeight', value)}
+                    help={__('Automatically adjust editor height based on content length. When disabled, you can manually resize the editor to your preferred height.', 'dblocks-codepro')}
+                />
             </CustomPanel>
 
             <CustomPanel title={__('Front End Highlighter Settings', 'dblocks-codepro')}>
