@@ -31,3 +31,31 @@ $inc_dir = DBLOCKS_CODEPRO_PATH . 'inc/';
 foreach (glob($inc_dir . '*.php') as $file) {
 	require_once $file;
 }
+
+
+add_action('admin_footer', function () {
+    echo '<div id="monaco-placeholder"></div>
+	
+	<style>
+		:root {
+			--monaco-editor-height: 200px;
+		}
+
+		#monaco-placeholder {
+			display: block;
+			height: var(--monaco-editor-height);
+			width: 100%;
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			z-index: 999999;
+			background: olive;
+			border-top: 2px solid #007cba;
+			
+		}
+
+		.interface-interface-skeleton {
+			height: calc(100vh - var(--monaco-editor-height)) !important;
+		}
+	</style>';
+});
