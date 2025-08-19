@@ -1,12 +1,12 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
-Tested up to:      6.8.1
-Stable tag:        1.3.2
+Tested up to:      6.8.2
+Stable tag:        1.4.0
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Advanced HTML Code Block and Code Syntax Highlighterin for sharing code snippets and running code.
+Advanced Custom HTML Block and Code Syntax Highlightering for sharing code snippets and running code.
 
 == Description ==
 
@@ -66,6 +66,14 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.4.0 =
+* Added a Global Settings page
+* Added a Settings for Unused Plugins page (next to Disable Plugin)
+* Moved Global Settings from the sidebar to the Settings page
+* Split block into two variations: Custom HTML and Syntax Highlighting
+* Fixed template loading
+* Fixed loading in the v2 API when the editor is not in an iframe
 
 = 1.3.2 =
 * Added transfrom from HTML Block to CodePro Block

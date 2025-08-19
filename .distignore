@@ -14,3 +14,5 @@ TODO.MD
 package-lock.json
 package.json
 prepros.config
+
+_arch/

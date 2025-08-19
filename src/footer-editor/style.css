@@ -1,0 +1,90 @@
+/**
+ * DBlocks Code Pro Footer Monaco Editor Styles
+ */
+
+:root {
+    --monaco-editor-height: 0px;
+}
+
+#monaco-placeholder {
+    display: block;
+    height: var(--monaco-editor-height);
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 999999;
+    background: #1e1e1e;
+}
+
+/* Draggable resize handle */
+#monaco-resize-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: #333;
+    cursor: ns-resize;
+    border-bottom: 1px solid #555;
+    transition: background-color 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#monaco-resize-handle:hover {
+    background: #555;
+}
+
+#monaco-resize-handle:active {
+    background: #777;
+}
+
+/* Prevent text selection during drag */
+body.monaco-dragging {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    cursor: ns-resize !important;
+}
+
+body.monaco-dragging * {
+    cursor: ns-resize !important;
+}
+
+#monaco-editor-container {
+    height: 100%;
+    width: 100%;
+    margin-top: 8px; /* Account for resize handle */
+}
+
+.interface-interface-skeleton {
+    height: calc(100vh - var(--monaco-editor-height)) !important;
+}
+
+
+.edit-site-layout__canvas .interface-interface-skeleton, 
+.edit-site-layout__mobile .interface-interface-skeleton, 
+.edit-site-template-pages-preview .interface-interface-skeleton {
+    height: calc(100vh - var(--monaco-editor-height)) !important;
+    min-height: calc(100vh - var(--monaco-editor-height)) !important;
+    max-height: calc(100vh - var(--monaco-editor-height)) !important;
+}
+
+/* Theme-specific colors for the draggable handle */
+#monaco-placeholder.theme-dark #monaco-resize-handle {
+	background: #333;
+    border-top: 1px solid #656565;
+}
+#monaco-placeholder.theme-dark #monaco-resize-handle:hover { background: #555; }
+#monaco-placeholder.theme-dark #monaco-resize-handle:active { background: #777; }
+
+#monaco-placeholder.theme-light #monaco-resize-handle {
+	background: white;
+    border-top: 1px solid #e0e0e0;
+}
+#monaco-placeholder.theme-light #monaco-resize-handle:hover { background: #d6d6d6; }
+#monaco-placeholder.theme-light #monaco-resize-handle:active { background: #c8c8c8; }

@@ -1,0 +1,28 @@
+/**
+ * DBlocks Code Pro Admin Monaco Editor Styles
+ */
+
+:root {
+    --monaco-editor-height: 0px;
+}
+
+#monaco-placeholder {
+    display: block;
+    height: var(--monaco-editor-height);
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 999999;
+    background: #1e1e1e;
+    border-top: 2px solid #007cba;
+}
+
+#monaco-editor-container {
+    height: 100%;
+    width: 100%;
+}
+
+.interface-interface-skeleton {
+    height: calc(100vh - var(--monaco-editor-height)) !important;
+}

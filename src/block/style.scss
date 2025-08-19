@@ -1,0 +1,62 @@
+.wp-block-dblocks-codepro:has(.syntax-highlighter-content) {
+
+	--base-color: #f0f0f0;
+	--contrast-color: #000;
+
+	&[data-theme="vs-dark"] {
+		--base-color: #252526;
+		--contrast-color: #fff;
+	}
+
+	border: 1px solid var(--base-color);
+	border-radius: 10px;
+	overflow: hidden;
+
+	.syntax-highlighter-header {
+		display: flex;
+		justify-content: space-between;
+		background-color: var(--base-color);
+		color: var(--contrast-color);
+		padding: 10px;
+	}
+
+	.copy-code-button {
+		background-color: transparent;
+		color: var(--contrast-color);
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		border: none;
+		cursor: pointer;
+		transition: background-color 0.3s ease;		
+	}
+
+	.copy-code-button-text {
+		font-size: 1rem;
+		
+	}
+
+	pre {
+		margin: 0;
+	}
+}
+
+.wp-block-dblocks-codepro {
+	
+	// .hljs-literal { color: blue; }
+
+	// .hljs-comment{ color: #008000; }
+
+	// .hljs-keyword { color: #0000ff; }
+
+	// .hljs-string { color: #a31515; }
+
+	// .hljs-attr { color: #24292e; }
+
+	// .hljs-meta { color: #e00000; }
+
+	// .hljs-doctag{ color: #008000; }
+
+	// .hljs-title { color: #24292F; }
+}

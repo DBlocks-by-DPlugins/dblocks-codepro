@@ -1,0 +1,81 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "dblocks/codepro",
+	"version": "1.2.5",
+	"title": "Code Pro",
+	"category": "dblocks",
+	"description": "HTML and Syntax Highlighter",
+	"example": {},
+	"supports": {
+		"html": false,
+		"align": [
+			"wide",
+			"full"
+		]
+	},
+	"variations": [
+		{
+			"name": "advanced-custom-html",
+			"title": "Advanced Custom HTML",
+			"description": "replace the default HTML editor with a more advanced one",
+			"icon": "html",
+			"attributes": {
+				"syntaxHighlight": false,
+				"viewMode": "split",
+				"scaleHeightWithContent": false
+			},
+			"scope": ["block", "transform"],
+			"isActive": ["syntaxHighlight", "scaleHeightWithContent"]
+		},
+		{
+			"name": "syntax-highlighter",
+			"title": "Syntax Highlighter",
+			"description": "Display code with syntax highlighting",
+			"icon": "editor-paste-text",
+			"attributes": {
+				"syntaxHighlight": true,
+				"viewMode": "preview",
+				"scaleHeightWithContent": true
+			},
+			"scope": ["block", "transform"],
+			"isActive": ["syntaxHighlight", "scaleHeightWithContent"]
+		}
+	],
+	"attributes": {
+		"content": {
+			"type": "string",
+			"default": "<p>Hello world!</p>"
+		},
+		"syntaxHighlight": {
+			"type": "boolean",
+			"default": false
+		},
+		"viewMode": {
+			"type": "string",
+			"default": "split"
+		},
+		"useWrapper": {
+			"type": "boolean",
+			"default": true
+		},
+		"editorLanguage": {
+			"type": "string",
+			"default": "html"
+		},
+		"scaleHeightWithContent": {
+			"type": "boolean",
+			"default": false
+		},
+		"editorHeight": {
+			"type": "number",
+			"default": 400
+		}
+	},
+	"textdomain": "example-static",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}
