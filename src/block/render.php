@@ -52,10 +52,10 @@ if ($syntaxHighlight) {
     if ($useWrapper) {
         $wrapper_attributes = get_block_wrapper_attributes();
         echo '<div ' . $wrapper_attributes . '>';
-        echo wp_kses_post($content);
+        echo $content;
         echo '</div>';
     } else {
-        echo wp_kses_post($content);
+        echo $content;
     }
 }
 ?>
