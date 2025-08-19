@@ -124,5 +124,50 @@
         }
     };
     
+    // Global function to load Emmet support for Monaco
+    window.loadEmmetForMonaco = async function(monacoInstance) {
+        if (!monacoInstance || monacoInstance._emmetInitialized) {
+            return;
+        }
+        
+        try {
+            // Try to load Emmet from the emmet-monaco-es package
+            // This will work if the package is available in the current context
+            if (typeof window.emmetHTML === 'function') {
+                window.emmetHTML(monacoInstance);
+                monacoInstance._emmetInitialized = true;
+                
+                // Configure Emmet options for better HTML editing experience
+                if (monacoInstance.editor && monacoInstance.editor.getEditors) {
+                    const editors = monacoInstance.editor.getEditors();
+                    editors.forEach(editor => {
+                        // Enable Emmet abbreviations
+                        editor.updateOptions({
+                            emmet: {
+                                showAbbreviationSuggestions: true,
+                                showExpandedAbbreviation: 'markup',
+                                syntaxProfiles: {
+                                    html: {
+                                        filters: 'html'
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+                
+                console.log('✅ Emmet support loaded for Monaco editor with enhanced configuration');
+                return;
+            }
+            
+            // If emmetHTML is not available globally, try to load it dynamically
+            // This is a fallback for contexts where the package might not be bundled
+            console.log('ℹ️ Emmet not available globally, trying dynamic load...');
+            
+        } catch (error) {
+            console.warn('⚠️ Failed to load Emmet support:', error);
+        }
+    };
+    
     // console.log('Monaco: Configuration loaded, use window.loadMonacoForBlock() when needed');
 })();

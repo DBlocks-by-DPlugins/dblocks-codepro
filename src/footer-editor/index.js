@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
+import { emmetHTML } from 'emmet-monaco-es';
 
 import './style.css';
 
@@ -191,10 +192,19 @@ const MonacoEditor = () => {
 
                 setMonacoInstance(monaco);
 
-                // Create editor instance
+                // Create editor instance with Emmet support
                 const options = window.DBlocksSettings?.getMonacoOptions({
                     value: `<!-- Loading block content... -->`,
-                    language: "html"
+                    language: "html",
+                    emmet: {
+                        showAbbreviationSuggestions: true,
+                        showExpandedAbbreviation: 'markup',
+                        syntaxProfiles: {
+                            html: {
+                                filters: 'html'
+                            }
+                        }
+                    }
                 }) || {};
 
                 const editor = monaco.editor.create(containerRef.current, options);
@@ -202,6 +212,34 @@ const MonacoEditor = () => {
 
                 // Store reference globally
                 window.monacoEditor = editor;
+
+                // Initialize Emmet support for HTML editing
+                if (!monaco._emmetInitialized) {
+                    try {
+                        emmetHTML(monaco);
+                        monaco._emmetInitialized = true;
+                        
+                        // Configure additional Emmet options for better HTML editing
+                        if (editor && editor.updateOptions) {
+                            editor.updateOptions({
+                                emmet: {
+                                    showAbbreviationSuggestions: true,
+                                    showExpandedAbbreviation: 'markup',
+                                    syntaxProfiles: {
+                                        html: {
+                                            filters: 'html'
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        
+                        console.log('✅ Emmet support initialized for footer editor with enhanced configuration');
+                        console.log('💡 Try typing HTML abbreviations like: div.container, ul>li*3, form>input:text+button');
+                    } catch (error) {
+                        console.warn('⚠️ Failed to initialize Emmet support:', error);
+                    }
+                }
 
                 // Handle window resize
                 const resizeHandler = () => {

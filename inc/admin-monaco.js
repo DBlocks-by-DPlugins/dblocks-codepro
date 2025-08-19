@@ -47,10 +47,19 @@
                 
                 const container = document.getElementById("monaco-editor-container");
                 
-                // Get Monaco options using existing utility (HTML only)
+                // Get Monaco options using existing utility (HTML only) with Emmet support
                 const options = window.DBlocksSettings?.getMonacoOptions({
                     value: `<!-- Loading block content... -->`,
-                    language: "html"
+                    language: "html",
+                    emmet: {
+                        showAbbreviationSuggestions: true,
+                        showExpandedAbbreviation: 'markup',
+                        syntaxProfiles: {
+                            html: {
+                                filters: 'html'
+                            }
+                        }
+                    }
                 }) || {};
                 
                 // Create editor instance
@@ -59,6 +68,14 @@
                 
                 // Store reference globally
                 window.monacoEditor = monacoEditor;
+
+                // Initialize Emmet support for HTML editing
+                if (typeof window.loadEmmetForMonaco === 'function') {
+                    await window.loadEmmetForMonaco(monaco);
+                    console.log('💡 Try typing HTML abbreviations like: div.container, ul>li*3, form>input:text+button');
+                } else {
+                    console.log('ℹ️ Emmet loading function not available in admin context');
+                }
                 
                 // Handle window resize
                 const resizeHandler = function() {
