@@ -1,0 +1,30 @@
+{
+    "landingPage": "/wp-admin/post.php?post=2&action=edit",
+    "preferredVersions": {
+      "php": "8.3",
+      "wp": "6.8.2"
+    },
+    "features": {
+      "networking": true
+    },
+    "steps": [
+      {
+        "step": "login",
+        "username": "admin",
+        "password": "password"
+      },
+      {
+        "step": "wp-cli",
+        "command": "wp plugin install dblocks-codepro --activate"
+      },
+      {
+        "step": "wp-cli",
+        "command": "wp post update 2 --post_content='<!-- wp:heading -->\n<h2 class=\"wp-block-heading\">Advanced HTML Block variation</h2>\n<!-- /wp:heading -->\n\n<!-- wp:dblocks/codepro /-->\n\n<!-- wp:spacer -->\n<div style=\"height:100px\" aria-hidden=\"true\" class=\"wp-block-spacer\"></div>\n<!-- /wp:spacer -->\n\n<!-- wp:heading -->\n<h2 class=\"wp-block-heading\">Syntax Highlighter variation</h2>\n<!-- /wp:heading -->\n\n<!-- wp:dblocks/codepro {\"syntaxHighlight\":true,\"viewMode\":\"preview\",\"scaleHeightWithContent\":true} /-->'"
+      },
+      {
+        "step": "wp-cli",
+        "command": "wp user meta update admin wp_saved_editor block"
+      }
+    ]
+  }
+  

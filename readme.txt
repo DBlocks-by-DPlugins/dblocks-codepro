@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
 Tested up to:      6.8.2
-Stable tag:        1.4.1
+Stable tag:        1.4.2
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -10,6 +10,7 @@ Advanced Custom HTML Block and Code Syntax Highlightering for sharing code snipp
 
 == Description ==
 
+[youtube https://www.youtube.com/watch?v=Jec4l5h6pwQ]
 
 **Enhanced Code Editor for WordPress** transforms the default WordPress block editor into a powerful development environment tailored for coding and content creation. Built on the robust Monaco Editor, this plugin brings advanced code editing features directly into WordPress, making it an essential tool for developers, designers, and content creators who frequently work with code.
 
@@ -66,6 +67,9 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.4.2 =
+content change and added blueprint.json
 
 = 1.4.1 =
 
