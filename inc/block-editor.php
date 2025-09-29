@@ -58,38 +58,24 @@ class DBlocksCodePro_Block_Editor {
     }
 
     /**
-     * Enqueue Monaco and block editor assets
+     * Enqueue block editor assets (this hook only runs in Gutenberg)
      */
     public function enqueue_block_editor_assets() {
-        // Register the script first
-        wp_register_script(
-            'dblocks-monaco-config',
-            plugin_dir_url(__FILE__) . 'monaco-config.js',
-            array('wp-blocks', 'wp-element', 'wp-editor'),
-            '1.0.0',
-            true
+        // Only add settings localization here since Monaco is handled by API class
+        // This ensures settings are available for the block editor
+        wp_add_inline_script(
+            'wp-blocks',
+            'window.dblocksCodeProSettings = ' . wp_json_encode(DBlocksCodePro_Admin_Settings::get_all_settings()) . ';',
+            'before'
         );
-        
-        // Localize Monaco settings BEFORE enqueuing
-        wp_localize_script('dblocks-monaco-config', 'dblocksCodeProSettings', DBlocksCodePro_Admin_Settings::get_all_settings());
-        
-        // Add plugin path for Monaco loading BEFORE enqueuing
-        wp_localize_script('dblocks-monaco-config', 'DBlocksCodePro', array(
-            'pluginPath' => plugin_dir_url(dirname(__FILE__))
-        ));
-        
-        // Now enqueue the script
-        wp_enqueue_script('dblocks-monaco-config');
     }
 
     /**
-     * Localize settings for block editor context (legacy)
+     * Localize settings for block editor context
      */
     public function localize_block_editor_settings() {
-        // Only load on block editor pages
-        global $pagenow;
-        if ($pagenow === 'post.php' || $pagenow === 'post-new.php' || strpos($_SERVER['REQUEST_URI'], 'block-editor') !== false) {
-            // Localize settings for Monaco editor
+        // Only add settings if Monaco scripts are loaded
+        if (wp_script_is('dblocks-monaco-config', 'enqueued')) {
             wp_localize_script('dblocks-monaco-config', 'dblocksCodeProSettings', DBlocksCodePro_Admin_Settings::get_all_settings());
         }
     }

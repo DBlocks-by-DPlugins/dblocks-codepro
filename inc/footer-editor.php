@@ -22,6 +22,11 @@ class DBlocksCodePro_Footer_Editor {
      * Enqueue footer editor assets
      */
     public function enqueue_footer_editor_assets() {
+        // Only load on Gutenberg editor pages
+        if (!$this->should_load_footer_editor()) {
+            return;
+        }
+
         // Get the asset file to load proper dependencies and version
         $asset_file = DBLOCKS_CODEPRO_PATH . 'build/footer-editor/index.asset.php';
         
@@ -45,6 +50,13 @@ class DBlocksCodePro_Footer_Editor {
                 $asset['version']
             );
         }
+    }
+
+    /**
+     * Check if footer editor should be loaded (only for Gutenberg)
+     */
+    private function should_load_footer_editor() {
+        return DBlocksCodePro_Gutenberg_Utils::should_load_gutenberg_assets();
     }
 
     /**

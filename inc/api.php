@@ -22,9 +22,8 @@ class DBlocksCodePro_API {
      * Enqueue API scripts and Monaco editor
      */
     public function enqueue_api() {
-        // Only load Monaco editor on block editor pages, not on admin settings
-        global $pagenow;
-        if ($pagenow === 'post.php' || $pagenow === 'post-new.php' || strpos($_SERVER['REQUEST_URI'], 'block-editor') !== false) {
+        // Only load Monaco editor on Gutenberg editor pages
+        if ($this->should_load_monaco()) {
             // Enqueue Monaco Editor
             wp_enqueue_script(
                 'dblocks-monaco-loader',
@@ -61,6 +60,13 @@ class DBlocksCodePro_API {
             // Enqueue the script
             wp_enqueue_script('dblocks-codepro-api');
         }
+    }
+
+    /**
+     * Check if Monaco should be loaded (only for Gutenberg editor)
+     */
+    private function should_load_monaco() {
+        return DBlocksCodePro_Gutenberg_Utils::should_load_gutenberg_assets();
     }
 }
 

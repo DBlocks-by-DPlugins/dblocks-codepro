@@ -2,7 +2,7 @@
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
 Tested up to:      6.8.2
-Stable tag:        1.4.2
+Stable tag:        1.4.3
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,9 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.4.3 =
+Hotfix - Will not load if Gutenberg is not loaded
 
 = 1.4.2 =
 content change and added blueprint.json

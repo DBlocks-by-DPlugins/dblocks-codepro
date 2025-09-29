@@ -1,6 +1,6 @@
 {
 	"name": "dblocks-codepro",
-	"version": "1.4.1",
+	"version": "1.4.3",
 	"description": "Example block scaffolded with Create Block tool.",
 	"author": "The WordPress Contributors",
 	"license": "GPL-2.0-or-later",
@@ -24,13 +24,13 @@
 		"*"
 	],
 	"devDependencies": {
-		"@wordpress/scripts": "^30.21.0",
+		"@wordpress/scripts": "^30.24.0",
 		"cpx": "^1.5.0",
 		"rimraf": "^6.0.1"
 	},
 	"dependencies": {
-		"@wordpress/icons": "^10.28.0",
-		"emmet-monaco-es": "^5.5.0",
-		"monaco-editor": "^0.52.2"
+		"@wordpress/icons": "^10.31.0",
+		"emmet-monaco-es": "^5.6.1",
+		"monaco-editor": "^0.53.0"
 	}
 }
