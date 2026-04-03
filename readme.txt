@@ -1,8 +1,9 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
-Tested up to:      6.8.2
-Stable tag:        1.4.4
+Requires at least: 7.0
+Tested up to:      7.0
+Stable tag:        1.5.0
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +68,16 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.5.0 =
+* Fixed AMD loader conflict that was breaking jQuery UI, TomSelect, and other plugins (EDD, datepicker, dialog, tooltip)
+* Updated Monaco Editor from 0.53.0 to 0.55.1
+* Fixed monaco.contribution.js defineProperty error
+* Requires WordPress 7.0+ (blocks v3 with mandatory iframe)
+* Removed non-iframe fallback code and classic editor detection
+* Simplified block registration using WP 7+ APIs
+* Consolidated all build scripts into single webpack config
+* Monaco Editor is now auto-copied via CopyWebpackPlugin on every build
 
 = 1.4.4 =
 Forgot to update number ih plugin header ...
