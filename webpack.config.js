@@ -16,6 +16,7 @@ module.exports = {
 					from: 'node_modules/monaco-editor/min',
 					to: '../vendor/monaco/min',
 					noErrorOnMissing: true,
+					info: { minimized: true }, // already minified, skip processing
 				},
 			],
 		} ),
