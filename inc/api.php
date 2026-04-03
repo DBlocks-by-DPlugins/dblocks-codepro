@@ -24,20 +24,15 @@ class DBlocksCodePro_API {
     public function enqueue_api() {
         // Only load Monaco editor on Gutenberg editor pages
         if ($this->should_load_monaco()) {
-            // Enqueue Monaco Editor
-            wp_enqueue_script(
-                'dblocks-monaco-loader',
-                DBLOCKS_CODEPRO_URL . 'vendor/monaco/min/vs/loader.js',
-                array(),
-                '1.0',
-                true
-            );
+            // Monaco's loader.js is loaded dynamically into the Gutenberg iframe
+            // by loadMonacoForBlock() — do NOT enqueue it on the main page as its
+            // AMD define() conflicts with jQuery UI and other scripts.
 
             // Enqueue Monaco configuration (includes settings utility)
             wp_enqueue_script(
                 'dblocks-monaco-config',
                 DBLOCKS_CODEPRO_URL . 'inc/monaco-config.js',
-                array('dblocks-monaco-loader'),
+                array(),
                 '1.0',
                 true
             );
