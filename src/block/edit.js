@@ -86,7 +86,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		if (editorInstanceRef.current) {
 			const model = editorInstanceRef.current.getModel();
 			if (model) {
-				const monaco = window.monaco || (document.querySelector('[name="editor-canvas"]')?.contentWindow?.monaco);
+				const monaco = document.querySelector('[name="editor-canvas"]')?.contentWindow?.monaco;
 				if (monaco) {
 					monaco.editor.setModelLanguage(model, language);
 				}

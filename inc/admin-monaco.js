@@ -287,10 +287,6 @@
         // Get HTML content from block attributes
         if (selectedBlock.attributes && selectedBlock.attributes.content) {
             blockContent = selectedBlock.attributes.content;
-        } else if (selectedBlock.attributes && selectedBlock.attributes.html) {
-            blockContent = selectedBlock.attributes.html;
-        } else if (selectedBlock.attributes && selectedBlock.attributes.code) {
-            blockContent = selectedBlock.attributes.code;
         }
         
         // Update Monaco editor with HTML content
@@ -515,28 +511,8 @@
             }
         }
         
-        // Method 2: Try to update via DOM (fallback)
-        try {
-            const blockElement = document.querySelector(`[data-block="${currentBlockId}"]`);
-            if (blockElement) {
-                // Find the content container within the block
-                const contentContainer = blockElement.querySelector('[data-block-content]') || 
-                                       blockElement.querySelector('.block-content') ||
-                                       blockElement.querySelector('.wp-block-content');
-                
-                if (contentContainer) {
-                    contentContainer.innerHTML = newContent;
-                    console.log('Updated block via DOM');
-                } else {
-                    // If no specific content container, try to update the block's innerHTML
-                    // This is more aggressive but might be needed
-                    blockElement.innerHTML = newContent;
-                    console.log('Updated block innerHTML via DOM');
-                }
-            }
-        } catch (error) {
-            console.error('DOM update failed:', error);
-        }
+        // WP 7+ Gutenberg API should always handle updates — no DOM fallback needed
+        console.warn('Block update via Gutenberg API failed for block:', currentBlockId);
     }
     
     // Initialize when DOM is ready

@@ -160,10 +160,10 @@ export default function SyntaxHighlighter({
 			return;
 		}
 
-		// Detect if we're in an iframe context (like the working plugin)
+		// WP 7+ always uses iframe for the block editor
 		const iframe = document.querySelector('[name="editor-canvas"]');
-		const contextWindow = iframe ? iframe.contentWindow : window;
-		const contextDoc = iframe ? iframe.contentWindow.document : document;
+		const contextWindow = iframe.contentWindow;
+		const contextDoc = iframe.contentWindow.document;
 
 		// Load Monaco using the new approach
 		const loadMonaco = async () => {
