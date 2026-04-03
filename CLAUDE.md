@@ -108,6 +108,6 @@ Settings: editor_theme, editor_font_size, editor_line_height, editor_letter_spac
 
 ## Requirements
 
-- WordPress 7.0+ (blocks v3, mandatory iframe)
+- WordPress 6.7+ (iframe editor available since 6.7)
 - PHP 7.4+
 - Monaco Editor 0.55.1 (vendored, auto-copied on build)

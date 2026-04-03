@@ -3,9 +3,9 @@
 /**
  * Plugin Name:       DBlocks Code Pro
  * Description:       Advanced HTML Block and Code Syntax Highlighterin in one
- * Requires at least: 7.0
+ * Requires at least: 6.7
  * Requires PHP:      7.4
- * Version:           1.5.0
+ * Version:           1.5.1
  * Author:            DPlugins
  * * Author URI:      https://dplugins.com/
  * License:           GPL-2.0-or-later

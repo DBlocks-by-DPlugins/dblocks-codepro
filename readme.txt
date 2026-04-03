@@ -1,9 +1,9 @@
 === DBlocks CodePro ===
 Contributors:      dplugins, krstivoja
 Tags:              block, html, code, monaco editor, code block
-Requires at least: 7.0
+Requires at least: 6.7
 Tested up to:      6.9.4
-Stable tag:        1.5.0
+Stable tag:        1.5.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,9 @@ Answer to foo bar dilemma.
 4. Supported languages
 
 == Changelog ==
+
+= 1.5.1 =
+* Fixed minimum WordPress version requirement (6.7+, not 7.0)
 
 = 1.5.0 =
 * Fixed AMD loader conflict that was breaking jQuery UI, TomSelect, and other plugins (EDD, datepicker, dialog, tooltip)
