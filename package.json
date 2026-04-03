@@ -9,24 +9,19 @@
 		"build": "wp-scripts build --blocks-manifest",
 		"build:admin": "wp-scripts build src/admin/index.js --output-path=build/admin",
 		"build:footer-editor": "wp-scripts build src/footer-editor/index.js --output-path=build/footer-editor",
-		"build:all": "npm run update-monaco && npm run build && npm run build:admin && npm run build:footer-editor",
+		"build:all": "npm run build && npm run build:admin && npm run build:footer-editor",
 		"start": "wp-scripts start --blocks-manifest",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
 		"packages-update": "wp-scripts packages-update",
-		"plugin-zip": "wp-scripts plugin-zip",
-		"----": "  ",
-		"delete-monaco": "rimraf vendor/monaco",
-		"copy-monaco": "node -e \"const fs=require('fs');fs.cpSync('node_modules/monaco-editor/min','vendor/monaco/min',{recursive:true})\"",
-		"update-monaco": "npm run delete-monaco && npm run copy-monaco"
+		"plugin-zip": "wp-scripts plugin-zip"
 	},
 	"files": [
 		"*"
 	],
 	"devDependencies": {
-		"@wordpress/scripts": "^30.24.0",
-		"rimraf": "^6.0.1"
+		"@wordpress/scripts": "^30.24.0"
 	},
 	"dependencies": {
 		"@wordpress/icons": "^10.31.0",
