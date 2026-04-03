@@ -36,5 +36,6 @@ node_modules/
 
 
 build/
+vendor/monaco/
 
 _examples/
